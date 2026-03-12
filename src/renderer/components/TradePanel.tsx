@@ -13,6 +13,8 @@
 
 import React, { useState, useCallback } from 'react';
 import type { MarketGood, PlayerInventory } from '../../shared/ipc-types';
+import ArtifactImage, { ArtifactCaption } from './ArtifactImage';
+import { useArtifactImages } from '../hooks/useArtifactImages';
 
 interface TradePanelProps {
   portId: string;
@@ -56,6 +58,10 @@ export default function TradePanel({
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const [feedback, setFeedback] = useState<Record<string, { msg: string; ok: boolean }>>({});
   const [busy, setBusy] = useState<string | null>(null);
+
+  // Artifact images: keyed by good.id, fetched from Met Museum via main process.
+  const goodIds = marketGoods.map((g) => g.id);
+  const artifactMap = useArtifactImages(goodIds);
 
   const getQty = (goodId: string) => quantities[goodId] ?? 1;
 
@@ -299,6 +305,14 @@ export default function TradePanel({
                   {fb.msg}
                 </div>
               )}
+
+              {/* Museum artifact image — lazy-loaded, max 1 per good for compact layout */}
+              {(artifactMap.get(good.id) ?? []).slice(0, 1).map((artifact) => (
+                <div key={artifact.id} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.4rem', marginTop: '0.35rem' }}>
+                  <ArtifactImage artifact={artifact} />
+                  <ArtifactCaption artifact={artifact} />
+                </div>
+              ))}
             </div>
           );
         })
