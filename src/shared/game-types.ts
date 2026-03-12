@@ -9,6 +9,11 @@
 export type GamePhase = 'idle' | 'trading' | 'sailing' | 'encountered';
 
 /**
+ * PortRegion — the six Mediterranean trading spheres.
+ */
+export type PortRegion = 'greece' | 'levant' | 'egypt' | 'italy' | 'iberia' | 'north_africa';
+
+/**
  * Port — historically accurate Mediterranean port with Pleiades coordinates.
  */
 export interface Port {
@@ -17,7 +22,7 @@ export interface Port {
   modernName: string;   // e.g. 'Athens', 'Carthage'
   lat: number;
   lng: number;
-  region: 'greece' | 'levant' | 'egypt' | 'italy' | 'iberia' | 'north_africa';
+  region: PortRegion;
   description: string;  // 1-2 sentence student-accessible description
   pleiadesId?: string;  // e.g. '579885'
   culturalDescription?: string; // richer historical/cultural context for port info panel
