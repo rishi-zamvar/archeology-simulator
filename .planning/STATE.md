@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-03-12)
 ## Current Position
 
 Phase: 2 of 3 (Core Loop)
-Plan: 1 of 4 in current phase
+Plan: 3 of 4 in current phase
 Status: In progress
-Last activity: 2026-03-12 — Completed 02-01-PLAN.md (port data, voyage, economy foundation)
+Last activity: 2026-03-12 — Completed 02-03-PLAN.md (trade system: buy/sell transactions, TradePanel UI)
 
-Progress: [████░░░░░░] 43% (1/3 phases complete + 1/4 plans in phase 2)
+Progress: [██████░░░░] 60% (1/3 phases complete + 3/4 plans in phase 2)
 
 ## Performance Metrics
 
@@ -28,10 +28,10 @@ Progress: [████░░░░░░] 43% (1/3 phases complete + 1/4 plans 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 01-foundation | 3/3 | 11 min | 3.7 min |
-| 02-core-loop  | 1/4 |  5 min | 5.0 min  |
+| 02-core-loop  | 3/4 |  9 min | 3.0 min  |
 
 **Recent Trend:**
-- Last 5 plans: 01-01 (5 min), 01-02 (3 min), 01-03 (3 min), 02-01 (5 min)
+- Last 5 plans: 01-02 (3 min), 01-03 (3 min), 02-01 (5 min), 02-03 (4 min)
 - Trend: Fast, consistent execution
 
 *Updated after each plan completion*
@@ -60,6 +60,11 @@ Recent decisions affecting current work:
 - **getMarketPrices calculates price inline** — SQL query layer handles currentPrice calculation; economy.ts advancePortEconomy is for turn-advance loop (avoids N+1)
 - **massalia region = 'italy'** — Marseille (ancient Massalia) trade sphere is Tyrrhenian, not Iberian
 - **INSERT OR IGNORE seed pattern** — seedPorts/seedGoods/seedPortInventory called every app launch; zero cost after first run
+- **Buy stacks by port+price** — same good/port/price merges into one CargoItem; different port or price = separate stack for P&L granularity
+- **FIFO sell across stacks** — sellGood drains oldest stacks first; entire stack removed if qty >= stack size
+- **Trade mutates supply/demand** — buy decrements supply by 1 (MIN 1); sell decrements demand by 1 (MIN 1); repeated trading moves prices
+- **broadcastGameUpdated helper** — extracted to standalone helper in game.ts; called after each trade to fan state to all BrowserWindows
+- **CargoHold/ProfitDisplay always visible** — rendered in left panel regardless of port selection; player inventory always contextually relevant
 
 ### Pending Todos
 
@@ -72,6 +77,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-12 12:33 UTC
-Stopped at: Completed 02-01-PLAN.md
+Last session: 2026-03-12 12:41 UTC
+Stopped at: Completed 02-03-PLAN.md
 Resume file: None
