@@ -10,28 +10,28 @@ See: .planning/PROJECT.md (updated 2026-03-12)
 ## Current Position
 
 Phase: 1 of 3 (Foundation)
-Plan: 1 of 3 in current phase
+Plan: 2 of 3 in current phase
 Status: In progress
-Last activity: 2026-03-12 — Completed 01-01-PLAN.md (scaffold + IPC + CI)
+Last activity: 2026-03-12 — Completed 01-02-PLAN.md (SQLite persistence + FSM game state)
 
-Progress: [█░░░░░░░░░] ~11% (1/9 plans estimated)
+Progress: [██░░░░░░░░] ~22% (2/9 plans estimated)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 1
-- Average duration: 5 min
-- Total execution time: 0.08 hours
+- Total plans completed: 2
+- Average duration: 4 min
+- Total execution time: 0.13 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 01-foundation | 1/3 | 5 min | 5 min |
+| 01-foundation | 2/3 | 8 min | 4 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-01 (5 min)
-- Trend: Establishing baseline
+- Last 5 plans: 01-01 (5 min), 01-02 (3 min)
+- Trend: Fast execution
 
 *Updated after each plan completion*
 
@@ -46,6 +46,10 @@ Recent decisions affecting current work:
 - **vite@7.3.1** — Vite 8 not released; 7.3.1 is latest stable
 - **contextBridge key is 'api'** — window.api exposes IPCBridge interface (not window.gameAPI)
 - **Separate tsconfig.main.json** — CommonJS for Electron main, ESNext for Vite renderer (required for Electron Node.js runtime)
+- **GameState is a discriminated union** — not a generic object; enables exhaustive FSM switch and type-safe IPC contracts
+- **initializeDatabase(path)** — accepts path string so tests pass ':memory:' without Electron dependency
+- **ipc-types.ts re-exports from game/types** — single source of truth; renderer imports from boundary file
+- **WAL mode silently ignored for :memory: DB** — SQLite constraint; real-file databases use WAL correctly
 
 ### Pending Todos
 
@@ -58,6 +62,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-12 11:57 UTC
-Stopped at: Completed 01-01-PLAN.md
+Last session: 2026-03-12 12:03 UTC
+Stopped at: Completed 01-02-PLAN.md
 Resume file: None
