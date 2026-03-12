@@ -6,18 +6,28 @@
  *
  * All layout concerns live here. The Shell is the single component that
  * wires useUIStore to the two SidePanels. Child routes/panels render inside
- * SidePanel children slots (Phase 2+).
+ * SidePanel children slots.
  *
  * Keyboard shortcuts:
  *   [ — toggle left panel
  *   ] — toggle right panel
+ *
+ * Left panel: PortInfoPanel + CargoHold + ProfitDisplay
+ * Right panel: TradePanel (when a port is selected)
  */
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useCallback } from 'react';
 import { useUIStore } from '../stores/uiStore';
+import { useGameState } from '../hooks/useGameState';
 import SidePanel from './SidePanel';
 import MapArea from './MapArea';
 import PortInfoPanel from './PortInfoPanel';
+import TradePanel from './TradePanel';
+import CargoHold from './CargoHold';
+import ProfitDisplay from './ProfitDisplay';
+import ShipMarker from './ShipMarker';
+import { useTradeState } from '../hooks/useTradeState';
+import type { SailingState } from '../../game/types';
 
 export default function Shell(): React.ReactElement {
   const {
@@ -28,6 +38,20 @@ export default function Shell(): React.ReactElement {
     selectedPortId,
     setSelectedPort,
   } = useUIStore();
+
+  const { state: gameState } = useGameState();
+  const { marketGoods, inventory, transactions } = useTradeState(selectedPortId);
+
+  // Build port coordinates map from loaded ports for ShipMarker
+  const [portCoords, setPortCoords] = React.useState<Map<string, [number, number]>>(new Map());
+
+  useEffect(() => {
+    window.api.game.getPorts().then((ports) => {
+      const map = new Map<string, [number, number]>();
+      ports.forEach((p) => map.set(p.id, [p.lat, p.lng]));
+      setPortCoords(map);
+    }).catch(() => {/* non-fatal: ship marker just won't animate */});
+  }, []);
 
   // Keyboard shortcuts for panel toggling (accessibility requirement)
   useEffect(() => {
@@ -48,14 +72,30 @@ export default function Shell(): React.ReactElement {
   }, [toggleLeftPanel, toggleRightPanel]);
 
   function handleNavigate(destinationPortId: string) {
-    // Dispatch SET_SAIL action to the main process
-    // eta is calculated by the main process from voyage data; we pass 0 as placeholder
-    window.api.game.action({
+    void window.api.game.action({
       type: 'SET_SAIL',
       destination: destinationPortId,
       eta: 0,
     });
   }
+
+  const handleBuy = useCallback(async (goodId: string, qty: number) => {
+    if (!selectedPortId) return;
+    await window.api.game.buyGood(selectedPortId, goodId, qty);
+  }, [selectedPortId]);
+
+  const handleSell = useCallback(async (goodId: string, qty: number) => {
+    if (!selectedPortId) return;
+    await window.api.game.sellGood(selectedPortId, goodId, qty);
+  }, [selectedPortId]);
+
+  const isSailing = gameState?.type === 'sailing';
+  const sailingState = isSailing ? (gameState as SailingState) : null;
+
+  // Port display name for TradePanel header
+  const portDisplayName = selectedPortId
+    ? selectedPortId.charAt(0).toUpperCase() + selectedPortId.slice(1).replace(/_/g, ' ')
+    : '';
 
   return (
     <div
@@ -69,7 +109,7 @@ export default function Shell(): React.ReactElement {
         position: 'relative',
       }}
     >
-      {/* Left side panel — port info when a port is selected */}
+      {/* Left side panel — port info + cargo hold + profit/loss */}
       <SidePanel
         side="left"
         isOpen={leftPanelOpen}
@@ -82,17 +122,50 @@ export default function Shell(): React.ReactElement {
             onNavigate={handleNavigate}
           />
         ) : undefined}
+        <CargoHold inventory={inventory} />
+        <ProfitDisplay inventory={inventory} transactions={transactions} />
       </SidePanel>
 
-      {/* Central map area */}
-      <MapArea />
+      {/* Central map area — ShipMarker passed as child (needs MapContainer context) */}
+      <MapArea>
+        {sailingState && portCoords.size > 0 && (
+          <ShipMarker
+            sailingState={sailingState}
+            portCoords={portCoords}
+          />
+        )}
+      </MapArea>
 
-      {/* Right side panel — trade log */}
+      {/* Right side panel — trade panel when a port is selected */}
       <SidePanel
         side="right"
         isOpen={rightPanelOpen}
         onToggle={toggleRightPanel}
-      />
+      >
+        {selectedPortId ? (
+          <TradePanel
+            portId={selectedPortId}
+            portName={portDisplayName}
+            marketGoods={marketGoods}
+            inventory={inventory}
+            onBuy={handleBuy}
+            onSell={handleSell}
+          />
+        ) : (
+          <div
+            style={{
+              padding: '1.5rem 1rem',
+              color: '#7a5c45',
+              fontFamily: "'Lora', Georgia, serif",
+              fontSize: '0.875rem',
+              fontStyle: 'italic',
+              opacity: 0.7,
+            }}
+          >
+            Select a port to trade.
+          </div>
+        )}
+      </SidePanel>
     </div>
   );
 }
