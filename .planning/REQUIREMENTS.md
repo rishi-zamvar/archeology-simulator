@@ -139,17 +139,17 @@
 | TURN-03 | Phase 2 | Complete |
 | TURN-04 | Phase 2 | Complete |
 | TURN-05 | Phase 2 | Complete |
-| PORT-01 | Phase 3 | Pending |
-| PORT-02 | Phase 3 | Pending |
-| PORT-03 | Phase 3 | Pending |
-| PORT-04 | Phase 3 | Pending |
+| PORT-01 | Phase 3 | Complete |
+| PORT-02 | Phase 3 | Complete |
+| PORT-03 | Phase 3 | Complete |
+| PORT-04 | Phase 3 | Complete |
 | SAVE-01 | Phase 1 | Complete |
 | SAVE-02 | Phase 1 | Complete |
-| TUT-01 | Phase 3 | Pending |
-| TUT-02 | Phase 3 | Pending |
+| TUT-01 | Phase 3 | Complete |
+| TUT-02 | Phase 3 | Complete |
 | UI-01 | Phase 1 | Complete |
 | UI-02 | Phase 1 | Complete |
-| UI-03 | Phase 3 | Pending |
+| UI-03 | Phase 3 | Complete |
 | UI-04 | Phase 1 | Complete |
 | INFRA-01 | Phase 1 | Complete |
 | INFRA-02 | Phase 1 | Complete |
@@ -164,4 +164,4 @@
 
 ---
 *Requirements defined: 2026-03-12*
-*Last updated: 2026-03-12 — Phase 2 requirements marked Complete (28/35)*
+*Last updated: 2026-03-12 — All v1 requirements marked Complete (35/35)*

@@ -14,7 +14,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Foundation** - Cross-platform Electron shell with IPC bridge, SQLite persistence, and parchment UI skeleton
 - [x] **Phase 2: Core Loop** - Playable game with Leaflet map, turn-based navigation, trade mechanics, ship inventory, and voyage events
-- [ ] **Phase 3: Port Experience** - Illustrated port scenes, museum artifact images, ambient audio, and guided tutorial
+- [x] **Phase 3: Port Experience** - Illustrated port scenes, museum artifact images, ambient audio, and guided tutorial
 
 ## Phase Details
 
@@ -68,9 +68,9 @@ Plans:
 - [x] 03-01-PLAN.md — Port scene: historical illustration background, clickable Market/Harbor regions, cultural descriptions in PortInfoPanel
 - [x] 03-02-PLAN.md — Museum API: Met/Wikimedia artifact images, SQLite artifact_cache with TTL, ArtifactImage lazy-load, TradePanel integration
 - [x] 03-03-PLAN.md — Audio + tutorial: Web Audio ambient loop, TutorialModal FSM-driven, TUTORIAL_SKIP/ADVANCE actions, Shell wiring
-- [ ] 03-04-PLAN.md — Gap closure: Wire ArtifactImage + useArtifactImages into TradePanel (PORT-04)
-- [ ] 03-05-PLAN.md — Gap closure: Programmatic SVG port illustrations per region, replace missing PNG assets (PORT-01)
-- [ ] 03-06-PLAN.md — Gap closure: Synthesized Web Audio ambient soundscape, no file dependency (UI-03)
+- [x] 03-04-PLAN.md — Gap closure: Wire ArtifactImage + useArtifactImages into TradePanel (PORT-04)
+- [x] 03-05-PLAN.md — Gap closure: Programmatic SVG port illustrations per region, replace missing PNG assets (PORT-01)
+- [x] 03-06-PLAN.md — Gap closure: Synthesized Web Audio ambient soundscape, no file dependency (UI-03)
 
 ## Progress
 
@@ -81,4 +81,4 @@ Phases execute in numeric order: 1 → 2 → 3
 |-------|----------------|--------|-----------|
 | 1. Foundation | 3/3 | Complete | 2026-03-12 |
 | 2. Core Loop | 4/4 | Complete | 2026-03-12 |
-| 3. Port Experience | 3/6 | Gap closure in progress | - |
+| 3. Port Experience | 6/6 | Complete | 2026-03-12 |

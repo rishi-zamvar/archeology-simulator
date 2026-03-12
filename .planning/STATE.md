@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-03-12)
 
 **Core value:** Students learn ancient Mediterranean history by making decisions as a merchant captain, not by reading about them.
-**Current focus:** Phase 3 — Port Experience
+**Current focus:** Milestone v1.0 complete — all 3 phases verified
 
 ## Current Position
 
-Phase: 3 of 3 (Port Experience) — Complete
-Plan: 6 of 6 in current phase (03-01, 03-02, 03-03, 03-04, 03-05, 03-06 complete)
-Status: Phase complete (all gap closure plans done)
-Last activity: 2026-03-12 — Completed 03-06-PLAN.md (synthesized ambient audio via Web Audio API)
+Phase: 3 of 3 (Port Experience) — Complete, verified
+Plan: 6 of 6 in current phase (all plans + gap closure complete)
+Status: Milestone v1.0 complete — all phases verified
+Last activity: 2026-03-12 — Phase 3 verified (5/5 must-haves passed)
 
-Progress: [██████████] 100% (All 3 phases + gap closure plans 03-05 and 03-06 complete)
+Progress: [██████████] 100% (All 3 phases complete and verified)
 
 ## Performance Metrics
 
