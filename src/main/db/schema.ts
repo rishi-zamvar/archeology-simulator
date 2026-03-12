@@ -42,16 +42,24 @@ export function initializeDatabase(dbPath: string): Database.Database {
     // ports: 25 historical Mediterranean ports (seeded via seedPorts in queries.ts)
     db.prepare(`
       CREATE TABLE IF NOT EXISTS ports (
-        id          TEXT PRIMARY KEY,
-        ancient_name TEXT NOT NULL,
-        modern_name TEXT NOT NULL,
-        lat         REAL NOT NULL,
-        lng         REAL NOT NULL,
-        region      TEXT NOT NULL,
-        description TEXT NOT NULL,
-        pleiades_id TEXT
+        id                   TEXT PRIMARY KEY,
+        ancient_name         TEXT NOT NULL,
+        modern_name          TEXT NOT NULL,
+        lat                  REAL NOT NULL,
+        lng                  REAL NOT NULL,
+        region               TEXT NOT NULL,
+        description          TEXT NOT NULL,
+        pleiades_id          TEXT,
+        cultural_description TEXT
       )
     `).run();
+
+    // Add cultural_description column if upgrading an existing database (idempotent)
+    try {
+      db.prepare('ALTER TABLE ports ADD COLUMN cultural_description TEXT').run();
+    } catch {
+      // Column already exists — ignore
+    }
 
     // goods: tradeable commodities
     db.prepare(`
@@ -97,6 +105,24 @@ export function initializeDatabase(dbPath: string): Database.Database {
         total_value   INTEGER NOT NULL,
         recorded_at   TEXT NOT NULL DEFAULT (datetime('now'))
       )
+    `).run();
+
+    // artifact_cache: museum artifact images per trade good, cached with 24h TTL.
+    // museum_id is the external ID (Met object ID or "wiki_*" for Wikimedia fallback).
+    db.prepare(`
+      CREATE TABLE IF NOT EXISTS artifact_cache (
+        id                TEXT PRIMARY KEY,
+        good_id           TEXT NOT NULL,
+        museum_id         TEXT NOT NULL,
+        image_url         TEXT NOT NULL,
+        title             TEXT NOT NULL,
+        description       TEXT NOT NULL DEFAULT '',
+        cache_timestamp   TEXT NOT NULL
+      )
+    `).run();
+
+    db.prepare(`
+      CREATE INDEX IF NOT EXISTS idx_artifact_cache_good_id ON artifact_cache (good_id)
     `).run();
   })();
 

@@ -580,6 +580,58 @@ export function sellGood(
   return result;
 }
 
+// ─── Artifact Cache ───────────────────────────────────────────────────────────
+
+/**
+ * A museum artifact cached from the Met Museum API or Wikimedia Commons.
+ * Rows expire after 24 hours (enforced by the TTL WHERE clause in getArtifactsForGood).
+ */
+export interface CachedArtifact {
+  id: string;
+  goodId: string;
+  museumId: string;
+  imageUrl: string;
+  title: string;
+  description: string;
+  cacheTimestamp: string;
+}
+
+/**
+ * Return cached artifacts for a trade good that were fetched within the last 24 hours.
+ * Returns up to 3 results. Returns empty array on cache miss.
+ */
+export function getArtifactsForGood(db: Database.Database, goodId: string): CachedArtifact[] {
+  return db.prepare(`
+    SELECT id, good_id as goodId, museum_id as museumId, image_url as imageUrl,
+           title, description, cache_timestamp as cacheTimestamp
+    FROM artifact_cache
+    WHERE good_id = ? AND datetime(cache_timestamp) > datetime('now', '-24 hours')
+    LIMIT 3
+  `).all(goodId) as CachedArtifact[];
+}
+
+/**
+ * Insert or replace an artifact in the cache.
+ * Uses INSERT OR REPLACE so re-fetching a good overwrites stale rows.
+ */
+export function cacheArtifact(db: Database.Database, artifact: CachedArtifact): void {
+  db.prepare(`
+    INSERT OR REPLACE INTO artifact_cache
+      (id, good_id, museum_id, image_url, title, description, cache_timestamp)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
+  `).run(
+    artifact.id,
+    artifact.goodId,
+    artifact.museumId,
+    artifact.imageUrl,
+    artifact.title,
+    artifact.description,
+    artifact.cacheTimestamp,
+  );
+}
+
+// ─── Trade Transactions — History ─────────────────────────────────────────────
+
 /**
  * Get the last N transaction records (default 10), newest first.
  */

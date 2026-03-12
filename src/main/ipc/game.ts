@@ -22,7 +22,10 @@ import {
   buyGood,
   sellGood,
   getTransactionHistory,
+  getArtifactsForGood,
+  cacheArtifact,
 } from '../db/queries';
+import type { CachedArtifact } from '../db/queries';
 import { performAction } from '../../game/engine';
 import { getReachablePorts } from '../../game/voyage';
 import { rollVoyageEvent, resolveEventChoice } from '../../game/events';
@@ -170,6 +173,125 @@ export function registerGameIPCHandlers(db: Database.Database): void {
    */
   ipcMain.handle('game:getPendingEvent', async () => {
     return pendingVoyageEvent;
+  });
+
+  /**
+   * game:get-artifacts — return up to 3 cached museum artifact images for a trade good.
+   *
+   * Flow:
+   *  1. Check artifact_cache for non-expired rows (24h TTL) → return immediately if found
+   *  2. On cache miss: query Met Museum Collection API (public domain, no auth)
+   *  3. Fetch up to 3 object detail records concurrently; cache each that has an image
+   *  4. If Met returns zero results, fall back to Wikimedia Commons allimages API
+   *  5. If both fail, return a single placeholder record so the renderer always has
+   *     something to render (placeholder image path handled on renderer side)
+   */
+  ipcMain.handle('game:get-artifacts', async (_event, goodId: string): Promise<CachedArtifact[]> => {
+    // 1. Cache hit
+    const cached = getArtifactsForGood(db, goodId);
+    if (cached.length > 0) return cached;
+
+    const now = new Date().toISOString();
+    const results: CachedArtifact[] = [];
+
+    try {
+      // 2. Met Museum search
+      const searchUrl = `https://collectionapi.metmuseum.org/public/collection/v1/search?q=${encodeURIComponent(goodId)}&hasImages=true&isPublicDomain=true`;
+      const searchResp = await fetch(searchUrl);
+      if (searchResp.ok) {
+        const searchData = await searchResp.json() as { objectIDs?: number[] };
+        const ids = (searchData.objectIDs ?? []).slice(0, 3);
+
+        if (ids.length > 0) {
+          // 3. Fetch detail for up to 3 objects concurrently
+          const detailResults = await Promise.all(
+            ids.map(async (id) => {
+              try {
+                const resp = await fetch(
+                  `https://collectionapi.metmuseum.org/public/collection/v1/objects/${id}`
+                );
+                if (!resp.ok) return null;
+                return await resp.json() as {
+                  objectID: number;
+                  isPublicDomain: boolean;
+                  primaryImage: string;
+                  title: string;
+                  objectDescription?: string;
+                  medium?: string;
+                };
+              } catch {
+                return null;
+              }
+            })
+          );
+
+          for (const obj of detailResults) {
+            if (obj && obj.isPublicDomain && obj.primaryImage) {
+              const artifact: CachedArtifact = {
+                id: `met_${goodId}_${obj.objectID}`,
+                goodId,
+                museumId: String(obj.objectID),
+                imageUrl: obj.primaryImage,
+                title: obj.title || goodId,
+                description: obj.objectDescription ?? obj.medium ?? '',
+                cacheTimestamp: now,
+              };
+              cacheArtifact(db, artifact);
+              results.push(artifact);
+            }
+          }
+        }
+      }
+    } catch {
+      // Network error — fall through to Wikimedia
+    }
+
+    // 4. Wikimedia fallback
+    if (results.length === 0) {
+      try {
+        const wikiUrl = `https://commons.wikimedia.org/w/api.php?action=query&list=allimages&aiprefix=${encodeURIComponent(goodId)}&ailimit=5&format=json&origin=*`;
+        const wikiResp = await fetch(wikiUrl);
+        if (wikiResp.ok) {
+          const wikiData = await wikiResp.json() as {
+            query?: { allimages?: Array<{ url: string; name: string; descriptionurl?: string }> };
+          };
+          const images = wikiData.query?.allimages ?? [];
+          if (images.length > 0) {
+            const img = images[0];
+            const artifact: CachedArtifact = {
+              id: `wiki_${goodId}_0`,
+              goodId,
+              museumId: `wiki_${goodId}_0`,
+              imageUrl: img.url,
+              title: img.name.replace(/_/g, ' ').replace(/\.[^.]+$/, ''),
+              description: '',
+              cacheTimestamp: now,
+            };
+            cacheArtifact(db, artifact);
+            results.push(artifact);
+          }
+        }
+      } catch {
+        // Network error — fall through to placeholder
+      }
+    }
+
+    // 5. Placeholder so the renderer always receives an array with at least one item
+    if (results.length === 0) {
+      return [
+        {
+          id: `placeholder_${goodId}`,
+          goodId,
+          museumId: 'placeholder',
+          imageUrl: '/assets/placeholder-artifact.png',
+          title: goodId,
+          description: '',
+          cacheTimestamp: now,
+        },
+      ];
+    }
+
+    return results;
   });
 
   /**

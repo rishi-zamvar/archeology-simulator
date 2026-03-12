@@ -11,6 +11,7 @@
 
 export type { GameState, GameAction, GameResult } from '../game/types';
 export type { Port, MarketGood, VoyageRoute, PlayerInventory, TransactionRecord, VoyageEvent } from './game-types';
+export type { CachedArtifact } from '../main/db/queries';
 
 /**
  * The contextBridge API surface exposed as window.api in the renderer.
@@ -41,6 +42,9 @@ export interface IPCBridge {
       eventId: string,
       choiceId: string
     ) => Promise<{ success: boolean; error?: string; outcome?: import('../game/events').EventOutcome; message?: string }>;
+
+    // Phase 3 Plan 2: museum artifact images
+    getArtifacts: (goodId: string) => Promise<import('../main/db/queries').CachedArtifact[]>;
   };
   /** Subscribe to a push event from main process. Returns cleanup function. */
   subscribe: (event: string, callback: (data: unknown) => void) => () => void;
