@@ -62,12 +62,15 @@ Plans:
   3. Trade goods display museum artifact images from Met/British Museum APIs with Wikimedia fallback
   4. Ambient Mediterranean audio and event sound effects play throughout the game
   5. A new player can complete a guided first voyage that teaches map navigation, buying/selling, and sailing — and can skip it
-**Plans:** 3 plans
+**Plans:** 6 plans (3 original + 3 gap closure)
 
 Plans:
-- [ ] 03-01-PLAN.md — Port scene: historical illustration background, clickable Market/Harbor regions, cultural descriptions in PortInfoPanel
-- [ ] 03-02-PLAN.md — Museum API: Met/Wikimedia artifact images, SQLite artifact_cache with TTL, ArtifactImage lazy-load, TradePanel integration
-- [ ] 03-03-PLAN.md — Audio + tutorial: Web Audio ambient loop, TutorialModal FSM-driven, TUTORIAL_SKIP/ADVANCE actions, Shell wiring
+- [x] 03-01-PLAN.md — Port scene: historical illustration background, clickable Market/Harbor regions, cultural descriptions in PortInfoPanel
+- [x] 03-02-PLAN.md — Museum API: Met/Wikimedia artifact images, SQLite artifact_cache with TTL, ArtifactImage lazy-load, TradePanel integration
+- [x] 03-03-PLAN.md — Audio + tutorial: Web Audio ambient loop, TutorialModal FSM-driven, TUTORIAL_SKIP/ADVANCE actions, Shell wiring
+- [ ] 03-04-PLAN.md — Gap closure: Wire ArtifactImage + useArtifactImages into TradePanel (PORT-04)
+- [ ] 03-05-PLAN.md — Gap closure: Programmatic SVG port illustrations per region, replace missing PNG assets (PORT-01)
+- [ ] 03-06-PLAN.md — Gap closure: Synthesized Web Audio ambient soundscape, no file dependency (UI-03)
 
 ## Progress
 
@@ -78,4 +81,4 @@ Phases execute in numeric order: 1 → 2 → 3
 |-------|----------------|--------|-----------|
 | 1. Foundation | 3/3 | Complete | 2026-03-12 |
 | 2. Core Loop | 4/4 | Complete | 2026-03-12 |
-| 3. Port Experience | 0/3 | Not started | - |
+| 3. Port Experience | 3/6 | Gap closure in progress | - |
