@@ -9,19 +9,19 @@ See: .planning/PROJECT.md (updated 2026-03-12)
 
 ## Current Position
 
-Phase: 3 of 3 (Port Experience) — In progress
-Plan: 1 of 3 in current phase (03-01 complete)
-Status: In progress
-Last activity: 2026-03-12 — Completed 03-01-PLAN.md (port scene + cultural descriptions)
+Phase: 3 of 3 (Port Experience) — Complete
+Plan: 4 of 4 in current phase (03-01, 03-02, 03-03, 03-04 complete)
+Status: Phase complete
+Last activity: 2026-03-12 — Completed 03-04-PLAN.md (ArtifactImage wired into TradePanel)
 
-Progress: [████████░░] 80% (Phase 2 complete + 1/3 plans in Phase 3)
+Progress: [██████████] 100% (All 3 phases complete)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 4
-- Average duration: 4.0 min
-- Total execution time: 0.20 hours
+- Total plans completed: 8 (all phases)
+- Average duration: ~3 min
+- Total execution time: ~0.40 hours
 
 **By Phase:**
 
@@ -29,7 +29,7 @@ Progress: [████████░░] 80% (Phase 2 complete + 1/3 plans in 
 |-------|-------|-------|----------|
 | 01-foundation | 3/3 | 11 min | 3.7 min |
 | 02-core-loop  | 4/4 | 14 min | 3.5 min ✓ |
-| 03-port-experience | 1/3 | 8 min | 8 min |
+| 03-port-experience | 4/4 | ~9 min | ~2.3 min ✓ |
 
 **Recent Trend:**
 - Last 5 plans: 01-02 (3 min), 01-03 (3 min), 02-01 (5 min), 02-03 (4 min)
@@ -78,6 +78,8 @@ Recent decisions affecting current work:
 - **PortScene as absolute overlay over relative MapArea wrapper** — map stays in DOM; overlay removed on sail, avoiding Leaflet re-init
 - **openRightPanel added to uiStore** — PortScene needs to open (not toggle) right panel; toggleRightPanel would close an already-open panel
 - **TradingState.selectedPort synced into uiStore via useEffect in Shell** — FSM is single source of truth; uiStore is a reflection
+- **Artifact thumbnail is additive above TradeGoodIcon row** — SVG icon stays as name/price row anchor; ArtifactImage renders above it when artifact data available
+- **artifactMap.get(good.id)?.[0] pattern** — safe first-artifact access; TypeScript infers CachedArtifact | undefined without explicit cast
 
 ### Pending Todos
 
@@ -90,6 +92,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-12 13:52 UTC
-Stopped at: Completed 03-01-PLAN.md (port scene + cultural descriptions)
+Last session: 2026-03-12 13:01 UTC
+Stopped at: Completed 03-04-PLAN.md (ArtifactImage wired into TradePanel — all phases complete)
 Resume file: None
