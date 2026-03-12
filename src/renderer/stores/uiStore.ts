@@ -13,16 +13,22 @@ interface UIState {
   leftPanelOpen: boolean;
   rightPanelOpen: boolean;
   activePanel: ActivePanel;
+  selectedPortId: string | null;
   toggleLeftPanel: () => void;
   toggleRightPanel: () => void;
   setActivePanel: (panel: ActivePanel) => void;
+  setSelectedPort: (portId: string | null) => void;
+  openLeftPanel: () => void;
 }
 
 export const useUIStore = create<UIState>((set) => ({
   leftPanelOpen: false,
   rightPanelOpen: false,
   activePanel: null,
+  selectedPortId: null,
   toggleLeftPanel: () => set((s) => ({ leftPanelOpen: !s.leftPanelOpen })),
   toggleRightPanel: () => set((s) => ({ rightPanelOpen: !s.rightPanelOpen })),
   setActivePanel: (panel) => set({ activePanel: panel }),
+  setSelectedPort: (portId) => set({ selectedPortId: portId }),
+  openLeftPanel: () => set({ leftPanelOpen: true }),
 }));

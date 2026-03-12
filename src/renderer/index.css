@@ -4,6 +4,13 @@
 /* Google Fonts: Cinzel (headings) and Lora (body) */
 @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Lora:ital,wght@0,400;0,600;1,400;1,600&display=swap');
 
+/* Leaflet core styles */
+@import 'leaflet/dist/leaflet.css';
+
+/* Leaflet MarkerCluster styles */
+@import 'leaflet.markercluster/dist/MarkerCluster.css';
+@import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
+
 /* CSS custom properties for easy access throughout the app */
 :root {
   --parchment-bg: #f8edd8;
@@ -38,4 +45,86 @@ body {
 /* Heading font helper used across components */
 h1, h2, h3, h4, h5, h6 {
   font-family: 'Cinzel', 'Palatino Linotype', Georgia, serif;
+}
+
+/* ── Leaflet map: parchment / sepia tile filter ──────────────────────── */
+
+/* Apply sepia/parchment filter to all map tiles */
+.leaflet-tile {
+  filter: sepia(60%) saturate(80%) brightness(105%);
+}
+
+/* Port marker icon */
+.port-icon {
+  background: transparent !important;
+  border: none !important;
+}
+
+.port-icon-inner {
+  width: 14px;
+  height: 14px;
+  background-color: #c4956a;
+  border: 2px solid #7a5c45;
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(61, 43, 31, 0.4);
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+.port-icon-inner:hover {
+  transform: scale(1.3);
+  background-color: #e8b870;
+}
+
+/* Port name tooltip — Cinzel font, parchment styling */
+.port-label {
+  background-color: rgba(253, 248, 240, 0.92) !important;
+  border: 1px solid #c4956a !important;
+  border-radius: 2px !important;
+  color: #3d2b1f !important;
+  font-family: 'Cinzel', 'Palatino Linotype', Georgia, serif !important;
+  font-size: 10px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.05em !important;
+  padding: 2px 5px !important;
+  white-space: nowrap !important;
+  box-shadow: 0 1px 4px rgba(61, 43, 31, 0.15) !important;
+}
+
+/* Remove default tooltip arrow */
+.port-label::before {
+  display: none !important;
+}
+
+/* Override default Leaflet popup/tooltip backgrounds for parchment theme */
+.leaflet-popup-content-wrapper {
+  background-color: #fdf8f0;
+  border: 1px solid #c4956a;
+  border-radius: 2px;
+  box-shadow: 0 2px 8px rgba(61, 43, 31, 0.15);
+}
+
+/* Cluster icon parchment styling */
+.marker-cluster {
+  background-color: rgba(196, 149, 106, 0.6) !important;
+}
+
+.marker-cluster div {
+  background-color: rgba(196, 149, 106, 0.9) !important;
+  color: #3d2b1f !important;
+  font-family: 'Cinzel', Georgia, serif !important;
+  font-weight: 700 !important;
+  font-size: 12px !important;
+}
+
+.marker-cluster-small,
+.marker-cluster-medium,
+.marker-cluster-large {
+  background-color: rgba(196, 149, 106, 0.5) !important;
+}
+
+.marker-cluster-small div,
+.marker-cluster-medium div,
+.marker-cluster-large div {
+  background-color: rgba(196, 149, 106, 0.85) !important;
 }

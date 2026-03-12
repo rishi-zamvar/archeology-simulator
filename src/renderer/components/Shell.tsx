@@ -17,6 +17,7 @@ import React, { useEffect } from 'react';
 import { useUIStore } from '../stores/uiStore';
 import SidePanel from './SidePanel';
 import MapArea from './MapArea';
+import PortInfoPanel from './PortInfoPanel';
 
 export default function Shell(): React.ReactElement {
   const {
@@ -24,6 +25,8 @@ export default function Shell(): React.ReactElement {
     rightPanelOpen,
     toggleLeftPanel,
     toggleRightPanel,
+    selectedPortId,
+    setSelectedPort,
   } = useUIStore();
 
   // Keyboard shortcuts for panel toggling (accessibility requirement)
@@ -44,6 +47,16 @@ export default function Shell(): React.ReactElement {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [toggleLeftPanel, toggleRightPanel]);
 
+  function handleNavigate(destinationPortId: string) {
+    // Dispatch SET_SAIL action to the main process
+    // eta is calculated by the main process from voyage data; we pass 0 as placeholder
+    window.api.game.action({
+      type: 'SET_SAIL',
+      destination: destinationPortId,
+      eta: 0,
+    });
+  }
+
   return (
     <div
       style={{
@@ -56,17 +69,25 @@ export default function Shell(): React.ReactElement {
         position: 'relative',
       }}
     >
-      {/* Left side panel — inventory, ship status */}
+      {/* Left side panel — port info when a port is selected */}
       <SidePanel
         side="left"
         isOpen={leftPanelOpen}
         onToggle={toggleLeftPanel}
-      />
+      >
+        {selectedPortId ? (
+          <PortInfoPanel
+            portId={selectedPortId}
+            onClose={() => setSelectedPort(null)}
+            onNavigate={handleNavigate}
+          />
+        ) : undefined}
+      </SidePanel>
 
-      {/* Central map area — Leaflet mounts here in Phase 2 */}
+      {/* Central map area */}
       <MapArea />
 
-      {/* Right side panel — port info, trade log */}
+      {/* Right side panel — trade log */}
       <SidePanel
         side="right"
         isOpen={rightPanelOpen}
