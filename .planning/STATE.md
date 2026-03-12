@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-03-12)
 ## Current Position
 
 Phase: 3 of 3 (Port Experience) — Complete
-Plan: 5 of 5 in current phase (03-01, 03-02, 03-03, 03-04, 03-05 complete)
-Status: Phase complete
-Last activity: 2026-03-12 — Completed 03-05-PLAN.md (PortIllustration SVG scenes for all 6 regions)
+Plan: 6 of 6 in current phase (03-01, 03-02, 03-03, 03-04, 03-05, 03-06 complete)
+Status: Phase complete (all gap closure plans done)
+Last activity: 2026-03-12 — Completed 03-06-PLAN.md (synthesized ambient audio via Web Audio API)
 
-Progress: [██████████] 100% (All 3 phases + bonus plan 03-05 complete)
+Progress: [██████████] 100% (All 3 phases + gap closure plans 03-05 and 03-06 complete)
 
 ## Performance Metrics
 
@@ -83,6 +83,8 @@ Recent decisions affecting current work:
 - **PortRegion exported as named type** — previously inlined in Port.region; exported from game-types.ts for consumer use in PortIllustration and PortScene
 - **portRegions Map in Shell** — built alongside portCoords in same getPorts() call; zero extra IPC round-trips
 - **SVG scene component pattern** — pure JSX SVG elements in sub-functions per region (GreeceScene, EgyptScene, etc.); same zero-dep pattern as TradeGoodIcon
+- **Web Audio synthesis for ambient** — /audio/ambient-port.mp3 doesn't exist; useGeneratedAmbient synthesizes 4-layer Mediterranean soundscape from oscillators/noise; zero file dependencies
+- **useAudioManager preserved** — not removed after 03-06; remains available for future file-based audio; useGeneratedAmbient added alongside it
 
 ### Pending Todos
 
@@ -95,6 +97,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-12 15:38 UTC
-Stopped at: Completed 03-05-PLAN.md (PortIllustration SVG scenes — gap closure plan)
+Last session: 2026-03-12 16:23 UTC
+Stopped at: Completed 03-06-PLAN.md (synthesized ambient audio — gap closure plan)
 Resume file: None
