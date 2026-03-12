@@ -1,0 +1,39 @@
+{
+  "name": "archeology-simulator",
+  "version": "0.1.0",
+  "description": "Archeology Simulator — Learn ancient Mediterranean history as a merchant captain",
+  "main": "dist/main/index.js",
+  "scripts": {
+    "dev": "concurrently \"vite\" \"wait-on http://localhost:5173 && electron .\"",
+    "build": "tsc --noEmit && vite build && electron-builder",
+    "build:renderer": "vite build",
+    "build:main": "tsc -p tsconfig.main.json",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "better-sqlite3": "^12.6.2",
+    "electron": "^41.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "zustand": "^5.0.11"
+  },
+  "devDependencies": {
+    "@electron-forge/cli": "^7.6.0",
+    "@types/better-sqlite3": "^7.6.12",
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@vitejs/plugin-react": "^4.3.4",
+    "concurrently": "^9.1.2",
+    "electron-builder": "^25.1.8",
+    "typescript": "^5.7.3",
+    "vite": "^7.3.1",
+    "vitest": "^2.1.9",
+    "wait-on": "^8.0.2"
+  },
+  "keywords": ["electron", "react", "game", "history", "education"],
+  "author": "Rishi Zamvar",
+  "license": "MIT"
+}
