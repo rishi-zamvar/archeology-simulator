@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-03-12)
 ## Current Position
 
 Phase: 3 of 3 (Port Experience) — Complete
-Plan: 4 of 4 in current phase (03-01, 03-02, 03-03, 03-04 complete)
+Plan: 5 of 5 in current phase (03-01, 03-02, 03-03, 03-04, 03-05 complete)
 Status: Phase complete
-Last activity: 2026-03-12 — Completed 03-04-PLAN.md (ArtifactImage wired into TradePanel)
+Last activity: 2026-03-12 — Completed 03-05-PLAN.md (PortIllustration SVG scenes for all 6 regions)
 
-Progress: [██████████] 100% (All 3 phases complete)
+Progress: [██████████] 100% (All 3 phases + bonus plan 03-05 complete)
 
 ## Performance Metrics
 
@@ -29,7 +29,7 @@ Progress: [██████████] 100% (All 3 phases complete)
 |-------|-------|-------|----------|
 | 01-foundation | 3/3 | 11 min | 3.7 min |
 | 02-core-loop  | 4/4 | 14 min | 3.5 min ✓ |
-| 03-port-experience | 4/4 | ~9 min | ~2.3 min ✓ |
+| 03-port-experience | 5/5 | ~43 min | ~8.6 min ✓ |
 
 **Recent Trend:**
 - Last 5 plans: 01-02 (3 min), 01-03 (3 min), 02-01 (5 min), 02-03 (4 min)
@@ -80,6 +80,9 @@ Recent decisions affecting current work:
 - **TradingState.selectedPort synced into uiStore via useEffect in Shell** — FSM is single source of truth; uiStore is a reflection
 - **Artifact thumbnail is additive above TradeGoodIcon row** — SVG icon stays as name/price row anchor; ArtifactImage renders above it when artifact data available
 - **artifactMap.get(good.id)?.[0] pattern** — safe first-artifact access; TypeScript infers CachedArtifact | undefined without explicit cast
+- **PortRegion exported as named type** — previously inlined in Port.region; exported from game-types.ts for consumer use in PortIllustration and PortScene
+- **portRegions Map in Shell** — built alongside portCoords in same getPorts() call; zero extra IPC round-trips
+- **SVG scene component pattern** — pure JSX SVG elements in sub-functions per region (GreeceScene, EgyptScene, etc.); same zero-dep pattern as TradeGoodIcon
 
 ### Pending Todos
 
@@ -92,6 +95,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-12 13:01 UTC
-Stopped at: Completed 03-04-PLAN.md (ArtifactImage wired into TradePanel — all phases complete)
+Last session: 2026-03-12 15:38 UTC
+Stopped at: Completed 03-05-PLAN.md (PortIllustration SVG scenes — gap closure plan)
 Resume file: None
