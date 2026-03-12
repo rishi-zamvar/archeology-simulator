@@ -69,41 +69,124 @@ export function loadGameState(db: Database.Database): GameState | null {
  */
 export function seedPorts(db: Database.Database): void {
   const insert = db.prepare(`
-    INSERT OR IGNORE INTO ports (id, ancient_name, modern_name, lat, lng, region, description, pleiades_id)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT OR IGNORE INTO ports (id, ancient_name, modern_name, lat, lng, region, description, pleiades_id, cultural_description)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
   `);
 
-  const ports: Array<[string, string, string, number, number, string, string, string]> = [
-    ['athens',     'Athenai',     'Athens',     37.97, 23.73, 'greece',       'The intellectual heart of the ancient world. Athens exported olive oil, pottery, and silver while importing grain from the Black Sea region.', '579885'],
-    ['corinth',    'Korinthos',   'Corinth',    37.94, 22.93, 'greece',       'A wealthy commercial city controlling two seas via its famous portage road (diolkos). Renowned for bronze works and fine pottery.', '570182'],
-    ['sparta',     'Sparte',      'Sparta',     37.08, 22.43, 'greece',       'The dominant land power of Greece, Sparta was less commercially active than Athens but traded iron tools and slaves through Lakonian ports.', '570685'],
-    ['miletos',    'Miletos',     'Miletus',    37.53, 27.28, 'greece',       'Once the greatest Greek city in Asia Minor, Miletos controlled trade routes to the Black Sea and Persia. Famous for wool textiles and philosophy.', '599799'],
-    ['ephesos',    'Ephesos',     'Ephesus',    37.94, 27.34, 'greece',       'Home to the Temple of Artemis, one of the Seven Wonders of the ancient world. A major Aegean port trading in grain, wine, and luxury goods.', '599612'],
-    ['byzantion',  'Byzantion',   'Istanbul',   41.02, 28.97, 'greece',       'Guardian of the Bosphorus strait, Byzantion collected tolls on all Black Sea trade including grain shipments vital to Athens and Rome.', '520985'],
-    ['rhodes',     'Rhodos',      'Rhodes',     36.44, 28.22, 'greece',       'A maritime powerhouse whose Rhodian Sea Law influenced Roman and later European maritime codes. Famous for the Colossus and fine wines.', '590031'],
-    ['knossos',    'Knossos',     'Heraklion',  35.30, 25.16, 'greece',       'The ancient center of Minoan civilization, Crete was a crucial waypoint for trade between Greece, Egypt, and the Levant.', '589872'],
-    ['syracuse',   'Syrakousai',  'Syracuse',   37.07, 15.29, 'italy',        'The largest Greek city in the western Mediterranean. Syracuse controlled grain trade in Sicily and rivaled even Athens in wealth and power.', '462503'],
-    ['massalia',   'Massalia',    'Marseille',  43.30,  5.37, 'italy',        'A Greek colony that became the gateway to Celtic Gaul and Iberia. Massalia traded Mediterranean wine and olive oil for Gallic tin and amber.', '148107'],
-    ['taras',      'Taras',       'Taranto',    40.47, 17.24, 'italy',        'The only Spartan colony, Taras was a major producer of purple dye and fine wool. Its excellent harbor made it a hub for Adriatic trade.', '442782'],
-    ['ostia',      'Ostia',       'Ostia',      41.75, 12.29, 'italy',        'The port city of Rome itself. As Rome grew, Ostia became the vital throat through which grain from Egypt and Africa fed the capital.', '422995'],
-    ['carthage',   'Karchedon',   'Carthage',   36.86, 10.32, 'north_africa', 'The great Phoenician trading empire that dominated the western Mediterranean until its destruction by Rome in 146 BCE. Traded in grain, purple dye, and metals.', '314921'],
-    ['utica',      'Utika',       'Utique',     37.06,  9.86, 'north_africa', 'The oldest Phoenician settlement in North Africa, predating Carthage. Utica remained an important agricultural and trading port throughout the ancient period.', '315247'],
-    ['leptis',     'Lepcis Magna','Khoms',      32.64, 14.29, 'north_africa', 'A major Phoenician and later Roman port on the Libyan coast. Leptis exported grain, olive oil, and wild animals captured for Roman arena games.', '344448'],
-    ['alexandria', 'Alexandreia', 'Alexandria', 31.20, 29.91, 'egypt',        'Founded by Alexander the Great, Alexandria became the greatest trading city of the Hellenistic world. Its famous lighthouse guided ships to Egypt\'s grain wealth.', '727070'],
-    ['naukratis',  'Naukratis',   'Kom Geif',   30.89, 30.60, 'egypt',        'The only Greek trading post permitted in Egypt during the Archaic period. Greek merchants exchanged silver and wine for Egyptian grain, papyrus, and linen.', '727199'],
-    ['memphis',    'Memphis',     'Mit Rahina', 29.84, 31.25, 'egypt',        'Ancient capital of Egypt and center of the Nile trade network. Memphis was where Nile grain was gathered before shipment north to the Mediterranean.', '786022'],
-    ['tyre',       'Tyros',       'Tyre',       33.27, 35.20, 'levant',       'The master city of Phoenician trade and navigation. Tyre\'s merchant sailors founded colonies from Carthage to Cadiz and monopolized the trade in purple dye.', '678437'],
-    ['sidon',      'Sidon',       'Sidon',      33.56, 35.37, 'levant',       'Sidon rivaled Tyre as a Phoenician trading center. Its craftsmen were famous for fine glassware and purple-dyed textiles exported across the Mediterranean.', '678405'],
-    ['byblos',     'Byblos',      'Jbeil',      34.12, 35.64, 'levant',       'One of the world\'s oldest continuously inhabited cities. Byblos was the primary exporter of Lebanese cedar timber, crucial for shipbuilding in Egypt and Greece.', '678063'],
-    ['kition',     'Kition',      'Larnaca',    34.91, 33.64, 'levant',       'A Phoenician city on Cyprus that controlled the island\'s rich copper mines. Kition was the meeting point of Greek and Near Eastern trade in the eastern Mediterranean.', '707498'],
-    ['salamis_cy', 'Salamis',     'Famagusta',  35.18, 33.90, 'levant',       'The most important Greek city on Cyprus, Salamis exported the island\'s famous copper (the word \'copper\' derives from Cyprus). A key waypoint for ships to Egypt and the Levant.', '707611'],
-    ['emporion',   'Emporion',    'Empúries',   42.13,  3.12, 'iberia',       'A Greek colonial trading post on the Iberian coast. Emporion traded Mediterranean goods with Celtic Iberian tribes, gaining access to Spanish silver, tin, and iron.', '246347'],
-    ['gadir',      'Gadir',       'Cádiz',      36.53, -6.30, 'iberia',       'A Phoenician colony at the edge of the known world, guarding the straits of Gibraltar. Gadir traded in Atlantic tin, silver, and the famous Spanish fish sauce (garum).', '256177'],
+  // Backfill cultural_description on rows already inserted (INSERT OR IGNORE won't update them)
+  const upsertCultural = db.prepare(`
+    UPDATE ports SET cultural_description = ? WHERE id = ? AND (cultural_description IS NULL OR cultural_description = '')
+  `);
+
+  // [id, ancient_name, modern_name, lat, lng, region, description, pleiades_id, cultural_description]
+  const ports: Array<[string, string, string, number, number, string, string, string, string]> = [
+    ['athens',     'Athenai',     'Athens',     37.97, 23.73, 'greece',
+      'The intellectual heart of the ancient world. Athens exported olive oil, pottery, and silver while importing grain from the Black Sea region.',
+      '579885',
+      "Piraeus was Athens' busy seaport, three miles from the city itself. Silver mined from the Laurion hills nearby paid for Athens' famous trireme warships and filled its treasury. Olive oil, fine pottery, and Athenian silver coins bearing the owl of Athena traveled the Mediterranean from this harbor."],
+    ['corinth',    'Korinthos',   'Corinth',    37.94, 22.93, 'greece',
+      'A wealthy commercial city controlling two seas via its famous portage road (diolkos). Renowned for bronze works and fine pottery.',
+      '570182',
+      "Corinth sat astride the narrow isthmus connecting mainland Greece to the Peloponnese, controlling overland trade between the Aegean and Adriatic seas. Ships were hauled across the diolkos, a stone-paved portage road, to avoid the dangerous voyage around Cape Malea. The city grew fabulously rich on these tolls and on its famous Corinthian bronze and painted pottery."],
+    ['sparta',     'Sparte',      'Sparta',     37.08, 22.43, 'greece',
+      'The dominant land power of Greece, Sparta was less commercially active than Athens but traded iron tools and slaves through Lakonian ports.',
+      '570685',
+      "Unlike commercial Athens, Sparta was an agrarian military state that discouraged its citizens from engaging in trade. Yet Spartan iron — fashioned into the distinctive iron spits used as primitive currency — circulated widely. Sparta's control of the fertile Eurotas valley and its helot slave-farmers made it a formidable power that Athens could never ignore."],
+    ['miletos',    'Miletos',     'Miletus',    37.53, 27.28, 'greece',
+      'Once the greatest Greek city in Asia Minor, Miletos controlled trade routes to the Black Sea and Persia. Famous for wool textiles and philosophy.',
+      '599799',
+      "Miletos founded over 90 colonies along the Black Sea coast, making it the most prolific colonizing city in the Greek world. Its harbor gave access to grain from the Pontic steppes, timber from Thrace, and luxury goods from Persia and Lydia. The city also produced some of antiquity's greatest thinkers, including Thales, Anaximander, and Anaximenes — the first philosophers to seek natural explanations for the world."],
+    ['ephesos',    'Ephesos',     'Ephesus',    37.94, 27.34, 'greece',
+      'Home to the Temple of Artemis, one of the Seven Wonders of the ancient world. A major Aegean port trading in grain, wine, and luxury goods.',
+      '599612',
+      "The Temple of Artemis at Ephesos was four times larger than the Parthenon, attracting pilgrims and merchants from across the ancient world. The city grew wealthy as a commercial hub where Greek, Persian, and Lydian cultures intersected. Merchants trading in grain, wine, textiles, and spices from the East passed through its famous harbor, and the city became one of the largest in the Roman Empire."],
+    ['byzantion',  'Byzantion',   'Istanbul',   41.02, 28.97, 'greece',
+      'Guardian of the Bosphorus strait, Byzantion collected tolls on all Black Sea trade including grain shipments vital to Athens and Rome.',
+      '520985',
+      "Byzantion occupied a peninsula of extraordinary strategic value — the only passage between the Black Sea and the Aegean. Every ship carrying Black Sea grain to feed the cities of Greece and later Rome had to pass its walls. The city grew rich on tolls and on control of the abundant fish (tuna in particular) that ran through the Bosphorus straits each season."],
+    ['rhodes',     'Rhodos',      'Rhodes',     36.44, 28.22, 'greece',
+      'A maritime powerhouse whose Rhodian Sea Law influenced Roman and later European maritime codes. Famous for the Colossus and fine wines.',
+      '590031',
+      "Rhodes was the great neutral trading state of the Hellenistic Mediterranean, keeping its harbors open to merchants of every faction. Rhodian sailors were renowned navigators and their sea law — which provided for shipwreck salvage, maritime loans, and cargo insurance — was adopted by Roman courts and later formed the foundation of European maritime law. The Colossus, a giant bronze statue of Helios, once stood beside the harbor entrance."],
+    ['knossos',    'Knossos',     'Heraklion',  35.30, 25.16, 'greece',
+      'The ancient center of Minoan civilization, Crete was a crucial waypoint for trade between Greece, Egypt, and the Levant.',
+      '589872',
+      "Knossos was the palace-city at the heart of the Minoan civilization, which flourished from around 2000 to 1450 BCE. The Minoans were the Mediterranean's first great seafaring traders, exchanging Cretan wine, olive oil, and fine pottery for Egyptian gold and Levantine tin. Though the Minoan palace was long in ruins by classical times, Crete remained a rich island strategically placed on routes between Greece, Egypt, and the Levant."],
+    ['syracuse',   'Syrakousai',  'Syracuse',   37.07, 15.29, 'italy',
+      'The largest Greek city in the western Mediterranean. Syracuse controlled grain trade in Sicily and rivaled even Athens in wealth and power.',
+      '462503',
+      "Syracuse was founded by Corinthian settlers around 734 BCE and grew to become the most powerful Greek city in the west. Its great double harbor could shelter hundreds of warships, and Sicilian grain — grown on the island's fertile volcanic soil — made it one of the wealthiest cities in the ancient world. When Athens sent a massive fleet to conquer Syracuse in 415 BCE, the Syracusans destroyed it utterly, turning the tide of the Peloponnesian War."],
+    ['massalia',   'Massalia',    'Marseille',  43.30,  5.37, 'italy',
+      'A Greek colony that became the gateway to Celtic Gaul and Iberia. Massalia traded Mediterranean wine and olive oil for Gallic tin and amber.',
+      '148107',
+      "Massalia was founded by Greek settlers from Phocaea around 600 BCE at the mouth of the Rhone River, giving Mediterranean traders direct access to the Celtic heartland of Gaul. The Greeks exchanged wine, olive oil, and fine pottery for Gallic tin, amber from the Baltic, and slaves. Celtic aristocrats adopted the Greek custom of wine-drinking and became devoted customers, driving a trade network that reached as far as Cornwall and Denmark."],
+    ['taras',      'Taras',       'Taranto',    40.47, 17.24, 'italy',
+      'The only Spartan colony, Taras was a major producer of purple dye and fine wool. Its excellent harbor made it a hub for Adriatic trade.',
+      '442782',
+      "Taras was the sole colony founded by Sparta, established around 706 BCE by a group of Spartans born outside of wedlock who were denied citizen rights. The city grew rich on purple dye extracted from murex sea-snails found abundantly in the bay, and on the fine wool of sheep raised in the surrounding countryside. Its magnificent harbor made it the leading port of the heel of Italy, controlling trade routes through the Adriatic."],
+    ['ostia',      'Ostia',       'Ostia',      41.75, 12.29, 'italy',
+      'The port city of Rome itself. As Rome grew, Ostia became the vital throat through which grain from Egypt and Africa fed the capital.',
+      '422995',
+      "Ostia, at the mouth of the Tiber River, served as the harbor of Rome. As the capital's population grew to over a million people, Ostia became the critical logistics hub through which Egyptian grain flowed to feed the city. Warehouses, merchants' guilds, baths, and temples lined its streets, making Ostia a cosmopolitan city of merchants from every corner of the empire."],
+    ['carthage',   'Karchedon',   'Carthage',   36.86, 10.32, 'north_africa',
+      'The great Phoenician trading empire that dominated the western Mediterranean until its destruction by Rome in 146 BCE. Traded in grain, purple dye, and metals.',
+      '314921',
+      "Carthage was founded by Phoenician settlers from Tyre around 814 BCE and grew to control trade throughout the western Mediterranean — Spain, Sardinia, Sicily, and the North African coast. Carthaginian sailors reached the Atlantic coast of Africa and possibly Britain. The city's destruction by Rome in 146 BCE at the end of the Third Punic War was one of antiquity's most deliberate acts of erasure."],
+    ['utica',      'Utika',       'Utique',     37.06,  9.86, 'north_africa',
+      'The oldest Phoenician settlement in North Africa, predating Carthage. Utica remained an important agricultural and trading port throughout the ancient period.',
+      '315247',
+      "Utica claimed to have been founded by Phoenicians from Tyre around 1100 BCE, making it older than Carthage itself. Though overshadowed by its more powerful neighbor, Utica remained an important port and agricultural center throughout the ancient period. When Carthage fell to Rome in 146 BCE, Utica cooperated with the Romans and was rewarded with control of the surrounding territory, becoming the capital of the new Roman province of Africa."],
+    ['leptis',     'Lepcis Magna','Khoms',      32.64, 14.29, 'north_africa',
+      'A major Phoenician and later Roman port on the Libyan coast. Leptis exported grain, olive oil, and wild animals captured for Roman arena games.',
+      '344448',
+      "Lepcis Magna was founded by Phoenician traders from Tyre on the fertile coastal plain of what is now Libya. The city exported North African grain, olive oil from the local groves, and exotic animals — lions, leopards, and elephants — captured in the interior for Roman arena spectacles. The city reached its greatest glory under the emperor Septimius Severus, himself a native son, who lavished it with magnificent marble monuments."],
+    ['alexandria', 'Alexandreia', 'Alexandria', 31.20, 29.91, 'egypt',
+      "Founded by Alexander the Great, Alexandria became the greatest trading city of the Hellenistic world. Its famous lighthouse guided ships to Egypt's grain wealth.",
+      '727070',
+      "Alexandria was founded by Alexander the Great in 331 BCE and swiftly grew to become the greatest city of the Hellenistic world. Its famous Pharos Lighthouse — one of the Seven Wonders — stood over 100 meters tall and guided sailors to Egypt's grain-rich harbors. The Library of Alexandria held scrolls from every corner of the known world. Egyptian grain, papyrus, linen, and luxury goods flowed outward while the city absorbed merchants and scholars from Greece, Persia, and beyond."],
+    ['naukratis',  'Naukratis',   'Kom Geif',   30.89, 30.60, 'egypt',
+      'The only Greek trading post permitted in Egypt during the Archaic period. Greek merchants exchanged silver and wine for Egyptian grain, papyrus, and linen.',
+      '727199',
+      "Naukratis was the only Greek emporion officially permitted in Egypt during the Archaic period, established by the pharaoh Amasis around 570 BCE. Greek merchants — primarily from Miletos, Aegina, and the islands — were required to conduct all their Egyptian trade through this single port. They exchanged Aegean silver, wine, and olive oil for Egyptian grain, papyrus, fine linen, and luxury goods that came up the Nile from sub-Saharan Africa and Arabia."],
+    ['memphis',    'Memphis',     'Mit Rahina', 29.84, 31.25, 'egypt',
+      'Ancient capital of Egypt and center of the Nile trade network. Memphis was where Nile grain was gathered before shipment north to the Mediterranean.',
+      '786022',
+      "Memphis was the ancient capital of Egypt for much of the Pharaonic period, situated at the apex of the Nile delta where river traffic from Upper Egypt met the branching channels leading north to the Mediterranean. The city was sacred to Ptah, craftsman of the gods, and housed vast grain warehouses where the produce of the Nile valley was collected, taxed, and redistributed. In classical times Memphis remained an important commercial and religious center, home to a large community of Greek and Phoenician merchants."],
+    ['tyre',       'Tyros',       'Tyre',       33.27, 35.20, 'levant',
+      "The master city of Phoenician trade and navigation. Tyre's merchant sailors founded colonies from Carthage to Cadiz and monopolized the trade in purple dye.",
+      '678437',
+      "Tyre was built on an island just off the Levantine coast, making it nearly impregnable — it withstood a 13-year siege by Nebuchadnezzar and later required Alexander the Great to build a causeway to finally capture it. Tyrian merchants dominated Mediterranean trade for centuries, founding colonies as far west as Cadiz. Above all, Tyre controlled the production of Tyrian purple — the most prestigious dye in the ancient world, extracted from murex sea-snails and worth more than its weight in gold."],
+    ['sidon',      'Sidon',       'Sidon',      33.56, 35.37, 'levant',
+      'Sidon rivaled Tyre as a Phoenician trading center. Its craftsmen were famous for fine glassware and purple-dyed textiles exported across the Mediterranean.',
+      '678405',
+      "Sidon was one of the oldest and most important Phoenician cities, perhaps the original home of the purple-dyeing industry. Its craftsmen were renowned throughout the ancient world for extraordinary blown glass — the technique of glassblowing was likely invented in the Sidon-Tyre region. Homer's heroes prized Sidonian silver bowls as the greatest of prizes, and the city's purple-dyed textiles were worn by kings and priests from Egypt to Persia."],
+    ['byblos',     'Byblos',      'Jbeil',      34.12, 35.64, 'levant',
+      "One of the world's oldest continuously inhabited cities. Byblos was the primary exporter of Lebanese cedar timber, crucial for shipbuilding in Egypt and Greece.",
+      '678063',
+      "Byblos is one of the world's oldest continuously inhabited cities, with settlement stretching back before 5000 BCE. Its greatest export was Lebanese cedar — tall, straight, fragrant timber from the mountain forests — essential for shipbuilding in the treeless lands of Egypt and later Greece. The Egyptians depicted the timber trade with Byblos in royal inscriptions as a matter of state necessity. The Greek word for papyrus scroll, byblos, came from this city's name, as Egypt's papyrus reached Greece through this port."],
+    ['kition',     'Kition',      'Larnaca',    34.91, 33.64, 'levant',
+      "A Phoenician city on Cyprus that controlled the island's rich copper mines. Kition was the meeting point of Greek and Near Eastern trade in the eastern Mediterranean.",
+      '707498',
+      "Cyprus sat at the crossroads of the eastern Mediterranean, within reach of Egypt, the Levant, Anatolia, and Greece. Kition, the major Phoenician city on the island, controlled access to Cyprus's extraordinary copper deposits — so abundant that the very name of the metal in European languages derives from the island's name. The philosopher Zeno of Citium, founder of the Stoic school of philosophy, was born here around 334 BCE."],
+    ['salamis_cy', 'Salamis',     'Famagusta',  35.18, 33.90, 'levant',
+      "The most important Greek city on Cyprus, Salamis exported the island's famous copper (the word 'copper' derives from Cyprus). A key waypoint for ships to Egypt and the Levant.",
+      '707611',
+      "Salamis on Cyprus was the island's principal Greek city, founded according to legend by the hero Teucer after the Trojan War. The city's harbor made it the natural stopping point for ships traveling between the Aegean and Egypt or the Levant. Cypriot copper — smelted from ores mined in the island's hills — was a crucial commodity in the ancient world's bronze-working industries, and the island's name became the word for copper throughout the Roman world."],
+    ['emporion',   'Emporion',    'Empuries',   42.13,  3.12, 'iberia',
+      'A Greek colonial trading post on the Iberian coast. Emporion traded Mediterranean goods with Celtic Iberian tribes, gaining access to Spanish silver, tin, and iron.',
+      '246347',
+      "Emporion, whose name simply means 'trading post' in Greek, was founded by settlers from Massalia around 575 BCE as the most distant Greek outpost on the Iberian coast. The city was physically divided in two — a Greek quarter and an adjacent native Iberian town — reflecting the cultural exchange at its heart. Greek merchants exchanged wine, olive oil, and fine pottery for the extraordinary mineral wealth of the Iberian Peninsula: silver from the mountains, tin from Galicia, and iron ore that would eventually supply Roman legions."],
+    ['gadir',      'Gadir',       'Cadiz',      36.53, -6.30, 'iberia',
+      'A Phoenician colony at the edge of the known world, guarding the straits of Gibraltar. Gadir traded in Atlantic tin, silver, and the famous Spanish fish sauce (garum).',
+      '256177',
+      "Gadir was founded by Phoenicians from Tyre around 1100 BCE, making it one of the oldest continuously inhabited cities in western Europe. It stood at the very edge of the known world, just beyond the Pillars of Hercules (Gibraltar) — the boundary the ancients believed marked the end of the civilized Mediterranean. From here, Phoenician and later Carthaginian sailors ventured into the Atlantic to trade for Cornish tin and West African gold. Gadir also produced garum, the pungent fermented fish sauce that Romans used as a condiment on virtually everything."],
   ];
 
   const seedAll = db.transaction(() => {
     for (const port of ports) {
       insert.run(...port);
+      // Backfill cultural_description for rows already in DB from prior launches
+      upsertCultural.run(port[8], port[0]);
     }
   });
 
@@ -123,6 +206,7 @@ export function getAllPorts(db: Database.Database): Port[] {
     region: string;
     description: string;
     pleiades_id: string | null;
+    cultural_description: string | null;
   }>;
 
   return rows.map(r => ({
@@ -134,6 +218,7 @@ export function getAllPorts(db: Database.Database): Port[] {
     region: r.region as Port['region'],
     description: r.description,
     pleiadesId: r.pleiades_id ?? undefined,
+    culturalDescription: r.cultural_description ?? undefined,
   }));
 }
 
@@ -150,6 +235,7 @@ export function getPortById(db: Database.Database, id: string): Port | null {
     region: string;
     description: string;
     pleiades_id: string | null;
+    cultural_description: string | null;
   } | undefined;
 
   if (!row) return null;
@@ -163,6 +249,7 @@ export function getPortById(db: Database.Database, id: string): Port | null {
     region: row.region as Port['region'],
     description: row.description,
     pleiadesId: row.pleiades_id ?? undefined,
+    culturalDescription: row.cultural_description ?? undefined,
   };
 }
 

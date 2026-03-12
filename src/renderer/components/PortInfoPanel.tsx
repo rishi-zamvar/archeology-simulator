@@ -209,6 +209,37 @@ export default function PortInfoPanel({
         </p>
       )}
 
+      {/* Historical context — cultural description */}
+      {port && !isLoading && port.culturalDescription && (
+        <div style={{ marginTop: '0.5rem', borderTop: '1px solid #c4956a', paddingTop: '1rem', marginBottom: '1rem' }}>
+          <h4
+            style={{
+              fontFamily: "'Cinzel', serif",
+              fontSize: '0.65rem',
+              color: '#7a5c45',
+              marginBottom: '0.5rem',
+              marginTop: 0,
+              textTransform: 'uppercase',
+              letterSpacing: '0.08em',
+              fontWeight: 700,
+            }}
+          >
+            Historical Context
+          </h4>
+          <p
+            style={{
+              fontFamily: "'Lora', Georgia, serif",
+              fontSize: '0.8rem',
+              color: '#3d2b1f',
+              lineHeight: 1.6,
+              margin: 0,
+            }}
+          >
+            {port.culturalDescription}
+          </p>
+        </div>
+      )}
+
       {/* Reachable destinations */}
       {!isLoading && destinations.length > 0 && (
         <>

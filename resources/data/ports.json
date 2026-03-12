@@ -6,7 +6,8 @@
     "lat": 31.2,
     "lng": 29.92,
     "description": "The great port city of Egypt, renowned for its lighthouse and library.",
-    "region": "Egypt"
+    "region": "Egypt",
+    "culturalDescription": "Alexandria was founded by Alexander the Great in 331 BCE and swiftly grew to become the greatest city of the Hellenistic world. Its famous Pharos Lighthouse — one of the Seven Wonders — stood over 100 meters tall and guided sailors to Egypt's grain-rich harbors. The Library of Alexandria held scrolls from every corner of the known world. Egyptian grain, papyrus, linen, and luxury goods flowed outward while the city absorbed merchants and scholars from Greece, Persia, and beyond."
   },
   {
     "id": "carthage",
@@ -15,7 +16,8 @@
     "lat": 36.85,
     "lng": 10.32,
     "description": "A powerful trading hub on the North African coast.",
-    "region": "North Africa"
+    "region": "North Africa",
+    "culturalDescription": "Carthage was founded by Phoenician settlers from Tyre around 814 BCE and grew to control trade throughout the western Mediterranean — Spain, Sardinia, Sicily, and the North African coast. Carthaginian sailors reached the Atlantic coast of Africa and possibly Britain. The city's destruction by Rome in 146 BCE at the end of the Third Punic War was one of antiquity's most deliberate acts of erasure."
   },
   {
     "id": "rome",
@@ -24,7 +26,8 @@
     "lat": 41.75,
     "lng": 12.28,
     "description": "The port of Rome, gateway to the empire's capital.",
-    "region": "Italia"
+    "region": "Italia",
+    "culturalDescription": "Ostia, at the mouth of the Tiber River, served as the harbor of Rome. As the capital's population grew to over a million people, Ostia became the critical logistics hub through which Egyptian grain flowed to feed the city. Warehouses, merchants' guilds, baths, and temples lined its streets, making Ostia a cosmopolitan city of merchants from every corner of the empire."
   },
   {
     "id": "athens",
@@ -33,7 +36,8 @@
     "lat": 37.95,
     "lng": 23.64,
     "description": "The harbor of Athens, center of Aegean trade.",
-    "region": "Greece"
+    "region": "Greece",
+    "culturalDescription": "Piraeus was Athens' busy seaport, three miles from the city itself. Silver mined from the Laurion hills nearby paid for Athens' famous trireme warships and filled its treasury. Olive oil, fine pottery, and Athenian silver coins bearing the owl of Athena traveled the Mediterranean from this harbor."
   },
   {
     "id": "antioch",
@@ -42,6 +46,7 @@
     "lat": 36.2,
     "lng": 36.16,
     "description": "A major city at the crossroads of eastern trade routes.",
-    "region": "Syria"
+    "region": "Syria",
+    "culturalDescription": "Antioch-on-the-Orontes was the third-largest city in the Roman Empire, founded by Seleucus I after Alexander's conquests. The city sat at the crossroads of overland routes from Persia and Arabia with Mediterranean sea trade, making it an entrepot for spices, silk, and Eastern luxury goods destined for Roman markets. Its famous colonnaded main street stretched for miles and its cosmopolitan population included Greeks, Jews, Syrians, and Persians."
   }
 ]

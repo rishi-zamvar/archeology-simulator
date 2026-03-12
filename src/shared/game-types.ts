@@ -20,6 +20,7 @@ export interface Port {
   region: 'greece' | 'levant' | 'egypt' | 'italy' | 'iberia' | 'north_africa';
   description: string;  // 1-2 sentence student-accessible description
   pleiadesId?: string;  // e.g. '579885'
+  culturalDescription?: string; // richer historical/cultural context for port info panel
 }
 
 /**
