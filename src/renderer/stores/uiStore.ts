@@ -19,6 +19,7 @@ interface UIState {
   setActivePanel: (panel: ActivePanel) => void;
   setSelectedPort: (portId: string | null) => void;
   openLeftPanel: () => void;
+  openRightPanel: () => void;
 }
 
 export const useUIStore = create<UIState>((set) => ({
@@ -31,4 +32,5 @@ export const useUIStore = create<UIState>((set) => ({
   setActivePanel: (panel) => set({ activePanel: panel }),
   setSelectedPort: (portId) => set({ selectedPortId: portId }),
   openLeftPanel: () => set({ leftPanelOpen: true }),
+  openRightPanel: () => set({ rightPanelOpen: true }),
 }));

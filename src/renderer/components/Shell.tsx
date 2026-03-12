@@ -22,13 +22,14 @@ import { useGameState } from '../hooks/useGameState';
 import SidePanel from './SidePanel';
 import MapArea from './MapArea';
 import PortInfoPanel from './PortInfoPanel';
+import PortScene from './PortScene';
 import TradePanel from './TradePanel';
 import CargoHold from './CargoHold';
 import ProfitDisplay from './ProfitDisplay';
 import ShipMarker from './ShipMarker';
 import EventCard from './EventCard';
 import { useTradeState } from '../hooks/useTradeState';
-import type { SailingState } from '../../game/types';
+import type { SailingState, TradingState } from '../../game/types';
 import type { VoyageEvent } from '../../shared/game-types';
 
 export default function Shell(): React.ReactElement {
@@ -39,6 +40,8 @@ export default function Shell(): React.ReactElement {
     toggleRightPanel,
     selectedPortId,
     setSelectedPort,
+    openLeftPanel,
+    openRightPanel,
   } = useUIStore();
 
   const { state: gameState } = useGameState();
@@ -58,6 +61,16 @@ export default function Shell(): React.ReactElement {
       setPortCoords(map);
     }).catch(() => {/* non-fatal: ship marker just won't animate */});
   }, []);
+
+  // Sync trading port into uiStore so panels know which port to display
+  const tradingState = gameState?.type === 'trading' ? (gameState as TradingState) : null;
+  useEffect(() => {
+    if (tradingState) {
+      setSelectedPort(tradingState.selectedPort);
+    }
+    // Do NOT clear selectedPortId when leaving trading — panels may still be open
+    // and user may want to sail from PortInfoPanel destinations list
+  }, [tradingState?.selectedPort, setSelectedPort]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Watch for EncounteredState transitions and fetch the pending event
   useEffect(() => {
@@ -110,8 +123,9 @@ export default function Shell(): React.ReactElement {
 
   const isSailing = gameState?.type === 'sailing';
   const sailingState = isSailing ? (gameState as SailingState) : null;
+  const isTrading = gameState?.type === 'trading';
 
-  // Port display name for TradePanel header
+  // Port display name for TradePanel header and PortScene banner
   const portDisplayName = selectedPortId
     ? selectedPortId.charAt(0).toUpperCase() + selectedPortId.slice(1).replace(/_/g, ' ')
     : '';
@@ -146,14 +160,27 @@ export default function Shell(): React.ReactElement {
       </SidePanel>
 
       {/* Central map area — ShipMarker passed as child (needs MapContainer context) */}
-      <MapArea>
-        {sailingState && portCoords.size > 0 && (
-          <ShipMarker
-            sailingState={sailingState}
-            portCoords={portCoords}
+      {/* Wrapper div: flex:1 so it fills the row, relative so PortScene can overlay */}
+      <div style={{ flex: 1, position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+        <MapArea>
+          {sailingState && portCoords.size > 0 && (
+            <ShipMarker
+              sailingState={sailingState}
+              portCoords={portCoords}
+            />
+          )}
+        </MapArea>
+
+        {/* Port scene overlay — shown when player has arrived at a port */}
+        {isTrading && selectedPortId && (
+          <PortScene
+            portId={selectedPortId}
+            portName={portDisplayName}
+            onOpenMarket={openRightPanel}
+            onOpenHarbor={openLeftPanel}
           />
         )}
-      </MapArea>
+      </div>
 
       {/* Right side panel — trade panel when a port is selected */}
       <SidePanel
