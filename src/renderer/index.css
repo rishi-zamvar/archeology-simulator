@@ -1,8 +1,8 @@
+/* Google Fonts: Cinzel (headings) and Lora (body) — must precede all other @imports */
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Lora:ital,wght@0,400;0,600;1,400;1,600&display=swap');
+
 /* Tailwind CSS v4 entry point */
 @import 'tailwindcss';
-
-/* Google Fonts: Cinzel (headings) and Lora (body) */
-@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Lora:ital,wght@0,400;0,600;1,400;1,600&display=swap');
 
 /* Leaflet core styles */
 @import 'leaflet/dist/leaflet.css';
