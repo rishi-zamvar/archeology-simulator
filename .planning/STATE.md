@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-03-12)
 ## Current Position
 
 Phase: 2 of 3 (Core Loop)
-Plan: 3 of 4 in current phase
-Status: In progress
-Last activity: 2026-03-12 — Completed 02-03-PLAN.md (trade system: buy/sell transactions, TradePanel UI)
+Plan: 4 of 4 in current phase
+Status: Phase complete
+Last activity: 2026-03-12 — Completed 02-04-PLAN.md (voyage event system: 24 events, EventCard modal, resolveEvent IPC)
 
-Progress: [██████░░░░] 60% (1/3 phases complete + 3/4 plans in phase 2)
+Progress: [████████░░] 75% (1/3 phases complete + 4/4 plans in phase 2)
 
 ## Performance Metrics
 
@@ -28,7 +28,7 @@ Progress: [██████░░░░] 60% (1/3 phases complete + 3/4 plans 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 01-foundation | 3/3 | 11 min | 3.7 min |
-| 02-core-loop  | 3/4 |  9 min | 3.0 min  |
+| 02-core-loop  | 4/4 | 14 min | 3.5 min  |
 
 **Recent Trend:**
 - Last 5 plans: 01-02 (3 min), 01-03 (3 min), 02-01 (5 min), 02-03 (4 min)
@@ -68,6 +68,9 @@ Recent decisions affecting current work:
 - **Trade mutates supply/demand** — buy decrements supply by 1 (MIN 1); sell decrements demand by 1 (MIN 1); repeated trading moves prices
 - **broadcastGameUpdated helper** — extracted to standalone helper in game.ts; called after each trade to fan state to all BrowserWindows
 - **CargoHold/ProfitDisplay always visible** — rendered in left panel regardless of port selection; player inventory always contextually relevant
+- **pendingVoyageEvent module-level in IPC** — single-player game; cleared on each SET_SAIL; no DB persistence needed for mid-voyage state
+- **Event roll inline in SET_SAIL handler** — if event fires, handler returns encountered state directly (no second round-trip needed)
+- **EventCard no-escape blocking** — player must choose; no backdrop click / Escape key dismiss
 
 ### Pending Todos
 
@@ -80,6 +83,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-12 12:41 UTC
-Stopped at: Completed 02-03-PLAN.md
+Last session: 2026-03-12 12:55 UTC
+Stopped at: Completed 02-04-PLAN.md (Phase 2 complete)
 Resume file: None
