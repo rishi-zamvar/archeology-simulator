@@ -13,7 +13,7 @@ Build a turn-based ancient Mediterranean trade simulator as an Electron + React 
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Foundation** - Cross-platform Electron shell with IPC bridge, SQLite persistence, and parchment UI skeleton
-- [ ] **Phase 2: Core Loop** - Playable game with Leaflet map, turn-based navigation, trade mechanics, ship inventory, and voyage events
+- [x] **Phase 2: Core Loop** - Playable game with Leaflet map, turn-based navigation, trade mechanics, ship inventory, and voyage events
 - [ ] **Phase 3: Port Experience** - Illustrated port scenes, museum artifact images, ambient audio, and guided tutorial
 
 ## Phase Details
@@ -47,10 +47,10 @@ Plans:
 **Plans:** 4 plans
 
 Plans:
-- [ ] 02-01-PLAN.md — Port/goods types, 25-port DB seed, voyage engine (haversine), economy module, expanded IPC channels
-- [ ] 02-02-PLAN.md — Leaflet map with parchment tiles, port markers, ship route animation, and click-to-navigate flow
-- [ ] 02-03-PLAN.md — Trade system: buy/sell IPC with ACID transactions, TradePanel, CargoHold, ProfitDisplay
-- [ ] 02-04-PLAN.md — Voyage events: 24-event database, EventCard modal, resolveEvent IPC, full interrupt flow
+- [x] 02-01-PLAN.md — Port/goods types, 25-port DB seed, voyage engine (haversine), economy module, expanded IPC channels
+- [x] 02-02-PLAN.md — Leaflet map with parchment tiles, port markers, ship route animation, and click-to-navigate flow
+- [x] 02-03-PLAN.md — Trade system: buy/sell IPC with ACID transactions, TradePanel, CargoHold, ProfitDisplay
+- [x] 02-04-PLAN.md — Voyage events: 24-event database, EventCard modal, resolveEvent IPC, full interrupt flow
 
 ### Phase 3: Port Experience
 **Goal**: Arriving at a port is an illustrated, historically rich scene with museum artifacts, ambient sound, and new players are guided through their first voyage
@@ -77,5 +77,5 @@ Phases execute in numeric order: 1 → 2 → 3
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation | 3/3 | Complete | 2026-03-12 |
-| 2. Core Loop | 0/4 | Not started | - |
+| 2. Core Loop | 4/4 | Complete | 2026-03-12 |
 | 3. Port Experience | 0/3 | Not started | - |

@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-03-12)
 
 **Core value:** Students learn ancient Mediterranean history by making decisions as a merchant captain, not by reading about them.
-**Current focus:** Phase 2 — Core Loop
+**Current focus:** Phase 3 — Port Experience
 
 ## Current Position
 
-Phase: 2 of 3 (Core Loop)
+Phase: 2 of 3 (Core Loop) — COMPLETE
 Plan: 4 of 4 in current phase
-Status: Phase complete
-Last activity: 2026-03-12 — Completed 02-04-PLAN.md (voyage event system: 24 events, EventCard modal, resolveEvent IPC)
+Status: Phase verified and complete
+Last activity: 2026-03-12 — Phase 2 verified (5/5 must-haves passed)
 
-Progress: [████████░░] 75% (1/3 phases complete + 4/4 plans in phase 2)
+Progress: [████████░░] 80% (2/3 phases complete)
 
 ## Performance Metrics
 
@@ -28,7 +28,7 @@ Progress: [████████░░] 75% (1/3 phases complete + 4/4 plans 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 01-foundation | 3/3 | 11 min | 3.7 min |
-| 02-core-loop  | 4/4 | 14 min | 3.5 min  |
+| 02-core-loop  | 4/4 | 14 min | 3.5 min ✓ |
 
 **Recent Trend:**
 - Last 5 plans: 01-02 (3 min), 01-03 (3 min), 02-01 (5 min), 02-03 (4 min)

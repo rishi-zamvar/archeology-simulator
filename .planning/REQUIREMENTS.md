@@ -121,24 +121,24 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| MAP-01 | Phase 2 | Pending |
-| MAP-02 | Phase 2 | Pending |
-| MAP-03 | Phase 2 | Pending |
-| MAP-04 | Phase 2 | Pending |
-| MAP-05 | Phase 2 | Pending |
-| TRADE-01 | Phase 2 | Pending |
-| TRADE-02 | Phase 2 | Pending |
-| TRADE-03 | Phase 2 | Pending |
-| TRADE-04 | Phase 2 | Pending |
-| TRADE-05 | Phase 2 | Pending |
-| SHIP-01 | Phase 2 | Pending |
-| SHIP-02 | Phase 2 | Pending |
-| SHIP-03 | Phase 2 | Pending |
-| TURN-01 | Phase 2 | Pending |
-| TURN-02 | Phase 2 | Pending |
-| TURN-03 | Phase 2 | Pending |
-| TURN-04 | Phase 2 | Pending |
-| TURN-05 | Phase 2 | Pending |
+| MAP-01 | Phase 2 | Complete |
+| MAP-02 | Phase 2 | Complete |
+| MAP-03 | Phase 2 | Complete |
+| MAP-04 | Phase 2 | Complete |
+| MAP-05 | Phase 2 | Complete |
+| TRADE-01 | Phase 2 | Complete |
+| TRADE-02 | Phase 2 | Complete |
+| TRADE-03 | Phase 2 | Complete |
+| TRADE-04 | Phase 2 | Complete |
+| TRADE-05 | Phase 2 | Complete |
+| SHIP-01 | Phase 2 | Complete |
+| SHIP-02 | Phase 2 | Complete |
+| SHIP-03 | Phase 2 | Complete |
+| TURN-01 | Phase 2 | Complete |
+| TURN-02 | Phase 2 | Complete |
+| TURN-03 | Phase 2 | Complete |
+| TURN-04 | Phase 2 | Complete |
+| TURN-05 | Phase 2 | Complete |
 | PORT-01 | Phase 3 | Pending |
 | PORT-02 | Phase 3 | Pending |
 | PORT-03 | Phase 3 | Pending |
@@ -164,4 +164,4 @@
 
 ---
 *Requirements defined: 2026-03-12*
-*Last updated: 2026-03-12 — Phase 1 requirements marked Complete (10/35)*
+*Last updated: 2026-03-12 — Phase 2 requirements marked Complete (28/35)*
