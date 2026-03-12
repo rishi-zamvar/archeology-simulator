@@ -10,27 +10,28 @@ See: .planning/PROJECT.md (updated 2026-03-12)
 ## Current Position
 
 Phase: 2 of 3 (Core Loop)
-Plan: 0 of 4 in current phase
-Status: Ready to plan
-Last activity: 2026-03-12 — Phase 1 Foundation verified and complete
+Plan: 1 of 4 in current phase
+Status: In progress
+Last activity: 2026-03-12 — Completed 02-01-PLAN.md (port data, voyage, economy foundation)
 
-Progress: [███░░░░░░░] 33% (1/3 phases complete)
+Progress: [████░░░░░░] 43% (1/3 phases complete + 1/4 plans in phase 2)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 3
-- Average duration: 3.7 min
-- Total execution time: 0.18 hours
+- Total plans completed: 4
+- Average duration: 4.0 min
+- Total execution time: 0.20 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 01-foundation | 3/3 | 11 min | 3.7 min |
+| 02-core-loop  | 1/4 |  5 min | 5.0 min  |
 
 **Recent Trend:**
-- Last 5 plans: 01-01 (5 min), 01-02 (3 min), 01-03 (3 min)
+- Last 5 plans: 01-01 (5 min), 01-02 (3 min), 01-03 (3 min), 02-01 (5 min)
 - Trend: Fast, consistent execution
 
 *Updated after each plan completion*
@@ -54,6 +55,11 @@ Recent decisions affecting current work:
 - **Inline styles for panel slide animation** — avoids Tailwind JIT purge of dynamic class strings like translate-x-[-280px]
 - **Google Fonts in dev, bundle in Phase 3** — Cinzel and Lora are OFL-licensed; bundling deferred to Phase 3
 - **[ and ] keyboard shortcuts for panel toggle** — guarded against input/textarea/select focus
+- **Port region as union type** — typed as 'greece' | 'levant' | 'egypt' | 'italy' | 'iberia' | 'north_africa' for type-safe filtering in 02-02 map and 02-03 trade panels
+- **SailingState optional fields** — departurePortId and route are optional; preserves backward compat with existing FSM tests and serialized saves
+- **getMarketPrices calculates price inline** — SQL query layer handles currentPrice calculation; economy.ts advancePortEconomy is for turn-advance loop (avoids N+1)
+- **massalia region = 'italy'** — Marseille (ancient Massalia) trade sphere is Tyrrhenian, not Iberian
+- **INSERT OR IGNORE seed pattern** — seedPorts/seedGoods/seedPortInventory called every app launch; zero cost after first run
 
 ### Pending Todos
 
@@ -66,6 +72,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-12 14:04 UTC
-Stopped at: Completed 01-03-PLAN.md
+Last session: 2026-03-12 12:33 UTC
+Stopped at: Completed 02-01-PLAN.md
 Resume file: None
