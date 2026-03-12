@@ -14,6 +14,8 @@
 import React, { useState, useCallback } from 'react';
 import type { MarketGood, PlayerInventory } from '../../shared/ipc-types';
 import TradeGoodIcon from './TradeGoodIcon';
+import ArtifactImage, { ArtifactCaption } from './ArtifactImage';
+import { useArtifactImages } from '../hooks/useArtifactImages';
 
 interface TradePanelProps {
   portId: string;
@@ -57,6 +59,8 @@ export default function TradePanel({
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const [feedback, setFeedback] = useState<Record<string, { msg: string; ok: boolean }>>({});
   const [busy, setBusy] = useState<string | null>(null);
+
+  const artifactMap = useArtifactImages(marketGoods.map((g) => g.id));
 
   // Trade good icons rendered inline (no API fetch needed)
 
@@ -159,6 +163,21 @@ export default function TradePanel({
 
           return (
             <div key={good.id} style={ROW_STYLE}>
+              {/* Museum artifact thumbnail (lazy-loaded; falls back to SVG amphora) */}
+              {(() => {
+                const artifacts = artifactMap.get(good.id);
+                const artifact = artifacts?.[0];
+                if (!artifact) return null;
+                return (
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem', marginBottom: '0.35rem' }}>
+                    <div>
+                      <ArtifactImage artifact={artifact} />
+                      <ArtifactCaption artifact={artifact} />
+                    </div>
+                  </div>
+                );
+              })()}
+
               {/* Good icon + name + price */}
               <div
                 style={{
