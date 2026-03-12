@@ -13,8 +13,7 @@
 
 import React, { useState, useCallback } from 'react';
 import type { MarketGood, PlayerInventory } from '../../shared/ipc-types';
-import ArtifactImage, { ArtifactCaption } from './ArtifactImage';
-import { useArtifactImages } from '../hooks/useArtifactImages';
+import TradeGoodIcon from './TradeGoodIcon';
 
 interface TradePanelProps {
   portId: string;
@@ -59,9 +58,7 @@ export default function TradePanel({
   const [feedback, setFeedback] = useState<Record<string, { msg: string; ok: boolean }>>({});
   const [busy, setBusy] = useState<string | null>(null);
 
-  // Artifact images: keyed by good.id, fetched from Met Museum via main process.
-  const goodIds = marketGoods.map((g) => g.id);
-  const artifactMap = useArtifactImages(goodIds);
+  // Trade good icons rendered inline (no API fetch needed)
 
   const getQty = (goodId: string) => quantities[goodId] ?? 1;
 
@@ -162,16 +159,17 @@ export default function TradePanel({
 
           return (
             <div key={good.id} style={ROW_STYLE}>
-              {/* Good name + price */}
+              {/* Good icon + name + price */}
               <div
                 style={{
                   display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'baseline',
+                  gap: '0.5rem',
+                  alignItems: 'center',
                   marginBottom: '0.25rem',
                 }}
               >
-                <span style={{ ...HEADING, fontSize: '0.75rem', marginBottom: 0 }}>
+                <TradeGoodIcon goodId={good.id} size={40} />
+                <span style={{ ...HEADING, fontSize: '0.75rem', marginBottom: 0, flex: 1 }}>
                   {good.name}
                 </span>
                 <span
@@ -306,13 +304,6 @@ export default function TradePanel({
                 </div>
               )}
 
-              {/* Museum artifact image — lazy-loaded, max 1 per good for compact layout */}
-              {(artifactMap.get(good.id) ?? []).slice(0, 1).map((artifact) => (
-                <div key={artifact.id} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.4rem', marginTop: '0.35rem' }}>
-                  <ArtifactImage artifact={artifact} />
-                  <ArtifactCaption artifact={artifact} />
-                </div>
-              ))}
             </div>
           );
         })

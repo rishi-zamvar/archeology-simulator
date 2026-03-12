@@ -96,6 +96,22 @@ export function handleAction(current: GameState, action: GameAction): GameState 
             currentTurn: current.currentTurn,
             tutorialPhase: current.tutorialPhase,
           };
+        case 'START_TRADE':
+          // Allow switching ports while already trading
+          return {
+            type: 'trading',
+            currentTurn: current.currentTurn,
+            selectedPort: action.port,
+            tutorialPhase: current.tutorialPhase,
+          };
+        case 'SET_SAIL':
+          return {
+            type: 'sailing',
+            currentTurn: current.currentTurn,
+            destination: action.destination,
+            eta: action.eta,
+            tutorialPhase: autoAdvanceTutorial(current.tutorialPhase, action.type),
+          };
         default:
           throw new Error(`Invalid transition: trading -> ${action.type}`);
       }

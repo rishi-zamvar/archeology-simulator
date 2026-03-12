@@ -44,24 +44,24 @@ export default function PortScene({
 
   const regions: OverlayRegion[] = [
     {
-      key: 'market',
-      label: 'Market',
-      sublabel: 'Trade goods',
+      key: 'harbor',
+      label: 'Harbor',
+      sublabel: 'Port & voyages',
       left: '15%',
       top: '35%',
       width: '30%',
       height: '35%',
-      onClick: onOpenMarket,
+      onClick: onOpenHarbor,
     },
     {
-      key: 'harbor',
-      label: 'Harbor',
-      sublabel: 'Port & voyages',
+      key: 'market',
+      label: 'Market',
+      sublabel: 'Trade goods',
       left: '55%',
       top: '40%',
       width: '30%',
       height: '30%',
-      onClick: onOpenHarbor,
+      onClick: onOpenMarket,
     },
   ];
 

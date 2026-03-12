@@ -19,16 +19,22 @@ import PortMarker from './PortMarker';
 
 interface MapAreaProps {
   children?: React.ReactNode;
+  onPortSelected?: () => void;
 }
 
-export default function MapArea({ children }: MapAreaProps): React.ReactElement {
+export default function MapArea({ children, onPortSelected }: MapAreaProps): React.ReactElement {
   const { ports, isLoading, error } = useMapPorts();
-  const { setSelectedPort, openLeftPanel } = useUIStore();
+  const { setSelectedPort } = useUIStore();
 
   const handlePortClick = useCallback((portId: string) => {
     setSelectedPort(portId);
-    openLeftPanel();
-  }, [setSelectedPort, openLeftPanel]);
+    // Transition game FSM to trading state so buy/sell IPC works
+    window.api.game.action({ type: 'START_TRADE', port: portId }).catch(() => {
+      // Non-fatal: panels still show data, just can't buy/sell without trading state
+    });
+    // Notify parent to switch to port scene view
+    onPortSelected?.();
+  }, [setSelectedPort, onPortSelected]);
 
   if (error) {
     return (
@@ -46,7 +52,8 @@ export default function MapArea({ children }: MapAreaProps): React.ReactElement 
     <div
       data-testid="map-area"
       style={{
-        flex: 1,
+        width: '100%',
+        height: '100%',
         position: 'relative',
         overflow: 'hidden',
       }}

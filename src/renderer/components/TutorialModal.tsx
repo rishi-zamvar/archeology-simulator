@@ -58,7 +58,7 @@ export default function TutorialModal(): React.ReactElement | null {
         bottom: '2rem',
         left: '50%',
         transform: 'translateX(-50%)',
-        zIndex: 200,
+        zIndex: 10000,
         width: 'max-content',
         maxWidth: 'min(420px, calc(100vw - 2rem))',
       }}

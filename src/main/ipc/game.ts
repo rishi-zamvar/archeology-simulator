@@ -208,12 +208,28 @@ export function registerGameIPCHandlers(db: Database.Database): void {
     const results: CachedArtifact[] = [];
 
     try {
-      // 2. Met Museum search
-      const searchUrl = `https://collectionapi.metmuseum.org/public/collection/v1/search?q=${encodeURIComponent(goodId)}&hasImages=true&isPublicDomain=true`;
+      // 2. Met Museum search — use specific ancient Mediterranean search terms
+      //    to avoid generic results returning the same popular artifact for every good
+      const ARTIFACT_SEARCH_TERMS: Record<string, string> = {
+        wheat: 'ancient Egyptian grain granary',
+        olive_oil: 'Greek amphora olive oil',
+        wine: 'Greek wine krater vessel',
+        textiles: 'ancient linen textile Egyptian',
+        spices: 'incense burner ancient',
+        bronze: 'Greek bronze vessel ancient',
+        timber: 'ancient wood carving ship',
+        pottery: 'Greek vase painting pottery',
+      };
+      const searchTerm = ARTIFACT_SEARCH_TERMS[goodId] ?? goodId;
+      const searchUrl = `https://collectionapi.metmuseum.org/public/collection/v1/search?q=${encodeURIComponent(searchTerm)}&hasImages=true&isPublicDomain=true`;
       const searchResp = await fetch(searchUrl);
       if (searchResp.ok) {
         const searchData = await searchResp.json() as { objectIDs?: number[] };
-        const ids = (searchData.objectIDs ?? []).slice(0, 3);
+        // Skip the first few results (often the same popular items) and pick from a spread
+        const allIds = searchData.objectIDs ?? [];
+        const ids = allIds.length > 10
+          ? [allIds[2], allIds[5], allIds[9]].filter(Boolean)
+          : allIds.slice(0, 3);
 
         if (ids.length > 0) {
           // 3. Fetch detail for up to 3 objects concurrently

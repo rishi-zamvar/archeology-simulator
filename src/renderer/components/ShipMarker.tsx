@@ -23,6 +23,7 @@ import 'leaflet.motion/dist/leaflet.motion.js';
 interface MotionLayer extends L.Layer {
   motionStart: () => void;
   motionStop: () => void;
+  on: (event: string, fn: () => void) => this;
 }
 
 // Cast for accessing the motion API added to L by the side-effect import
@@ -73,6 +74,8 @@ export default function ShipMarker({ sailingState, portCoords }: ShipMarkerProps
 
     if (!destCoords) return; // Can't animate without destination coords
 
+    let cleanedUp = false;
+
     // Start point: departure port if known, otherwise nearby offset
     const startCoords: [number, number] = deptCoords ?? [destCoords[0] - 0.5, destCoords[1] - 0.5];
     const endCoords: [number, number] = destCoords;
@@ -86,7 +89,6 @@ export default function ShipMarker({ sailingState, portCoords }: ShipMarkerProps
 
     const lm = L as LeafletWithMotion;
 
-    // 30-second animation (visual feedback; actual game time tracked by FSM)
     const motionLayer = lm.motion.polyline(
       [startCoords, endCoords],
       {
@@ -95,7 +97,7 @@ export default function ShipMarker({ sailingState, portCoords }: ShipMarkerProps
       },
       {
         auto: true,
-        duration: 30_000,
+        duration: 5_000,
       },
       {
         icon: createShipIcon(),
@@ -104,10 +106,21 @@ export default function ShipMarker({ sailingState, portCoords }: ShipMarkerProps
       }
     );
 
+    // When animation naturally ends, fire ARRIVE then auto-transition to port scene
+    motionLayer.on('motion-ended', () => {
+      if (cleanedUp) return; // Ignore events from cleanup motionStop()
+      window.api.game.action({ type: 'ARRIVE' }).then(() => {
+        return window.api.game.action({ type: 'START_TRADE', port: destination });
+      }).catch(() => {
+        // Non-fatal: player lands on map in idle state
+      });
+    });
+
     motionLayer.addTo(map);
     motionLayerRef.current = motionLayer;
 
     return () => {
+      cleanedUp = true;
       if (motionLayerRef.current) {
         motionLayerRef.current.motionStop();
         map.removeLayer(motionLayerRef.current);
