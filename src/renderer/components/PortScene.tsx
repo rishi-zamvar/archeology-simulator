@@ -14,10 +14,13 @@
  */
 
 import React, { useState } from 'react';
+import PortIllustration from './PortIllustration';
+import type { PortRegion } from '../../shared/game-types';
 
 interface PortSceneProps {
   portId: string;
   portName: string;
+  region: PortRegion;
   onOpenMarket: () => void;
   onOpenHarbor: () => void;
 }
@@ -36,6 +39,7 @@ interface OverlayRegion {
 export default function PortScene({
   portId,
   portName,
+  region,
   onOpenMarket,
   onOpenHarbor,
 }: PortSceneProps): React.ReactElement {
@@ -79,19 +83,21 @@ export default function PortScene({
         position: 'absolute',
         inset: 0,
         zIndex: 10,
-        // Port illustration as background; falls back to warm parchment color
-        backgroundImage: `url(/assets/ports/${portId}.png)`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
         backgroundColor: '#f0d9b5',
         overflow: 'hidden',
       }}
     >
-      {/* Subtle parchment texture overlay for legibility when illustration absent */}
+      {/* Port illustration — SVG scene, fills the container */}
+      <div style={{ position: 'absolute', inset: 0, zIndex: 1 }}>
+        <PortIllustration region={region} />
+      </div>
+
+      {/* Subtle parchment texture overlay for legibility */}
       <div
         style={{
           position: 'absolute',
           inset: 0,
+          zIndex: 2,
           backgroundImage: `
             repeating-linear-gradient(
               0deg,

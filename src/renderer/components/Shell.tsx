@@ -29,7 +29,7 @@ import Logbook from './Logbook';
 import { useTradeState } from '../hooks/useTradeState';
 import { useAudioManager } from '../hooks/useAudioManager';
 import type { SailingState, TradingState } from '../../game/types';
-import type { VoyageEvent } from '../../shared/game-types';
+import type { VoyageEvent, PortRegion } from '../../shared/game-types';
 
 /* ── Shared floating panel style ─────────────────────────────────────── */
 const FLOAT_PANEL: React.CSSProperties = {
@@ -77,12 +77,19 @@ export default function Shell(): React.ReactElement {
 
   // Build port coordinates map from loaded ports for ShipMarker
   const [portCoords, setPortCoords] = React.useState<Map<string, [number, number]>>(new Map());
+  // Build port regions map for PortScene illustration variant
+  const [portRegions, setPortRegions] = React.useState<Map<string, PortRegion>>(new Map());
 
   useEffect(() => {
     window.api.game.getPorts().then((ports) => {
-      const map = new Map<string, [number, number]>();
-      ports.forEach((p) => map.set(p.id, [p.lat, p.lng]));
-      setPortCoords(map);
+      const coords = new Map<string, [number, number]>();
+      const regions = new Map<string, PortRegion>();
+      ports.forEach((p) => {
+        coords.set(p.id, [p.lat, p.lng]);
+        regions.set(p.id, p.region);
+      });
+      setPortCoords(coords);
+      setPortRegions(regions);
     }).catch(() => {/* non-fatal: ship marker just won't animate */});
   }, []);
 
@@ -167,6 +174,7 @@ export default function Shell(): React.ReactElement {
           <PortScene
             portId={selectedPortId}
             portName={portDisplayName}
+            region={portRegions.get(selectedPortId) ?? 'greece'}
             onOpenMarket={toggleRightPanel}
             onOpenHarbor={toggleLeftPanel}
           />
