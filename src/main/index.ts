@@ -4,18 +4,15 @@
  * Responsibilities:
  * - Create the BrowserWindow with security settings
  * - Load renderer (Vite dev server in dev, built HTML in production)
+ * - Initialize SQLite database
  * - Register IPC handlers for game:load, game:save, game:action
  */
 
-import { app, BrowserWindow, ipcMain } from 'electron';
+import { app, BrowserWindow } from 'electron';
 import path from 'path';
-import type { GameState, GameAction, GameResult } from '../shared/ipc-types';
-
-// Initial empty game state returned when no save exists
-const INITIAL_STATE: GameState = {
-  type: 'idle',
-  currentTurn: 0,
-};
+import { initializeDatabase } from './db/schema';
+import { registerSaveIPCHandlers } from './ipc/save';
+import { registerGameIPCHandlers } from './ipc/game';
 
 function createWindow(): BrowserWindow {
   const win = new BrowserWindow({
@@ -42,41 +39,18 @@ function createWindow(): BrowserWindow {
   return win;
 }
 
-// --- IPC Handlers ---
-
-/**
- * game:load — Return saved game state (stub returns initial state until
- * Phase 1 Plan 02 wires up the SQLite persistence layer).
- */
-ipcMain.handle('game:load', async (): Promise<GameState> => {
-  return INITIAL_STATE;
-});
-
-/**
- * game:save — Persist game state (stub until SQLite layer is ready).
- */
-ipcMain.handle('game:save', async (_event, state: GameState): Promise<GameResult> => {
-  if (!state || typeof state !== 'object' || !('type' in state)) {
-    return { success: false, state: INITIAL_STATE, error: 'Invalid state shape' };
-  }
-  return { success: true, state };
-});
-
-/**
- * game:action — Apply a game action and return updated state
- * (stub until game engine is implemented in Plan 04+).
- */
-ipcMain.handle('game:action', async (_event, action: GameAction): Promise<GameResult> => {
-  if (!action || typeof action.type !== 'string') {
-    return { success: false, state: INITIAL_STATE, error: 'Invalid action' };
-  }
-  // Stub: echo back initial state for now
-  return { success: true, state: INITIAL_STATE };
-});
-
 // --- App lifecycle ---
 
 app.whenReady().then(() => {
+  // Initialize SQLite database at Electron's userData path.
+  // This path is platform-specific and persists across app restarts.
+  const dbPath = path.join(app.getPath('userData'), 'game.db');
+  const db = initializeDatabase(dbPath);
+
+  // Register IPC handlers with the live database instance.
+  registerSaveIPCHandlers(db);
+  registerGameIPCHandlers(db);
+
   createWindow();
 
   app.on('activate', () => {

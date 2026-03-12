@@ -1,0 +1,26 @@
+[
+  {
+    "id": "grain",
+    "name": "Grain",
+    "basePrice": 10,
+    "unit": "amphora",
+    "description": "Staple food crop, always in demand across the empire.",
+    "origin": ["alexandria", "carthage"]
+  },
+  {
+    "id": "olive_oil",
+    "name": "Olive Oil",
+    "basePrice": 25,
+    "unit": "amphora",
+    "description": "Used for cooking, lamps, and bathing. Highly valued.",
+    "origin": ["athens", "antioch"]
+  },
+  {
+    "id": "wine",
+    "name": "Wine",
+    "basePrice": 20,
+    "unit": "amphora",
+    "description": "Prized across the Mediterranean. Quality varies by region.",
+    "origin": ["rome", "athens"]
+  }
+]

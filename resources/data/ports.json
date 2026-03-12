@@ -1,0 +1,47 @@
+[
+  {
+    "id": "alexandria",
+    "name": "Alexandria",
+    "ancientName": "Alexandria",
+    "lat": 31.2,
+    "lng": 29.92,
+    "description": "The great port city of Egypt, renowned for its lighthouse and library.",
+    "region": "Egypt"
+  },
+  {
+    "id": "carthage",
+    "name": "Carthage",
+    "ancientName": "Carthago",
+    "lat": 36.85,
+    "lng": 10.32,
+    "description": "A powerful trading hub on the North African coast.",
+    "region": "North Africa"
+  },
+  {
+    "id": "rome",
+    "name": "Rome (Ostia)",
+    "ancientName": "Ostia",
+    "lat": 41.75,
+    "lng": 12.28,
+    "description": "The port of Rome, gateway to the empire's capital.",
+    "region": "Italia"
+  },
+  {
+    "id": "athens",
+    "name": "Athens (Piraeus)",
+    "ancientName": "Peiraieus",
+    "lat": 37.95,
+    "lng": 23.64,
+    "description": "The harbor of Athens, center of Aegean trade.",
+    "region": "Greece"
+  },
+  {
+    "id": "antioch",
+    "name": "Antioch",
+    "ancientName": "Antiochia",
+    "lat": 36.2,
+    "lng": 36.16,
+    "description": "A major city at the crossroads of eastern trade routes.",
+    "region": "Syria"
+  }
+]

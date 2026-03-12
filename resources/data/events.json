@@ -1,0 +1,53 @@
+[
+  {
+    "id": "pirates",
+    "type": "pirates",
+    "name": "Pirate Attack",
+    "description": "A band of pirates has spotted your vessel and moves to intercept.",
+    "choices": [
+      {
+        "id": "fight",
+        "label": "Fight them off",
+        "successChance": 0.6,
+        "outcomeWin": "You repel the pirates, but your crew is shaken.",
+        "outcomeLose": "They board your ship and take half your cargo."
+      },
+      {
+        "id": "flee",
+        "label": "Try to outrun them",
+        "successChance": 0.7,
+        "outcomeWin": "You escape into open water, losing only time.",
+        "outcomeLose": "They catch you easily. You lose cargo to ransom."
+      },
+      {
+        "id": "bribe",
+        "label": "Pay them off",
+        "successChance": 1.0,
+        "outcomeWin": "They take your coin and let you pass.",
+        "outcomeLose": "They take your coin and your cargo."
+      }
+    ]
+  },
+  {
+    "id": "storm",
+    "type": "storm",
+    "name": "Mediterranean Storm",
+    "description": "Dark clouds gather and the sea turns violent.",
+    "choices": [
+      {
+        "id": "ride_it_out",
+        "label": "Ride out the storm",
+        "successChance": 0.5,
+        "outcomeWin": "Your crew's skill sees you through safely.",
+        "outcomeLose": "The storm damages your hull. Repairs needed at next port."
+      },
+      {
+        "id": "seek_shelter",
+        "label": "Seek a nearby cove",
+        "successChance": 0.8,
+        "outcomeWin": "You find shelter and wait out the storm safely.",
+        "outcomeLose": "The cove offers little protection. You take damage."
+      }
+    ]
+  }
+]
