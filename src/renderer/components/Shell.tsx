@@ -27,7 +27,7 @@ import EventCard from './EventCard';
 import TutorialModal from './TutorialModal';
 import Logbook from './Logbook';
 import { useTradeState } from '../hooks/useTradeState';
-import { useAudioManager } from '../hooks/useAudioManager';
+import { useGeneratedAmbient } from '../hooks/useGeneratedAmbient';
 import type { SailingState, TradingState } from '../../game/types';
 import type { VoyageEvent, PortRegion } from '../../shared/game-types';
 
@@ -62,14 +62,14 @@ export default function Shell(): React.ReactElement {
   const { marketGoods, inventory, transactions } = useTradeState(selectedPortId);
 
   // Ambient audio — start on first user interaction (browser autoplay policy)
-  const audio = useAudioManager();
+  const generatedAmbient = useGeneratedAmbient();
   const ambientStarted = useRef(false);
   const handleFirstInteraction = useCallback(() => {
     if (!ambientStarted.current) {
       ambientStarted.current = true;
-      void audio.playAmbient('/audio/ambient-port.mp3');
+      void generatedAmbient.start();
     }
-  }, [audio]);
+  }, [generatedAmbient]);
 
   // Voyage event state
   const [pendingEvent, setPendingEvent] = useState<VoyageEvent | null>(null);
