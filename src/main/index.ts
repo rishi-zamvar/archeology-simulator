@@ -11,6 +11,7 @@
 import { app, BrowserWindow } from 'electron';
 import path from 'path';
 import { initializeDatabase } from './db/schema';
+import { seedPorts, seedGoods, seedPortInventory } from './db/queries';
 import { registerSaveIPCHandlers } from './ipc/save';
 import { registerGameIPCHandlers } from './ipc/game';
 
@@ -46,6 +47,11 @@ app.whenReady().then(() => {
   // This path is platform-specific and persists across app restarts.
   const dbPath = path.join(app.getPath('userData'), 'game.db');
   const db = initializeDatabase(dbPath);
+
+  // Seed reference data — INSERT OR IGNORE so safe on every launch.
+  seedPorts(db);
+  seedGoods(db);
+  seedPortInventory(db);
 
   // Register IPC handlers with the live database instance.
   registerSaveIPCHandlers(db);

@@ -31,9 +31,16 @@ try {
 
 const api: IPCBridge = {
   game: {
+    // Phase 1: core FSM channels
     load: () => ipcRenderer!.invoke('game:load'),
     save: (state) => ipcRenderer!.invoke('game:save', state),
     action: (action) => ipcRenderer!.invoke('game:action', action),
+    // Phase 2: port and market data channels
+    getPorts: () => ipcRenderer!.invoke('game:getPorts'),
+    getPortDetails: (portId) => ipcRenderer!.invoke('game:getPortDetails', portId),
+    getMarketPrices: (portId) => ipcRenderer!.invoke('game:getMarketPrices', portId),
+    getReachablePorts: (fromPortId) => ipcRenderer!.invoke('game:getReachablePorts', fromPortId),
+    getPlayerInventory: () => ipcRenderer!.invoke('game:getPlayerInventory'),
   },
   subscribe: (event, callback) => {
     const handler = (_: Electron.IpcRendererEvent, data: unknown) =>
