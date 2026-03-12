@@ -62,12 +62,12 @@ Plans:
   3. Trade goods display museum artifact images from Met/British Museum APIs with Wikimedia fallback
   4. Ambient Mediterranean audio and event sound effects play throughout the game
   5. A new player can complete a guided first voyage that teaches map navigation, buying/selling, and sailing — and can skip it
-**Plans**: TBD
+**Plans:** 3 plans
 
 Plans:
-- [ ] 03-01: Port scene — public domain illustrations, clickable elements, side-panel layout, cultural descriptions
-- [ ] 03-02: Museum API integration — Met/British Museum artifact images, Wikimedia fallback, caching, rate-limit handling
-- [ ] 03-03: Audio + tutorial — Howler.js ambient and event sounds, guided first-voyage tutorial with skip option
+- [ ] 03-01-PLAN.md — Port scene: historical illustration background, clickable Market/Harbor regions, cultural descriptions in PortInfoPanel
+- [ ] 03-02-PLAN.md — Museum API: Met/Wikimedia artifact images, SQLite artifact_cache with TTL, ArtifactImage lazy-load, TradePanel integration
+- [ ] 03-03-PLAN.md — Audio + tutorial: Web Audio ambient loop, TutorialModal FSM-driven, TUTORIAL_SKIP/ADVANCE actions, Shell wiring
 
 ## Progress
 
