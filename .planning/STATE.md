@@ -60,6 +60,9 @@ Recent decisions affecting current work:
 - **getMarketPrices calculates price inline** — SQL query layer handles currentPrice calculation; economy.ts advancePortEconomy is for turn-advance loop (avoids N+1)
 - **massalia region = 'italy'** — Marseille (ancient Massalia) trade sphere is Tyrrhenian, not Iberian
 - **INSERT OR IGNORE seed pattern** — seedPorts/seedGoods/seedPortInventory called every app launch; zero cost after first run
+- **react-leaflet-cluster not @react-leaflet/cluster** — @react-leaflet/cluster does not exist on npm; react-leaflet-cluster@4.0.0 is the correct package
+- **leaflet.motion type cast** — no TS bindings; LeafletWithMotion type alias + side-effect import is the correct pattern for accessing L.motion.polyline
+- **ShipMarker renders null JSX** — imperative Leaflet layer via useMap() + useEffect; children prop on MapArea is the correct React/Leaflet composition pattern
 - **Buy stacks by port+price** — same good/port/price merges into one CargoItem; different port or price = separate stack for P&L granularity
 - **FIFO sell across stacks** — sellGood drains oldest stacks first; entire stack removed if qty >= stack size
 - **Trade mutates supply/demand** — buy decrements supply by 1 (MIN 1); sell decrements demand by 1 (MIN 1); repeated trading moves prices
