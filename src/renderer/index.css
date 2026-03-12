@@ -1,0 +1,41 @@
+/* Tailwind CSS v4 entry point */
+@import 'tailwindcss';
+
+/* Google Fonts: Cinzel (headings) and Lora (body) */
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Lora:ital,wght@0,400;0,600;1,400;1,600&display=swap');
+
+/* CSS custom properties for easy access throughout the app */
+:root {
+  --parchment-bg: #f8edd8;
+  --parchment-light: #fdf8f0;
+  --sepia-text: #3d2b1f;
+  --sepia-muted: #7a5c45;
+  --sepia-border: #c4956a;
+}
+
+/* Base body styles */
+body {
+  background-color: var(--parchment-bg);
+  color: var(--sepia-text);
+  font-family: 'Lora', 'Palatino Linotype', Georgia, serif;
+  margin: 0;
+  padding: 0;
+  overflow: hidden; /* Electron window — no OS scrollbars */
+}
+
+/* Keyboard accessibility — visible focus ring using parchment palette */
+:focus-visible {
+  outline: 2px solid var(--sepia-border);
+  outline-offset: 2px;
+}
+
+/* Selection highlight */
+::selection {
+  background-color: #e8c48a; /* parchment-300 */
+  color: var(--sepia-text);
+}
+
+/* Heading font helper used across components */
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Cinzel', 'Palatino Linotype', Georgia, serif;
+}
