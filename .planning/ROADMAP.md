@@ -27,12 +27,12 @@ Decimal phases appear between their surrounding integers in numeric order.
   2. App displays a parchment-themed shell with correct fonts and warm sepia palette
   3. Game auto-saves state to SQLite on each turn and resumes correctly on next launch
   4. Renderer can invoke game actions via IPC and receive updated state back without direct Node access
-**Plans**: TBD
+**Plans:** 3 plans
 
 Plans:
-- [ ] 01-01: Electron + Vite + React scaffold with Electron Forge packaging and CI for all three platforms
-- [ ] 01-02: SQLite schema, migrations, save/load IPC handlers, and auto-save wiring
-- [ ] 01-03: Parchment UI shell — Tailwind theme, period fonts, side-panel layout, accessibility baseline
+- [ ] 01-01-PLAN.md — Electron + Vite + React scaffold with secure contextBridge IPC, Vitest, and 3-platform GitHub Actions CI
+- [ ] 01-02-PLAN.md — SQLite schema, ACID-safe save/load, FSM game state machine, and IPC handlers (TDD)
+- [ ] 01-03-PLAN.md — Parchment UI shell: Tailwind theme, Cinzel font, side-panel layout, useGameState hook
 
 ### Phase 2: Core Loop
 **Goal**: Players can sail between historically accurate Mediterranean ports, buy and sell goods, manage cargo, and encounter voyage events — the game is fully playable
