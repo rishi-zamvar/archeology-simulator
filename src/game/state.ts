@@ -9,13 +9,62 @@
  * (via the `never` assertion at the end of each outer switch arm).
  */
 
-import type { GameState, GameAction } from './types';
+import type { GameState, GameAction, TutorialPhase } from './types';
+
+/**
+ * Auto-advance tutorial phase based on a game action.
+ * Returns the next tutorial phase, or the unchanged phase if no transition applies.
+ * Returns undefined if phase is undefined (backward compat).
+ */
+function autoAdvanceTutorial(
+  phase: TutorialPhase | undefined,
+  actionType: GameAction['type']
+): TutorialPhase | undefined {
+  if (!phase || phase.type === 'completed') return phase;
+  switch (actionType) {
+    case 'START_TRADE':
+      if (phase.type === 'map_intro' || phase.type === 'port_intro') {
+        return { type: 'trade_intro' };
+      }
+      break;
+    case 'SET_SAIL':
+      if (phase.type === 'trade_intro') return { type: 'sailing_intro' };
+      if (phase.type === 'sailing_intro') return { type: 'completed' };
+      break;
+    case 'ARRIVE':
+      if (phase.type === 'map_intro') return { type: 'port_intro' };
+      break;
+  }
+  return phase;
+}
+
+/**
+ * Step tutorial phase forward by one step (used by TUTORIAL_ADVANCE action).
+ */
+function stepTutorialPhase(phase: TutorialPhase | undefined): TutorialPhase {
+  if (!phase) return { type: 'completed' };
+  switch (phase.type) {
+    case 'map_intro': return { type: 'port_intro' };
+    case 'port_intro': return { type: 'trade_intro' };
+    case 'trade_intro': return { type: 'sailing_intro' };
+    case 'sailing_intro': return { type: 'completed' };
+    case 'completed': return { type: 'completed' };
+  }
+}
 
 /**
  * Apply a game action to the current state, returning the next state.
  * Throws Error('Invalid transition: {from} -> {action.type}') for invalid transitions.
  */
 export function handleAction(current: GameState, action: GameAction): GameState {
+  // Tutorial-only actions are valid from any game state variant
+  if (action.type === 'TUTORIAL_SKIP') {
+    return { ...current, tutorialPhase: { type: 'completed' } };
+  }
+  if (action.type === 'TUTORIAL_ADVANCE') {
+    return { ...current, tutorialPhase: stepTutorialPhase(current.tutorialPhase) };
+  }
+
   switch (current.type) {
     case 'idle': {
       switch (action.type) {
@@ -24,6 +73,7 @@ export function handleAction(current: GameState, action: GameAction): GameState 
             type: 'trading',
             currentTurn: current.currentTurn,
             selectedPort: action.port,
+            tutorialPhase: autoAdvanceTutorial(current.tutorialPhase, action.type),
           };
         case 'SET_SAIL':
           return {
@@ -31,6 +81,7 @@ export function handleAction(current: GameState, action: GameAction): GameState 
             currentTurn: current.currentTurn,
             destination: action.destination,
             eta: action.eta,
+            tutorialPhase: autoAdvanceTutorial(current.tutorialPhase, action.type),
           };
         default:
           throw new Error(`Invalid transition: idle -> ${action.type}`);
@@ -43,6 +94,7 @@ export function handleAction(current: GameState, action: GameAction): GameState 
           return {
             type: 'idle',
             currentTurn: current.currentTurn,
+            tutorialPhase: current.tutorialPhase,
           };
         default:
           throw new Error(`Invalid transition: trading -> ${action.type}`);
@@ -55,12 +107,14 @@ export function handleAction(current: GameState, action: GameAction): GameState 
           return {
             type: 'idle',
             currentTurn: current.currentTurn,
+            tutorialPhase: autoAdvanceTutorial(current.tutorialPhase, action.type),
           };
         case 'ENCOUNTER':
           return {
             type: 'encountered',
             currentTurn: current.currentTurn,
             eventType: action.eventType,
+            tutorialPhase: current.tutorialPhase,
           };
         default:
           throw new Error(`Invalid transition: sailing -> ${action.type}`);
@@ -73,6 +127,7 @@ export function handleAction(current: GameState, action: GameAction): GameState 
           return {
             type: 'idle',
             currentTurn: current.currentTurn,
+            tutorialPhase: current.tutorialPhase,
           };
         default:
           throw new Error(`Invalid transition: encountered -> ${action.type}`);

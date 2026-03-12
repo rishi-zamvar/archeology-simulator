@@ -8,17 +8,35 @@
 
 import type { VoyageRoute, VoyageEvent } from '../shared/game-types';
 
+// ---------- Tutorial ----------
+
+/**
+ * TutorialPhase tracks the onboarding progression for new players.
+ * Optional on all state variants for backward compatibility with existing saves.
+ *
+ * Flow: map_intro → port_intro → trade_intro → sailing_intro → completed
+ * New games start at map_intro; loaded saves default to completed.
+ */
+export type TutorialPhase =
+  | { type: 'map_intro' }
+  | { type: 'port_intro' }
+  | { type: 'trade_intro' }
+  | { type: 'sailing_intro' }
+  | { type: 'completed' };
+
 // ---------- States ----------
 
 export type IdleState = {
   type: 'idle';
   currentTurn: number;
+  tutorialPhase?: TutorialPhase;
 };
 
 export type TradingState = {
   type: 'trading';
   currentTurn: number;
   selectedPort: string;
+  tutorialPhase?: TutorialPhase;
 };
 
 export type SailingState = {
@@ -29,6 +47,7 @@ export type SailingState = {
   // Phase 2 additions — optional for backward compat with existing saves/tests
   departurePortId?: string;
   route?: VoyageRoute;
+  tutorialPhase?: TutorialPhase;
 };
 
 export type EncounteredState = {
@@ -37,6 +56,7 @@ export type EncounteredState = {
   eventType: string;
   // Phase 2 addition — optional for backward compat
   event?: VoyageEvent;
+  tutorialPhase?: TutorialPhase;
 };
 
 export type GameState = IdleState | TradingState | SailingState | EncounteredState;
@@ -71,13 +91,23 @@ export type ResolveAction = {
   type: 'RESOLVE';
 };
 
+export type TutorialSkipAction = {
+  type: 'TUTORIAL_SKIP';
+};
+
+export type TutorialAdvanceAction = {
+  type: 'TUTORIAL_ADVANCE';
+};
+
 export type GameAction =
   | StartTradeAction
   | CompleteTradeAction
   | SetSailAction
   | ArriveAction
   | EncounterAction
-  | ResolveAction;
+  | ResolveAction
+  | TutorialSkipAction
+  | TutorialAdvanceAction;
 
 // ---------- Result ----------
 

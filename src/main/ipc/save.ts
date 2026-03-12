@@ -11,7 +11,8 @@ import type Database from 'better-sqlite3';
 import { saveGameStateAtomic, loadGameState } from '../db/queries';
 import type { GameState, GameResult } from '../../game/types';
 
-const INITIAL_STATE: GameState = { type: 'idle', currentTurn: 0 };
+// New games start the tutorial from the beginning (same as game.ts INITIAL_STATE).
+const INITIAL_STATE: GameState = { type: 'idle', currentTurn: 0, tutorialPhase: { type: 'map_intro' } };
 
 /**
  * Type guard — ensures the value has the minimum shape of a GameState.
@@ -24,13 +25,25 @@ function isValidGameState(value: unknown): value is GameState {
   return true;
 }
 
+/**
+ * Backfill tutorialPhase on a loaded save that predates the tutorial system.
+ * Existing saves have no tutorialPhase field → default to 'completed' so
+ * returning players are not forced through the tutorial again.
+ */
+function withTutorialDefault(state: GameState): GameState {
+  if (state.tutorialPhase !== undefined) return state;
+  return { ...state, tutorialPhase: { type: 'completed' } };
+}
+
 export function registerSaveIPCHandlers(db: Database.Database): void {
   /**
    * game:load — Return the saved state, or initial idle state if none exists.
+   * Backfills tutorialPhase on old saves that predate the tutorial system.
    */
   ipcMain.handle('game:load', async (): Promise<GameState> => {
     const saved = loadGameState(db);
-    return saved ?? INITIAL_STATE;
+    if (!saved) return INITIAL_STATE;
+    return withTutorialDefault(saved);
   });
 
   /**

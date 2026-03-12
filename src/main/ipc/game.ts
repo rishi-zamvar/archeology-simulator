@@ -29,10 +29,23 @@ import type { CachedArtifact } from '../db/queries';
 import { performAction } from '../../game/engine';
 import { getReachablePorts } from '../../game/voyage';
 import { rollVoyageEvent, resolveEventChoice } from '../../game/events';
-import type { GameAction, GameResult, GameState } from '../../game/types';
+import type { GameAction, GameResult, GameState, TutorialPhase } from '../../game/types';
 import type { VoyageEvent } from '../../shared/game-types';
 
-const INITIAL_STATE: GameState = { type: 'idle', currentTurn: 0 };
+// New games start the tutorial from the beginning.
+// Existing saves that pre-date the tutorial system will have tutorialPhase=undefined;
+// those are defaulted to 'completed' at load time so returning players aren't re-tutorialized.
+const INITIAL_STATE: GameState = { type: 'idle', currentTurn: 0, tutorialPhase: { type: 'map_intro' } };
+
+/**
+ * Backfill tutorialPhase on a loaded save that predates the tutorial system.
+ * Existing saves have no tutorialPhase field → default to 'completed' so
+ * returning players are not forced through the tutorial again.
+ */
+function withTutorialDefault(state: GameState): GameState {
+  if (state.tutorialPhase !== undefined) return state;
+  return { ...state, tutorialPhase: { type: 'completed' } as TutorialPhase };
+}
 
 // In-memory pending event — cleared after resolution or on next SET_SAIL.
 // Single-player game: only one event can be pending at a time.
@@ -47,7 +60,7 @@ export function registerGameIPCHandlers(db: Database.Database): void {
       return { success: false, state: INITIAL_STATE, error: 'Invalid action' };
     }
 
-    const current = loadGameState(db) ?? INITIAL_STATE;
+    const current = withTutorialDefault(loadGameState(db) ?? INITIAL_STATE);
     const result = performAction(current, action);
 
     if (result.success) {
@@ -374,7 +387,7 @@ export function registerGameIPCHandlers(db: Database.Database): void {
       applyOutcome();
 
       // Transition FSM: encountered → idle
-      const current = loadGameState(db) ?? INITIAL_STATE;
+      const current = withTutorialDefault(loadGameState(db) ?? INITIAL_STATE);
       const nextResult = performAction(current, { type: 'RESOLVE' });
       if (nextResult.success) {
         try {
@@ -408,8 +421,9 @@ export function registerGameIPCHandlers(db: Database.Database): void {
  * Called after buy/sell to keep all windows in sync.
  */
 function broadcastGameUpdated(db: Database.Database): void {
-  const state = loadGameState(db);
-  if (!state) return;
+  const rawState = loadGameState(db);
+  if (!rawState) return;
+  const state = withTutorialDefault(rawState);
   for (const win of BrowserWindow.getAllWindows()) {
     if (!win.isDestroyed()) {
       win.webContents.send('subscribe:game:updated', state);
