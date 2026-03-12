@@ -45,6 +45,9 @@ const api: IPCBridge = {
     buyGood: (portId, goodId, qty) => ipcRenderer!.invoke('game:buyGood', portId, goodId, qty),
     sellGood: (portId, goodId, qty) => ipcRenderer!.invoke('game:sellGood', portId, goodId, qty),
     getTransactionHistory: (limit) => ipcRenderer!.invoke('game:getTransactionHistory', limit),
+    // Phase 2 Plan 4: voyage event channels
+    getPendingEvent: () => ipcRenderer!.invoke('game:getPendingEvent'),
+    resolveEvent: (eventId, choiceId) => ipcRenderer!.invoke('game:resolveEvent', eventId, choiceId),
   },
   subscribe: (event, callback) => {
     const handler = (_: Electron.IpcRendererEvent, data: unknown) =>

@@ -25,9 +25,15 @@ import {
 } from '../db/queries';
 import { performAction } from '../../game/engine';
 import { getReachablePorts } from '../../game/voyage';
+import { rollVoyageEvent, resolveEventChoice } from '../../game/events';
 import type { GameAction, GameResult, GameState } from '../../game/types';
+import type { VoyageEvent } from '../../shared/game-types';
 
 const INITIAL_STATE: GameState = { type: 'idle', currentTurn: 0 };
+
+// In-memory pending event — cleared after resolution or on next SET_SAIL.
+// Single-player game: only one event can be pending at a time.
+let pendingVoyageEvent: VoyageEvent | null = null;
 
 export function registerGameIPCHandlers(db: Database.Database): void {
   /**
@@ -47,6 +53,36 @@ export function registerGameIPCHandlers(db: Database.Database): void {
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err);
         return { success: false, state: current, error: `Save failed: ${message}` };
+      }
+
+      // After SET_SAIL, roll for a voyage event. If one fires, interrupt
+      // the sailing state with ENCOUNTER and store the pending event.
+      if (action.type === 'SET_SAIL') {
+        pendingVoyageEvent = null; // clear any stale event from prior voyage
+        const event = rollVoyageEvent(result.state.currentTurn);
+        if (event) {
+          pendingVoyageEvent = event;
+          // Transition FSM: sailing → encountered
+          const encounterResult = performAction(result.state, {
+            type: 'ENCOUNTER',
+            eventType: event.type,
+          });
+          if (encounterResult.success) {
+            try {
+              saveGameStateAtomic(db, encounterResult.state);
+            } catch {
+              // Non-fatal: event won't interrupt but voyage proceeds
+              pendingVoyageEvent = null;
+            }
+            // Broadcast encountered state so renderer opens EventCard
+            for (const win of BrowserWindow.getAllWindows()) {
+              if (!win.isDestroyed()) {
+                win.webContents.send('subscribe:game:updated', encounterResult.state);
+              }
+            }
+            return { success: true, state: encounterResult.state };
+          }
+        }
       }
 
       // Broadcast updated state to all renderer windows.
@@ -128,6 +164,121 @@ export function registerGameIPCHandlers(db: Database.Database): void {
   ipcMain.handle('game:getTransactionHistory', async (_event, limit?: number) => {
     return getTransactionHistory(db, limit);
   });
+
+  /**
+   * game:getPendingEvent — return the current in-flight voyage event, or null.
+   */
+  ipcMain.handle('game:getPendingEvent', async () => {
+    return pendingVoyageEvent;
+  });
+
+  /**
+   * game:resolveEvent — apply event outcome to inventory and transition FSM to idle.
+   *
+   * Atomically:
+   *  1. Resolves the event choice to an EventOutcome
+   *  2. Applies goldDelta and cargoDelta to player_inventory
+   *  3. Transitions FSM: encountered → idle
+   *  4. Clears pendingVoyageEvent
+   *  5. Broadcasts the updated state to all windows
+   */
+  ipcMain.handle(
+    'game:resolveEvent',
+    async (_event, eventId: string, choiceId: string) => {
+      if (!pendingVoyageEvent || pendingVoyageEvent.id !== eventId) {
+        return { success: false, error: 'No pending event or event mismatch' };
+      }
+
+      const event = pendingVoyageEvent;
+
+      let outcome: ReturnType<typeof resolveEventChoice>;
+      try {
+        const inv = getPlayerInventory(db);
+        outcome = resolveEventChoice(event, choiceId, inv);
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        return { success: false, error: msg };
+      }
+
+      // Apply outcome atomically
+      const applyOutcome = db.transaction(() => {
+        // Apply goldDelta
+        if (outcome.goldDelta !== 0) {
+          db.prepare(
+            `UPDATE player_inventory SET gold = MAX(0, gold + ?) WHERE id = 1`
+          ).run(outcome.goldDelta);
+        }
+
+        // Apply cargoDelta
+        const freshInv = getPlayerInventory(db);
+        const updatedCargo = [...freshInv.cargoItems];
+
+        for (const [goodId, delta] of Object.entries(outcome.cargoDelta)) {
+          if (delta === undefined || delta === 0) continue;
+
+          const idx = updatedCargo.findIndex((c) => c.goodId === goodId);
+
+          if (delta > 0) {
+            // Gain cargo
+            if (idx >= 0) {
+              updatedCargo[idx] = {
+                ...updatedCargo[idx],
+                quantity: updatedCargo[idx].quantity + delta,
+              };
+            } else {
+              updatedCargo.push({
+                goodId,
+                quantity: delta,
+                boughtAtPrice: 0,
+                boughtAtPort: 'salvaged',
+              });
+            }
+          } else if (delta < 0 && idx >= 0) {
+            // Lose cargo
+            const newQty = Math.max(0, updatedCargo[idx].quantity + delta);
+            if (newQty === 0) {
+              updatedCargo.splice(idx, 1);
+            } else {
+              updatedCargo[idx] = { ...updatedCargo[idx], quantity: newQty };
+            }
+          }
+        }
+
+        db.prepare(
+          `UPDATE player_inventory SET cargo_json = ? WHERE id = 1`
+        ).run(JSON.stringify(updatedCargo));
+      });
+
+      applyOutcome();
+
+      // Transition FSM: encountered → idle
+      const current = loadGameState(db) ?? INITIAL_STATE;
+      const nextResult = performAction(current, { type: 'RESOLVE' });
+      if (nextResult.success) {
+        try {
+          saveGameStateAtomic(db, nextResult.state);
+        } catch {
+          // Non-fatal: state stays encountered but we still return success
+        }
+      }
+
+      pendingVoyageEvent = null;
+
+      // Broadcast updated state
+      const finalState = loadGameState(db) ?? nextResult.state;
+      for (const win of BrowserWindow.getAllWindows()) {
+        if (!win.isDestroyed()) {
+          win.webContents.send('subscribe:game:updated', finalState);
+        }
+      }
+
+      return {
+        success: true,
+        outcome,
+        message: outcome.message,
+      };
+    }
+  );
 }
 
 /**
