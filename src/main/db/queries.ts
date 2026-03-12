@@ -1,5 +1,5 @@
 /**
- * Database query functions — atomic save and load of game state.
+ * Database query functions — atomic save/load plus ports, goods, market, and player inventory.
  *
  * saveGameStateAtomic() writes to game_state (upsert) and saves_history
  * in a single better-sqlite3 transaction. If either statement fails,
@@ -7,10 +7,15 @@
  *
  * loadGameState() returns the parsed GameState from the single game_state
  * row, or null if no save exists yet.
+ *
+ * Seed functions use INSERT OR IGNORE so re-runs (on every app launch) are safe.
  */
 
 import type Database from 'better-sqlite3';
 import type { GameState } from '../../game/types';
+import type { Port, Good, MarketGood, PlayerInventory, CargoItem } from '../../shared/game-types';
+
+// ─── Game State ──────────────────────────────────────────────────────────────
 
 /**
  * Persist game state atomically.
@@ -54,4 +59,292 @@ export function loadGameState(db: Database.Database): GameState | null {
   }
 
   return JSON.parse(row.state_json) as GameState;
+}
+
+// ─── Ports ────────────────────────────────────────────────────────────────────
+
+/**
+ * Seed 25 historically accurate Mediterranean ports.
+ * INSERT OR IGNORE — safe to call on every app launch.
+ */
+export function seedPorts(db: Database.Database): void {
+  const insert = db.prepare(`
+    INSERT OR IGNORE INTO ports (id, ancient_name, modern_name, lat, lng, region, description, pleiades_id)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+  `);
+
+  const ports: Array<[string, string, string, number, number, string, string, string]> = [
+    ['athens',     'Athenai',     'Athens',     37.97, 23.73, 'greece',       'The intellectual heart of the ancient world. Athens exported olive oil, pottery, and silver while importing grain from the Black Sea region.', '579885'],
+    ['corinth',    'Korinthos',   'Corinth',    37.94, 22.93, 'greece',       'A wealthy commercial city controlling two seas via its famous portage road (diolkos). Renowned for bronze works and fine pottery.', '570182'],
+    ['sparta',     'Sparte',      'Sparta',     37.08, 22.43, 'greece',       'The dominant land power of Greece, Sparta was less commercially active than Athens but traded iron tools and slaves through Lakonian ports.', '570685'],
+    ['miletos',    'Miletos',     'Miletus',    37.53, 27.28, 'greece',       'Once the greatest Greek city in Asia Minor, Miletos controlled trade routes to the Black Sea and Persia. Famous for wool textiles and philosophy.', '599799'],
+    ['ephesos',    'Ephesos',     'Ephesus',    37.94, 27.34, 'greece',       'Home to the Temple of Artemis, one of the Seven Wonders of the ancient world. A major Aegean port trading in grain, wine, and luxury goods.', '599612'],
+    ['byzantion',  'Byzantion',   'Istanbul',   41.02, 28.97, 'greece',       'Guardian of the Bosphorus strait, Byzantion collected tolls on all Black Sea trade including grain shipments vital to Athens and Rome.', '520985'],
+    ['rhodes',     'Rhodos',      'Rhodes',     36.44, 28.22, 'greece',       'A maritime powerhouse whose Rhodian Sea Law influenced Roman and later European maritime codes. Famous for the Colossus and fine wines.', '590031'],
+    ['knossos',    'Knossos',     'Heraklion',  35.30, 25.16, 'greece',       'The ancient center of Minoan civilization, Crete was a crucial waypoint for trade between Greece, Egypt, and the Levant.', '589872'],
+    ['syracuse',   'Syrakousai',  'Syracuse',   37.07, 15.29, 'italy',        'The largest Greek city in the western Mediterranean. Syracuse controlled grain trade in Sicily and rivaled even Athens in wealth and power.', '462503'],
+    ['massalia',   'Massalia',    'Marseille',  43.30,  5.37, 'italy',        'A Greek colony that became the gateway to Celtic Gaul and Iberia. Massalia traded Mediterranean wine and olive oil for Gallic tin and amber.', '148107'],
+    ['taras',      'Taras',       'Taranto',    40.47, 17.24, 'italy',        'The only Spartan colony, Taras was a major producer of purple dye and fine wool. Its excellent harbor made it a hub for Adriatic trade.', '442782'],
+    ['ostia',      'Ostia',       'Ostia',      41.75, 12.29, 'italy',        'The port city of Rome itself. As Rome grew, Ostia became the vital throat through which grain from Egypt and Africa fed the capital.', '422995'],
+    ['carthage',   'Karchedon',   'Carthage',   36.86, 10.32, 'north_africa', 'The great Phoenician trading empire that dominated the western Mediterranean until its destruction by Rome in 146 BCE. Traded in grain, purple dye, and metals.', '314921'],
+    ['utica',      'Utika',       'Utique',     37.06,  9.86, 'north_africa', 'The oldest Phoenician settlement in North Africa, predating Carthage. Utica remained an important agricultural and trading port throughout the ancient period.', '315247'],
+    ['leptis',     'Lepcis Magna','Khoms',      32.64, 14.29, 'north_africa', 'A major Phoenician and later Roman port on the Libyan coast. Leptis exported grain, olive oil, and wild animals captured for Roman arena games.', '344448'],
+    ['alexandria', 'Alexandreia', 'Alexandria', 31.20, 29.91, 'egypt',        'Founded by Alexander the Great, Alexandria became the greatest trading city of the Hellenistic world. Its famous lighthouse guided ships to Egypt\'s grain wealth.', '727070'],
+    ['naukratis',  'Naukratis',   'Kom Geif',   30.89, 30.60, 'egypt',        'The only Greek trading post permitted in Egypt during the Archaic period. Greek merchants exchanged silver and wine for Egyptian grain, papyrus, and linen.', '727199'],
+    ['memphis',    'Memphis',     'Mit Rahina', 29.84, 31.25, 'egypt',        'Ancient capital of Egypt and center of the Nile trade network. Memphis was where Nile grain was gathered before shipment north to the Mediterranean.', '786022'],
+    ['tyre',       'Tyros',       'Tyre',       33.27, 35.20, 'levant',       'The master city of Phoenician trade and navigation. Tyre\'s merchant sailors founded colonies from Carthage to Cadiz and monopolized the trade in purple dye.', '678437'],
+    ['sidon',      'Sidon',       'Sidon',      33.56, 35.37, 'levant',       'Sidon rivaled Tyre as a Phoenician trading center. Its craftsmen were famous for fine glassware and purple-dyed textiles exported across the Mediterranean.', '678405'],
+    ['byblos',     'Byblos',      'Jbeil',      34.12, 35.64, 'levant',       'One of the world\'s oldest continuously inhabited cities. Byblos was the primary exporter of Lebanese cedar timber, crucial for shipbuilding in Egypt and Greece.', '678063'],
+    ['kition',     'Kition',      'Larnaca',    34.91, 33.64, 'levant',       'A Phoenician city on Cyprus that controlled the island\'s rich copper mines. Kition was the meeting point of Greek and Near Eastern trade in the eastern Mediterranean.', '707498'],
+    ['salamis_cy', 'Salamis',     'Famagusta',  35.18, 33.90, 'levant',       'The most important Greek city on Cyprus, Salamis exported the island\'s famous copper (the word \'copper\' derives from Cyprus). A key waypoint for ships to Egypt and the Levant.', '707611'],
+    ['emporion',   'Emporion',    'Empúries',   42.13,  3.12, 'iberia',       'A Greek colonial trading post on the Iberian coast. Emporion traded Mediterranean goods with Celtic Iberian tribes, gaining access to Spanish silver, tin, and iron.', '246347'],
+    ['gadir',      'Gadir',       'Cádiz',      36.53, -6.30, 'iberia',       'A Phoenician colony at the edge of the known world, guarding the straits of Gibraltar. Gadir traded in Atlantic tin, silver, and the famous Spanish fish sauce (garum).', '256177'],
+  ];
+
+  const seedAll = db.transaction(() => {
+    for (const port of ports) {
+      insert.run(...port);
+    }
+  });
+
+  seedAll();
+}
+
+/**
+ * Get all ports from the database.
+ */
+export function getAllPorts(db: Database.Database): Port[] {
+  const rows = db.prepare('SELECT * FROM ports').all() as Array<{
+    id: string;
+    ancient_name: string;
+    modern_name: string;
+    lat: number;
+    lng: number;
+    region: string;
+    description: string;
+    pleiades_id: string | null;
+  }>;
+
+  return rows.map(r => ({
+    id: r.id,
+    ancientName: r.ancient_name,
+    modernName: r.modern_name,
+    lat: r.lat,
+    lng: r.lng,
+    region: r.region as Port['region'],
+    description: r.description,
+    pleiadesId: r.pleiades_id ?? undefined,
+  }));
+}
+
+/**
+ * Get a single port by ID. Returns null if not found.
+ */
+export function getPortById(db: Database.Database, id: string): Port | null {
+  const row = db.prepare('SELECT * FROM ports WHERE id = ?').get(id) as {
+    id: string;
+    ancient_name: string;
+    modern_name: string;
+    lat: number;
+    lng: number;
+    region: string;
+    description: string;
+    pleiades_id: string | null;
+  } | undefined;
+
+  if (!row) return null;
+
+  return {
+    id: row.id,
+    ancientName: row.ancient_name,
+    modernName: row.modern_name,
+    lat: row.lat,
+    lng: row.lng,
+    region: row.region as Port['region'],
+    description: row.description,
+    pleiadesId: row.pleiades_id ?? undefined,
+  };
+}
+
+// ─── Goods ────────────────────────────────────────────────────────────────────
+
+/**
+ * Seed 8 tradeable goods.
+ * INSERT OR IGNORE — safe to call on every app launch.
+ */
+export function seedGoods(db: Database.Database): void {
+  const insert = db.prepare(`
+    INSERT OR IGNORE INTO goods (id, name, base_price, description)
+    VALUES (?, ?, ?, ?)
+  `);
+
+  const goods: Array<[string, string, number, string]> = [
+    ['wheat',     'Wheat',     80,  'The staple grain of the ancient world. Egypt and Sicily were the great breadbaskets that fed Mediterranean cities.'],
+    ['olive_oil', 'Olive Oil', 120, 'Essential for cooking, lighting, and hygiene. Greece and Italy produced the finest grades, traded across the entire Mediterranean.'],
+    ['wine',      'Wine',      100, 'The universal drink of the ancient world, mixed with water. Greek and Italian wines commanded premium prices in barbarian markets.'],
+    ['textiles',  'Textiles',  150, 'Fine woven cloth was a luxury good. Levantine purple-dyed textiles and Egyptian linen fetched the highest prices.'],
+    ['spices',    'Spices',    200, 'Aromatic spices from Arabia and India, traded through Levantine ports. Pepper, cinnamon, and frankincense were worth their weight in silver.'],
+    ['bronze',    'Bronze',    180, 'The primary metal for tools, weapons, and decorative arts. Cyprus (meaning copper) was the ancient world\'s leading source.'],
+    ['timber',    'Timber',    90,  'Quality shipbuilding timber was scarce in the Mediterranean. Lebanese cedar and Macedonian pine were prized by Egypt, Greece, and Phoenicia alike.'],
+    ['pottery',   'Pottery',   60,  'Fine painted pottery from Athens and Corinth served as both luxury goods and practical containers for transporting wine and oil.'],
+  ];
+
+  const seedAll = db.transaction(() => {
+    for (const good of goods) {
+      insert.run(...good);
+    }
+  });
+
+  seedAll();
+}
+
+// ─── Port Inventory ──────────────────────────────────────────────────────────
+
+/**
+ * Seed port inventory defaults (supply and demand per region).
+ * INSERT OR IGNORE — safe to call on every app launch.
+ */
+export function seedPortInventory(db: Database.Database): void {
+  const insert = db.prepare(`
+    INSERT OR IGNORE INTO port_inventory (port_id, good_id, supply, demand)
+    VALUES (?, ?, ?, ?)
+  `);
+
+  // Regional supply/demand patterns based on historical trade specialization.
+  // supply = units produced per turn; demand = units consumed per turn
+  // High supply relative to demand → low price; high demand relative to supply → high price
+  const inventoryByPort: Record<string, Array<[string, number, number]>> = {
+    // Greece region — wine, olive oil, pottery surplus; grain deficit
+    'athens':    [['wheat', 3, 8], ['olive_oil', 10, 4], ['wine', 10, 5], ['textiles', 3, 6], ['spices', 2, 5], ['bronze', 4, 6], ['timber', 3, 7], ['pottery', 8, 4]],
+    'corinth':   [['wheat', 3, 7], ['olive_oil', 8, 4], ['wine', 8, 5], ['textiles', 4, 6], ['spices', 2, 4], ['bronze', 5, 5], ['timber', 3, 6], ['pottery', 9, 4]],
+    'sparta':    [['wheat', 4, 6], ['olive_oil', 6, 4], ['wine', 5, 5], ['textiles', 4, 5], ['spices', 1, 4], ['bronze', 3, 6], ['timber', 5, 5], ['pottery', 4, 5]],
+    'miletos':   [['wheat', 4, 7], ['olive_oil', 7, 4], ['wine', 6, 5], ['textiles', 8, 4], ['spices', 3, 5], ['bronze', 4, 5], ['timber', 3, 6], ['pottery', 7, 4]],
+    'ephesos':   [['wheat', 3, 7], ['olive_oil', 8, 4], ['wine', 7, 5], ['textiles', 7, 4], ['spices', 4, 5], ['bronze', 4, 5], ['timber', 3, 6], ['pottery', 6, 4]],
+    'byzantion': [['wheat', 5, 8], ['olive_oil', 6, 5], ['wine', 8, 5], ['textiles', 5, 5], ['spices', 3, 5], ['bronze', 5, 5], ['timber', 4, 6], ['pottery', 5, 4]],
+    'rhodes':    [['wheat', 3, 7], ['olive_oil', 9, 4], ['wine', 10, 4], ['textiles', 4, 6], ['spices', 4, 5], ['bronze', 4, 5], ['timber', 3, 6], ['pottery', 7, 4]],
+    'knossos':   [['wheat', 5, 6], ['olive_oil', 9, 4], ['wine', 9, 4], ['textiles', 4, 6], ['spices', 3, 5], ['bronze', 4, 5], ['timber', 4, 6], ['pottery', 7, 4]],
+
+    // Italy/Sicily region — wine, pottery, timber surplus
+    'syracuse':  [['wheat', 10, 5], ['olive_oil', 7, 5], ['wine', 12, 4], ['textiles', 4, 6], ['spices', 2, 5], ['bronze', 4, 5], ['timber', 8, 4], ['pottery', 9, 4]],
+    'massalia':  [['wheat', 6, 6], ['olive_oil', 6, 5], ['wine', 10, 4], ['textiles', 5, 6], ['spices', 3, 5], ['bronze', 5, 5], ['timber', 7, 5], ['pottery', 7, 5]],
+    'taras':     [['wheat', 7, 6], ['olive_oil', 8, 4], ['wine', 9, 4], ['textiles', 6, 5], ['spices', 2, 5], ['bronze', 5, 5], ['timber', 7, 4], ['pottery', 8, 4]],
+    'ostia':     [['wheat', 4, 12], ['olive_oil', 5, 8], ['wine', 6, 9], ['textiles', 4, 8], ['spices', 3, 8], ['bronze', 5, 7], ['timber', 6, 8], ['pottery', 6, 6]],
+
+    // North Africa — grain and textiles surplus
+    'carthage':  [['wheat', 8, 5], ['olive_oil', 5, 6], ['wine', 2, 7], ['textiles', 6, 5], ['spices', 3, 6], ['bronze', 4, 6], ['timber', 3, 7], ['pottery', 4, 5]],
+    'utica':     [['wheat', 7, 5], ['olive_oil', 5, 5], ['wine', 2, 6], ['textiles', 5, 5], ['spices', 2, 5], ['bronze', 3, 5], ['timber', 3, 6], ['pottery', 4, 5]],
+    'leptis':    [['wheat', 8, 4], ['olive_oil', 6, 5], ['wine', 2, 6], ['textiles', 5, 5], ['spices', 3, 6], ['bronze', 3, 5], ['timber', 2, 7], ['pottery', 4, 5]],
+
+    // Egypt — grain and textiles heavy surplus; wine/olive oil deficit
+    'alexandria':[['wheat', 15, 4], ['olive_oil', 3, 8], ['wine', 2, 9], ['textiles', 8, 5], ['spices', 5, 6], ['bronze', 4, 6], ['timber', 2, 9], ['pottery', 5, 5]],
+    'naukratis': [['wheat', 12, 4], ['olive_oil', 3, 7], ['wine', 3, 8], ['textiles', 7, 5], ['spices', 4, 5], ['bronze', 3, 5], ['timber', 2, 8], ['pottery', 5, 5]],
+    'memphis':   [['wheat', 14, 4], ['olive_oil', 3, 7], ['wine', 2, 8], ['textiles', 9, 5], ['spices', 4, 5], ['bronze', 3, 5], ['timber', 2, 8], ['pottery', 4, 5]],
+
+    // Levant — textiles, spices, timber surplus; grain moderate
+    'tyre':      [['wheat', 3, 7], ['olive_oil', 4, 6], ['wine', 3, 7], ['textiles', 10, 4], ['spices', 8, 4], ['bronze', 5, 5], ['timber', 7, 5], ['pottery', 5, 5]],
+    'sidon':     [['wheat', 3, 7], ['olive_oil', 4, 6], ['wine', 3, 7], ['textiles', 9, 4], ['spices', 7, 4], ['bronze', 5, 5], ['timber', 6, 5], ['pottery', 5, 5]],
+    'byblos':    [['wheat', 3, 6], ['olive_oil', 4, 6], ['wine', 3, 7], ['textiles', 7, 5], ['spices', 6, 5], ['bronze', 4, 5], ['timber', 10, 4], ['pottery', 4, 5]],
+    'kition':    [['wheat', 3, 6], ['olive_oil', 5, 5], ['wine', 4, 6], ['textiles', 7, 4], ['spices', 6, 4], ['bronze', 8, 4], ['timber', 5, 5], ['pottery', 5, 5]],
+    'salamis_cy':[['wheat', 4, 6], ['olive_oil', 5, 5], ['wine', 5, 6], ['textiles', 7, 4], ['spices', 5, 5], ['bronze', 8, 4], ['timber', 4, 5], ['pottery', 5, 5]],
+
+    // Iberia — bronze and timber surplus; wine moderate
+    'emporion':  [['wheat', 5, 6], ['olive_oil', 5, 6], ['wine', 5, 5], ['textiles', 4, 7], ['spices', 2, 6], ['bronze', 8, 4], ['timber', 10, 4], ['pottery', 4, 5]],
+    'gadir':     [['wheat', 5, 6], ['olive_oil', 5, 6], ['wine', 5, 5], ['textiles', 4, 7], ['spices', 2, 6], ['bronze', 8, 4], ['timber', 10, 4], ['pottery', 4, 5]],
+  };
+
+  const seedAll = db.transaction(() => {
+    for (const [portId, goods] of Object.entries(inventoryByPort)) {
+      for (const [goodId, supply, demand] of goods) {
+        insert.run(portId, goodId, supply, demand);
+      }
+    }
+  });
+
+  seedAll();
+}
+
+/**
+ * Get market prices for a port — joins port_inventory with goods and calculates price.
+ */
+export function getMarketPrices(db: Database.Database, portId: string): MarketGood[] {
+  const rows = db.prepare(`
+    SELECT
+      g.id, g.name, g.base_price, g.description,
+      pi.port_id, pi.supply, pi.demand
+    FROM port_inventory pi
+    JOIN goods g ON g.id = pi.good_id
+    WHERE pi.port_id = ?
+    ORDER BY g.name
+  `).all(portId) as Array<{
+    id: string;
+    name: string;
+    base_price: number;
+    description: string;
+    port_id: string;
+    supply: number;
+    demand: number;
+  }>;
+
+  return rows.map(r => {
+    // Price formula: base × (1 + (demand - supply) × 0.02), capped ±50%
+    const delta = r.demand - r.supply;
+    const multiplier = 1 + delta * 0.02;
+    const currentPrice = Math.round(
+      Math.max(r.base_price * 0.5, Math.min(r.base_price * 1.5, r.base_price * multiplier))
+    );
+    return {
+      id: r.id,
+      name: r.name,
+      basePrice: r.base_price,
+      description: r.description,
+      portId: r.port_id,
+      supply: r.supply,
+      demand: r.demand,
+      currentPrice,
+    };
+  });
+}
+
+// ─── Player Inventory ────────────────────────────────────────────────────────
+
+/**
+ * Get the player's current inventory.
+ * Returns defaults (gold=500, empty cargo) if no row exists yet.
+ */
+export function getPlayerInventory(db: Database.Database): PlayerInventory {
+  const row = db.prepare('SELECT * FROM player_inventory WHERE id = 1').get() as {
+    id: number;
+    gold: number;
+    cargo_capacity: number;
+    cargo_json: string;
+  } | undefined;
+
+  if (!row) {
+    return { gold: 500, cargoItems: [], cargoCapacity: 50, currentCargo: 0 };
+  }
+
+  const cargoItems = JSON.parse(row.cargo_json) as CargoItem[];
+  const currentCargo = cargoItems.reduce((sum, item) => sum + item.quantity, 0);
+
+  return {
+    gold: row.gold,
+    cargoItems,
+    cargoCapacity: row.cargo_capacity,
+    currentCargo,
+  };
+}
+
+/**
+ * Upsert the player's inventory (always uses id=1 row).
+ */
+export function updatePlayerInventory(db: Database.Database, inventory: PlayerInventory): void {
+  const cargoJson = JSON.stringify(inventory.cargoItems);
+  db.prepare(`
+    INSERT INTO player_inventory (id, gold, cargo_capacity, cargo_json)
+    VALUES (1, ?, ?, ?)
+    ON CONFLICT(id) DO UPDATE SET
+      gold           = excluded.gold,
+      cargo_capacity = excluded.cargo_capacity,
+      cargo_json     = excluded.cargo_json
+  `).run(inventory.gold, inventory.cargoCapacity, cargoJson);
 }

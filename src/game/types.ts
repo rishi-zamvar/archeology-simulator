@@ -6,6 +6,8 @@
  * 'sailing' simultaneously) and enables exhaustive switch statements.
  */
 
+import type { VoyageRoute, VoyageEvent } from '../shared/game-types';
+
 // ---------- States ----------
 
 export type IdleState = {
@@ -24,12 +26,17 @@ export type SailingState = {
   currentTurn: number;
   destination: string;
   eta: number;
+  // Phase 2 additions — optional for backward compat with existing saves/tests
+  departurePortId?: string;
+  route?: VoyageRoute;
 };
 
 export type EncounteredState = {
   type: 'encountered';
   currentTurn: number;
   eventType: string;
+  // Phase 2 addition — optional for backward compat
+  event?: VoyageEvent;
 };
 
 export type GameState = IdleState | TradingState | SailingState | EncounteredState;

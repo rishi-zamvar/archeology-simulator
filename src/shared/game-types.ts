@@ -8,17 +8,102 @@
 
 export type GamePhase = 'idle' | 'trading' | 'sailing' | 'encountered';
 
-export type Port = {
-  id: string;
-  name: string;
-  ancientName: string;
+/**
+ * Port — historically accurate Mediterranean port with Pleiades coordinates.
+ */
+export interface Port {
+  id: string;           // e.g. 'athens', 'carthage'
+  ancientName: string;  // e.g. 'Athenai', 'Karchedon'
+  modernName: string;   // e.g. 'Athens', 'Carthage'
   lat: number;
   lng: number;
-};
+  region: 'greece' | 'levant' | 'egypt' | 'italy' | 'iberia' | 'north_africa';
+  description: string;  // 1-2 sentence student-accessible description
+  pleiadesId?: string;  // e.g. '579885'
+}
 
-export type Good = {
-  id: string;
+/**
+ * Good — a tradeable commodity with a base price.
+ */
+export interface Good {
+  id: string;           // e.g. 'wheat', 'olive_oil'
   name: string;
-  basePrice: number;
-  unit: string;
-};
+  basePrice: number;    // denarii per unit
+  description: string;
+}
+
+/**
+ * MarketGood — a Good as it appears at a specific port, with supply/demand dynamics.
+ */
+export interface MarketGood extends Good {
+  portId: string;
+  supply: number;       // units produced per turn at this port
+  demand: number;       // units consumed per turn at this port
+  currentPrice: number; // calculated by economy.ts
+}
+
+/**
+ * CargoItem — a good the player is carrying, with purchase provenance.
+ */
+export interface CargoItem {
+  goodId: string;
+  quantity: number;
+  boughtAtPrice: number;
+  boughtAtPort: string;
+}
+
+/**
+ * PlayerInventory — the player's wealth and cargo hold state.
+ */
+export interface PlayerInventory {
+  gold: number;
+  cargoItems: CargoItem[];
+  cargoCapacity: number;  // max units (one ship type: 50)
+  currentCargo: number;   // sum of all quantities
+}
+
+/**
+ * TransactionRecord — a single buy or sell event for audit trail.
+ */
+export interface TransactionRecord {
+  id?: number;
+  turn: number;
+  portId: string;
+  goodId: string;
+  action: 'buy' | 'sell';
+  quantity: number;
+  pricePerUnit: number;
+  totalValue: number;
+}
+
+/**
+ * VoyageRoute — the calculated route between two ports.
+ */
+export interface VoyageRoute {
+  fromPortId: string;
+  toPortId: string;
+  distanceKm: number;
+  durationTurns: number;
+}
+
+export type VoyageEventType = 'storm' | 'pirate' | 'calm';
+
+/**
+ * VoyageEvent — an event the player may encounter during a voyage.
+ */
+export interface VoyageEvent {
+  id: string;
+  type: VoyageEventType;
+  title: string;
+  description: string;
+  choices: VoyageEventChoice[];
+}
+
+/**
+ * VoyageEventChoice — one option when resolving a voyage event.
+ */
+export interface VoyageEventChoice {
+  id: string;
+  label: string;
+  outcome: string;  // human-readable consequence description
+}
