@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-03-12)
 ## Current Position
 
 Phase: 3 of 3 (Port Experience) — In progress
-Plan: 2 of 3 in current phase
+Plan: 1 of 3 in current phase (03-01 complete)
 Status: In progress
-Last activity: 2026-03-12 — Completed 03-02-PLAN.md (artifact images)
+Last activity: 2026-03-12 — Completed 03-01-PLAN.md (port scene + cultural descriptions)
 
-Progress: [████████░░] 80% (Phase 2 complete + 2/3 plans in Phase 3)
+Progress: [████████░░] 80% (Phase 2 complete + 1/3 plans in Phase 3)
 
 ## Performance Metrics
 
@@ -29,7 +29,7 @@ Progress: [████████░░] 80% (Phase 2 complete + 2/3 plans in 
 |-------|-------|-------|----------|
 | 01-foundation | 3/3 | 11 min | 3.7 min |
 | 02-core-loop  | 4/4 | 14 min | 3.5 min ✓ |
-| 03-port-experience | 2/3 | 6 min | 3 min |
+| 03-port-experience | 1/3 | 8 min | 8 min |
 
 **Recent Trend:**
 - Last 5 plans: 01-02 (3 min), 01-03 (3 min), 02-01 (5 min), 02-03 (4 min)
@@ -72,11 +72,12 @@ Recent decisions affecting current work:
 - **pendingVoyageEvent module-level in IPC** — single-player game; cleared on each SET_SAIL; no DB persistence needed for mid-voyage state
 - **Event roll inline in SET_SAIL handler** — if event fires, handler returns encountered state directly (no second round-trip needed)
 - **EventCard no-escape blocking** — player must choose; no backdrop click / Escape key dismiss
-- **CachedArtifact in ipc-types.ts boundary** — type re-exported from queries.ts so renderer imports from boundary file
-- **game:get-artifacts IPC channel** — Met Museum search → detail → Wikimedia → placeholder fallback chain in main process
-- **Placeholder via museumId sentinel** — main process always returns at least one record; renderer maps without nil guards
-- **1 artifact shown per good in TradePanel** — compact layout; hook fetches up to 3 for future multi-image use
-- **IntersectionObserver disconnect in cleanup** — unobserve on intersection + disconnect on unmount prevents memory leaks
+- **culturalDescription optional on Port** — existing call sites need no changes; new consumers check presence
+- **ALTER TABLE try/catch for column backfill** — SQLite has no IF NOT EXISTS for columns; try/catch in schema.ts is the idempotent upgrade pattern
+- **INSERT OR IGNORE + UPDATE backfill in seedPorts** — covers both fresh installs and existing DBs with new columns
+- **PortScene as absolute overlay over relative MapArea wrapper** — map stays in DOM; overlay removed on sail, avoiding Leaflet re-init
+- **openRightPanel added to uiStore** — PortScene needs to open (not toggle) right panel; toggleRightPanel would close an already-open panel
+- **TradingState.selectedPort synced into uiStore via useEffect in Shell** — FSM is single source of truth; uiStore is a reflection
 
 ### Pending Todos
 
@@ -89,6 +90,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-12 13:47 UTC
-Stopped at: Completed 03-02-PLAN.md (artifact images in TradePanel)
+Last session: 2026-03-12 13:52 UTC
+Stopped at: Completed 03-01-PLAN.md (port scene + cultural descriptions)
 Resume file: None
