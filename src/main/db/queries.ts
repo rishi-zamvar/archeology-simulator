@@ -348,3 +348,269 @@ export function updatePlayerInventory(db: Database.Database, inventory: PlayerIn
       cargo_json     = excluded.cargo_json
   `).run(inventory.gold, inventory.cargoCapacity, cargoJson);
 }
+
+// ─── Trade Transactions ───────────────────────────────────────────────────────
+
+/**
+ * Calculate current price at a port for a given good using supply/demand formula.
+ * delta = demand - supply; multiplier = 1 + delta * 0.02, capped ±50% of basePrice.
+ */
+function calcCurrentPrice(basePrice: number, supply: number, demand: number): number {
+  const delta = demand - supply;
+  const multiplier = 1 + delta * 0.02;
+  return Math.round(
+    Math.max(basePrice * 0.5, Math.min(basePrice * 1.5, basePrice * multiplier))
+  );
+}
+
+/**
+ * Buy a good at a port.
+ * Atomic transaction: validates gold and cargo space, deducts gold, adds to cargo_json,
+ * records in transaction_history. Throws with a user-readable message on validation failure.
+ */
+export function buyGood(
+  db: Database.Database,
+  portId: string,
+  goodId: string,
+  qty: number
+): PlayerInventory {
+  let result!: PlayerInventory;
+
+  const tx = db.transaction(() => {
+    // Validate quantity
+    if (qty <= 0) throw new Error('Quantity must be at least 1');
+
+    // Get current game state for turn number
+    const stateRow = db.prepare('SELECT state_json FROM game_state WHERE id = 1').get() as
+      | { state_json: string }
+      | undefined;
+    const turn: number = stateRow ? (JSON.parse(stateRow.state_json) as { currentTurn?: number }).currentTurn ?? 0 : 0;
+
+    // Get port inventory for this good
+    const piRow = db.prepare(
+      'SELECT supply, demand FROM port_inventory WHERE port_id = ? AND good_id = ?'
+    ).get(portId, goodId) as { supply: number; demand: number } | undefined;
+    if (!piRow) throw new Error(`Good "${goodId}" not available at port "${portId}"`);
+
+    // Get base price
+    const goodRow = db.prepare('SELECT base_price FROM goods WHERE id = ?').get(goodId) as
+      | { base_price: number }
+      | undefined;
+    if (!goodRow) throw new Error(`Unknown good: ${goodId}`);
+
+    const pricePerUnit = calcCurrentPrice(goodRow.base_price, piRow.supply, piRow.demand);
+    const totalCost = pricePerUnit * qty;
+
+    // Load player inventory
+    const invRow = db.prepare('SELECT * FROM player_inventory WHERE id = 1').get() as {
+      id: number;
+      gold: number;
+      cargo_capacity: number;
+      cargo_json: string;
+    } | undefined;
+
+    const gold = invRow?.gold ?? 500;
+    const cargoCapacity = invRow?.cargo_capacity ?? 50;
+    const cargoItems = invRow ? (JSON.parse(invRow.cargo_json) as CargoItem[]) : [];
+    const currentCargo = cargoItems.reduce((s, i) => s + i.quantity, 0);
+
+    // Validate funds
+    if (gold < totalCost) {
+      throw new Error(`Insufficient gold. Need ${totalCost}, have ${gold}.`);
+    }
+
+    // Validate cargo space
+    if (currentCargo + qty > cargoCapacity) {
+      const available = cargoCapacity - currentCargo;
+      throw new Error(`Insufficient cargo space. Can carry ${available} more unit(s).`);
+    }
+
+    // Merge into cargo (add to existing stack or create new)
+    const existingIdx = cargoItems.findIndex(
+      (c) => c.goodId === goodId && c.boughtAtPort === portId && c.boughtAtPrice === pricePerUnit
+    );
+    if (existingIdx >= 0) {
+      cargoItems[existingIdx] = {
+        ...cargoItems[existingIdx],
+        quantity: cargoItems[existingIdx].quantity + qty,
+      };
+    } else {
+      cargoItems.push({ goodId, quantity: qty, boughtAtPrice: pricePerUnit, boughtAtPort: portId });
+    }
+
+    const newGold = gold - totalCost;
+    const newCargoJson = JSON.stringify(cargoItems);
+
+    // Update player inventory
+    db.prepare(`
+      INSERT INTO player_inventory (id, gold, cargo_capacity, cargo_json)
+      VALUES (1, ?, ?, ?)
+      ON CONFLICT(id) DO UPDATE SET
+        gold       = excluded.gold,
+        cargo_json = excluded.cargo_json
+    `).run(newGold, cargoCapacity, newCargoJson);
+
+    // Record transaction
+    db.prepare(`
+      INSERT INTO transaction_history (turn, port_id, good_id, action, quantity, price_per_unit, total_value)
+      VALUES (?, ?, ?, 'buy', ?, ?, ?)
+    `).run(turn, portId, goodId, qty, pricePerUnit, totalCost);
+
+    // Update supply/demand: buying increases demand pressure (decrement supply)
+    db.prepare(`
+      UPDATE port_inventory
+      SET supply = MAX(1, supply - 1)
+      WHERE port_id = ? AND good_id = ?
+    `).run(portId, goodId);
+
+    const newCurrentCargo = cargoItems.reduce((s, i) => s + i.quantity, 0);
+    result = { gold: newGold, cargoItems, cargoCapacity, currentCargo: newCurrentCargo };
+  });
+
+  tx();
+  return result;
+}
+
+/**
+ * Sell a good at a port.
+ * Atomic transaction: validates cargo quantity, adds gold, removes from cargo_json,
+ * records in transaction_history. Throws with a user-readable message on validation failure.
+ */
+export function sellGood(
+  db: Database.Database,
+  portId: string,
+  goodId: string,
+  qty: number
+): PlayerInventory {
+  let result!: PlayerInventory;
+
+  const tx = db.transaction(() => {
+    // Validate quantity
+    if (qty <= 0) throw new Error('Quantity must be at least 1');
+
+    // Get current game state for turn number
+    const stateRow = db.prepare('SELECT state_json FROM game_state WHERE id = 1').get() as
+      | { state_json: string }
+      | undefined;
+    const turn: number = stateRow ? (JSON.parse(stateRow.state_json) as { currentTurn?: number }).currentTurn ?? 0 : 0;
+
+    // Get port inventory for this good
+    const piRow = db.prepare(
+      'SELECT supply, demand FROM port_inventory WHERE port_id = ? AND good_id = ?'
+    ).get(portId, goodId) as { supply: number; demand: number } | undefined;
+    if (!piRow) throw new Error(`Good "${goodId}" not available at port "${portId}"`);
+
+    // Get base price
+    const goodRow = db.prepare('SELECT base_price FROM goods WHERE id = ?').get(goodId) as
+      | { base_price: number }
+      | undefined;
+    if (!goodRow) throw new Error(`Unknown good: ${goodId}`);
+
+    const pricePerUnit = calcCurrentPrice(goodRow.base_price, piRow.supply, piRow.demand);
+    const totalRevenue = pricePerUnit * qty;
+
+    // Load player inventory
+    const invRow = db.prepare('SELECT * FROM player_inventory WHERE id = 1').get() as {
+      id: number;
+      gold: number;
+      cargo_capacity: number;
+      cargo_json: string;
+    } | undefined;
+
+    const gold = invRow?.gold ?? 500;
+    const cargoCapacity = invRow?.cargo_capacity ?? 50;
+    const cargoItems = invRow ? (JSON.parse(invRow.cargo_json) as CargoItem[]) : [];
+
+    // Validate cargo has enough of this good
+    const totalOwned = cargoItems
+      .filter((c) => c.goodId === goodId)
+      .reduce((s, c) => s + c.quantity, 0);
+
+    if (totalOwned < qty) {
+      throw new Error(`Not enough ${goodId} to sell. Have ${totalOwned}, trying to sell ${qty}.`);
+    }
+
+    // Remove from cargo — FIFO across stacks
+    let remaining = qty;
+    const newCargoItems: CargoItem[] = [];
+    for (const item of cargoItems) {
+      if (item.goodId === goodId && remaining > 0) {
+        if (item.quantity <= remaining) {
+          remaining -= item.quantity;
+          // Drop entire stack
+        } else {
+          newCargoItems.push({ ...item, quantity: item.quantity - remaining });
+          remaining = 0;
+        }
+      } else {
+        newCargoItems.push(item);
+      }
+    }
+
+    const newGold = gold + totalRevenue;
+    const newCargoJson = JSON.stringify(newCargoItems);
+
+    // Update player inventory
+    db.prepare(`
+      INSERT INTO player_inventory (id, gold, cargo_capacity, cargo_json)
+      VALUES (1, ?, ?, ?)
+      ON CONFLICT(id) DO UPDATE SET
+        gold       = excluded.gold,
+        cargo_json = excluded.cargo_json
+    `).run(newGold, cargoCapacity, newCargoJson);
+
+    // Record transaction
+    db.prepare(`
+      INSERT INTO transaction_history (turn, port_id, good_id, action, quantity, price_per_unit, total_value)
+      VALUES (?, ?, ?, 'sell', ?, ?, ?)
+    `).run(turn, portId, goodId, qty, pricePerUnit, totalRevenue);
+
+    // Update supply/demand: selling here increases supply
+    db.prepare(`
+      UPDATE port_inventory
+      SET demand = MAX(1, demand - 1)
+      WHERE port_id = ? AND good_id = ?
+    `).run(portId, goodId);
+
+    const newCurrentCargo = newCargoItems.reduce((s, i) => s + i.quantity, 0);
+    result = { gold: newGold, cargoItems: newCargoItems, cargoCapacity, currentCargo: newCurrentCargo };
+  });
+
+  tx();
+  return result;
+}
+
+/**
+ * Get the last N transaction records (default 10), newest first.
+ */
+export function getTransactionHistory(
+  db: Database.Database,
+  limit = 10
+): import('../../shared/game-types').TransactionRecord[] {
+  const rows = db.prepare(`
+    SELECT id, turn, port_id, good_id, action, quantity, price_per_unit, total_value
+    FROM transaction_history
+    ORDER BY id DESC
+    LIMIT ?
+  `).all(limit) as Array<{
+    id: number;
+    turn: number;
+    port_id: string;
+    good_id: string;
+    action: 'buy' | 'sell';
+    quantity: number;
+    price_per_unit: number;
+    total_value: number;
+  }>;
+
+  return rows.map((r) => ({
+    id: r.id,
+    turn: r.turn,
+    portId: r.port_id,
+    goodId: r.good_id,
+    action: r.action,
+    quantity: r.quantity,
+    pricePerUnit: r.price_per_unit,
+    totalValue: r.total_value,
+  }));
+}

@@ -10,7 +10,7 @@
  */
 
 export type { GameState, GameAction, GameResult } from '../game/types';
-export type { Port, MarketGood, VoyageRoute, PlayerInventory } from './game-types';
+export type { Port, MarketGood, VoyageRoute, PlayerInventory, TransactionRecord } from './game-types';
 
 /**
  * The contextBridge API surface exposed as window.api in the renderer.
@@ -29,6 +29,11 @@ export interface IPCBridge {
     getMarketPrices: (portId: string) => Promise<import('./game-types').MarketGood[]>;
     getReachablePorts: (fromPortId: string) => Promise<Array<{ port: import('./game-types').Port; route: import('./game-types').VoyageRoute }>>;
     getPlayerInventory: () => Promise<import('./game-types').PlayerInventory>;
+
+    // Phase 2 Plan 3: trade channels
+    buyGood: (portId: string, goodId: string, qty: number) => Promise<import('./game-types').PlayerInventory>;
+    sellGood: (portId: string, goodId: string, qty: number) => Promise<import('./game-types').PlayerInventory>;
+    getTransactionHistory: (limit?: number) => Promise<import('./game-types').TransactionRecord[]>;
   };
   /** Subscribe to a push event from main process. Returns cleanup function. */
   subscribe: (event: string, callback: (data: unknown) => void) => () => void;

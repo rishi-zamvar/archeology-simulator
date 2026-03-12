@@ -19,6 +19,9 @@ import {
   getPortById,
   getMarketPrices,
   getPlayerInventory,
+  buyGood,
+  sellGood,
+  getTransactionHistory,
 } from '../db/queries';
 import { performAction } from '../../game/engine';
 import { getReachablePorts } from '../../game/voyage';
@@ -92,4 +95,51 @@ export function registerGameIPCHandlers(db: Database.Database): void {
   ipcMain.handle('game:getPlayerInventory', async () => {
     return getPlayerInventory(db);
   });
+
+  /**
+   * game:buyGood — atomic buy transaction; returns updated PlayerInventory.
+   * Broadcasts game:updated after successful trade.
+   */
+  ipcMain.handle(
+    'game:buyGood',
+    async (_event, portId: string, goodId: string, qty: number) => {
+      const inventory = buyGood(db, portId, goodId, qty);
+      broadcastGameUpdated(db);
+      return inventory;
+    }
+  );
+
+  /**
+   * game:sellGood — atomic sell transaction; returns updated PlayerInventory.
+   * Broadcasts game:updated after successful trade.
+   */
+  ipcMain.handle(
+    'game:sellGood',
+    async (_event, portId: string, goodId: string, qty: number) => {
+      const inventory = sellGood(db, portId, goodId, qty);
+      broadcastGameUpdated(db);
+      return inventory;
+    }
+  );
+
+  /**
+   * game:getTransactionHistory — return last N transaction records (default 10).
+   */
+  ipcMain.handle('game:getTransactionHistory', async (_event, limit?: number) => {
+    return getTransactionHistory(db, limit);
+  });
+}
+
+/**
+ * Broadcast the current game state to all renderer windows.
+ * Called after buy/sell to keep all windows in sync.
+ */
+function broadcastGameUpdated(db: Database.Database): void {
+  const state = loadGameState(db);
+  if (!state) return;
+  for (const win of BrowserWindow.getAllWindows()) {
+    if (!win.isDestroyed()) {
+      win.webContents.send('subscribe:game:updated', state);
+    }
+  }
 }

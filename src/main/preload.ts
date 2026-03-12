@@ -41,6 +41,10 @@ const api: IPCBridge = {
     getMarketPrices: (portId) => ipcRenderer!.invoke('game:getMarketPrices', portId),
     getReachablePorts: (fromPortId) => ipcRenderer!.invoke('game:getReachablePorts', fromPortId),
     getPlayerInventory: () => ipcRenderer!.invoke('game:getPlayerInventory'),
+    // Phase 2 Plan 3: trade channels
+    buyGood: (portId, goodId, qty) => ipcRenderer!.invoke('game:buyGood', portId, goodId, qty),
+    sellGood: (portId, goodId, qty) => ipcRenderer!.invoke('game:sellGood', portId, goodId, qty),
+    getTransactionHistory: (limit) => ipcRenderer!.invoke('game:getTransactionHistory', limit),
   },
   subscribe: (event, callback) => {
     const handler = (_: Electron.IpcRendererEvent, data: unknown) =>
