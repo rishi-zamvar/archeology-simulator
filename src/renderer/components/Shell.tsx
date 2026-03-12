@@ -16,7 +16,7 @@
  * Right panel: TradePanel (when a port is selected)
  */
 
-import React, { useEffect, useCallback, useState } from 'react';
+import React, { useEffect, useCallback, useState, useRef } from 'react';
 import { useUIStore } from '../stores/uiStore';
 import { useGameState } from '../hooks/useGameState';
 import SidePanel from './SidePanel';
@@ -28,7 +28,9 @@ import CargoHold from './CargoHold';
 import ProfitDisplay from './ProfitDisplay';
 import ShipMarker from './ShipMarker';
 import EventCard from './EventCard';
+import TutorialModal from './TutorialModal';
 import { useTradeState } from '../hooks/useTradeState';
+import { useAudioManager } from '../hooks/useAudioManager';
 import type { SailingState, TradingState } from '../../game/types';
 import type { VoyageEvent } from '../../shared/game-types';
 
@@ -46,6 +48,16 @@ export default function Shell(): React.ReactElement {
 
   const { state: gameState } = useGameState();
   const { marketGoods, inventory, transactions } = useTradeState(selectedPortId);
+
+  // Ambient audio — start on first user interaction (browser autoplay policy)
+  const audio = useAudioManager();
+  const ambientStarted = useRef(false);
+  const handleFirstInteraction = useCallback(() => {
+    if (!ambientStarted.current) {
+      ambientStarted.current = true;
+      void audio.playAmbient('/audio/ambient-port.mp3');
+    }
+  }, [audio]);
 
   // Voyage event state
   const [pendingEvent, setPendingEvent] = useState<VoyageEvent | null>(null);
@@ -132,6 +144,7 @@ export default function Shell(): React.ReactElement {
 
   return (
     <div
+      onClick={handleFirstInteraction}
       style={{
         display: 'flex',
         flexDirection: 'row',
@@ -254,6 +267,9 @@ export default function Shell(): React.ReactElement {
           {eventToast}
         </div>
       )}
+
+      {/* Tutorial overlay — self-hides when tutorialPhase is completed or undefined */}
+      {!pendingEvent && <TutorialModal />}
     </div>
   );
 }
