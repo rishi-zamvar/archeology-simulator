@@ -16,7 +16,7 @@
  * Right panel: TradePanel (when a port is selected)
  */
 
-import React, { useEffect, useCallback } from 'react';
+import React, { useEffect, useCallback, useState } from 'react';
 import { useUIStore } from '../stores/uiStore';
 import { useGameState } from '../hooks/useGameState';
 import SidePanel from './SidePanel';
@@ -26,8 +26,10 @@ import TradePanel from './TradePanel';
 import CargoHold from './CargoHold';
 import ProfitDisplay from './ProfitDisplay';
 import ShipMarker from './ShipMarker';
+import EventCard from './EventCard';
 import { useTradeState } from '../hooks/useTradeState';
 import type { SailingState } from '../../game/types';
+import type { VoyageEvent } from '../../shared/game-types';
 
 export default function Shell(): React.ReactElement {
   const {
@@ -42,6 +44,10 @@ export default function Shell(): React.ReactElement {
   const { state: gameState } = useGameState();
   const { marketGoods, inventory, transactions } = useTradeState(selectedPortId);
 
+  // Voyage event state
+  const [pendingEvent, setPendingEvent] = useState<VoyageEvent | null>(null);
+  const [eventToast, setEventToast] = useState<string | null>(null);
+
   // Build port coordinates map from loaded ports for ShipMarker
   const [portCoords, setPortCoords] = React.useState<Map<string, [number, number]>>(new Map());
 
@@ -52,6 +58,19 @@ export default function Shell(): React.ReactElement {
       setPortCoords(map);
     }).catch(() => {/* non-fatal: ship marker just won't animate */});
   }, []);
+
+  // Watch for EncounteredState transitions and fetch the pending event
+  useEffect(() => {
+    if (gameState?.type === 'encountered') {
+      window.api.game.getPendingEvent().then((event) => {
+        if (event) setPendingEvent(event);
+      }).catch(() => {/* non-fatal: event card won't show */});
+    } else {
+      // Game left encountered state (resolved or rolled back)
+      // Don't clear pendingEvent here — EventCard manages its own dismissal
+      // to avoid a flash when the state updates before the 2-second timer fires
+    }
+  }, [gameState?.type]);
 
   // Keyboard shortcuts for panel toggling (accessibility requirement)
   useEffect(() => {
@@ -166,6 +185,48 @@ export default function Shell(): React.ReactElement {
           </div>
         )}
       </SidePanel>
+
+      {/* Voyage event modal — blocking overlay during EncounteredState */}
+      {pendingEvent && (
+        <EventCard
+          event={pendingEvent}
+          onResolved={(message) => {
+            setPendingEvent(null);
+            if (message) {
+              setEventToast(message);
+              // Dismiss toast after 3 seconds
+              setTimeout(() => setEventToast(null), 3000);
+            }
+          }}
+        />
+      )}
+
+      {/* Event result toast — shown after EventCard is dismissed */}
+      {eventToast && !pendingEvent && (
+        <div
+          role="status"
+          style={{
+            position: 'fixed',
+            bottom: 32,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 1500,
+            background: 'rgba(26, 15, 10, 0.88)',
+            color: '#fdf5e6',
+            padding: '0.6rem 1.25rem',
+            borderRadius: 6,
+            fontFamily: "'Lora', Georgia, serif",
+            fontSize: '0.85rem',
+            fontStyle: 'italic',
+            maxWidth: 400,
+            textAlign: 'center',
+            boxShadow: '0 4px 16px rgba(0,0,0,0.4)',
+            pointerEvents: 'none',
+          }}
+        >
+          {eventToast}
+        </div>
+      )}
     </div>
   );
 }
