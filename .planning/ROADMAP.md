@@ -12,7 +12,7 @@ Build a turn-based ancient Mediterranean trade simulator as an Electron + React 
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Foundation** - Cross-platform Electron shell with IPC bridge, SQLite persistence, and parchment UI skeleton
+- [x] **Phase 1: Foundation** - Cross-platform Electron shell with IPC bridge, SQLite persistence, and parchment UI skeleton
 - [ ] **Phase 2: Core Loop** - Playable game with Leaflet map, turn-based navigation, trade mechanics, ship inventory, and voyage events
 - [ ] **Phase 3: Port Experience** - Illustrated port scenes, museum artifact images, ambient audio, and guided tutorial
 
@@ -30,9 +30,9 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Plans:** 3 plans
 
 Plans:
-- [ ] 01-01-PLAN.md — Electron + Vite + React scaffold with secure contextBridge IPC, Vitest, and 3-platform GitHub Actions CI
-- [ ] 01-02-PLAN.md — SQLite schema, ACID-safe save/load, FSM game state machine, and IPC handlers (TDD)
-- [ ] 01-03-PLAN.md — Parchment UI shell: Tailwind theme, Cinzel font, side-panel layout, useGameState hook
+- [x] 01-01-PLAN.md — Electron + Vite + React scaffold with secure contextBridge IPC, Vitest, and 3-platform GitHub Actions CI
+- [x] 01-02-PLAN.md — SQLite schema, ACID-safe save/load, FSM game state machine, and IPC handlers (TDD)
+- [x] 01-03-PLAN.md — Parchment UI shell: Tailwind theme, Cinzel font, side-panel layout, useGameState hook
 
 ### Phase 2: Core Loop
 **Goal**: Players can sail between historically accurate Mediterranean ports, buy and sell goods, manage cargo, and encounter voyage events — the game is fully playable
@@ -76,6 +76,6 @@ Phases execute in numeric order: 1 → 2 → 3
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation | 0/3 | Not started | - |
+| 1. Foundation | 3/3 | Complete | 2026-03-12 |
 | 2. Core Loop | 0/4 | Not started | - |
 | 3. Port Experience | 0/3 | Not started | - |

@@ -143,19 +143,19 @@
 | PORT-02 | Phase 3 | Pending |
 | PORT-03 | Phase 3 | Pending |
 | PORT-04 | Phase 3 | Pending |
-| SAVE-01 | Phase 1 | Pending |
-| SAVE-02 | Phase 1 | Pending |
+| SAVE-01 | Phase 1 | Complete |
+| SAVE-02 | Phase 1 | Complete |
 | TUT-01 | Phase 3 | Pending |
 | TUT-02 | Phase 3 | Pending |
-| UI-01 | Phase 1 | Pending |
-| UI-02 | Phase 1 | Pending |
+| UI-01 | Phase 1 | Complete |
+| UI-02 | Phase 1 | Complete |
 | UI-03 | Phase 3 | Pending |
-| UI-04 | Phase 1 | Pending |
-| INFRA-01 | Phase 1 | Pending |
-| INFRA-02 | Phase 1 | Pending |
-| INFRA-03 | Phase 1 | Pending |
-| INFRA-04 | Phase 1 | Pending |
-| INFRA-05 | Phase 1 | Pending |
+| UI-04 | Phase 1 | Complete |
+| INFRA-01 | Phase 1 | Complete |
+| INFRA-02 | Phase 1 | Complete |
+| INFRA-03 | Phase 1 | Complete |
+| INFRA-04 | Phase 1 | Complete |
+| INFRA-05 | Phase 1 | Complete |
 
 **Coverage:**
 - v1 requirements: 35 total
@@ -164,4 +164,4 @@
 
 ---
 *Requirements defined: 2026-03-12*
-*Last updated: 2026-03-12 after roadmap creation — all 35 v1 requirements mapped*
+*Last updated: 2026-03-12 — Phase 1 requirements marked Complete (10/35)*

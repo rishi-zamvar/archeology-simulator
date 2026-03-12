@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-03-12)
 
 **Core value:** Students learn ancient Mediterranean history by making decisions as a merchant captain, not by reading about them.
-**Current focus:** Phase 1 — Foundation
+**Current focus:** Phase 2 — Core Loop
 
 ## Current Position
 
-Phase: 1 of 3 (Foundation)
-Plan: 3 of 3 in current phase
-Status: Phase 1 complete
-Last activity: 2026-03-12 — Completed 01-03-PLAN.md (parchment UI shell)
+Phase: 2 of 3 (Core Loop)
+Plan: 0 of 4 in current phase
+Status: Ready to plan
+Last activity: 2026-03-12 — Phase 1 Foundation verified and complete
 
-Progress: [███░░░░░░░] ~33% (3/9 plans estimated)
+Progress: [███░░░░░░░] 33% (1/3 phases complete)
 
 ## Performance Metrics
 
