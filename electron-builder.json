@@ -1,0 +1,51 @@
+{
+  "appId": "com.archeologysimulator.app",
+  "productName": "Archeology Simulator",
+  "copyright": "Copyright © 2026 Rishi Zamvar",
+  "asar": true,
+  "directories": {
+    "output": "release",
+    "buildResources": "build"
+  },
+  "files": [
+    "dist/**/*",
+    "src/main/**/*",
+    "resources/**/*"
+  ],
+  "extraResources": [
+    {
+      "from": "resources/",
+      "to": "resources/"
+    }
+  ],
+  "mac": {
+    "target": [
+      {
+        "target": "dmg",
+        "arch": ["x64", "arm64"]
+      }
+    ],
+    "category": "public.app-category.education"
+  },
+  "win": {
+    "target": [
+      {
+        "target": "nsis",
+        "arch": ["x64"]
+      }
+    ]
+  },
+  "linux": {
+    "target": [
+      {
+        "target": "deb",
+        "arch": ["x64"]
+      }
+    ],
+    "category": "Education"
+  },
+  "nsis": {
+    "oneClick": false,
+    "allowToChangeInstallationDirectory": true
+  }
+}
