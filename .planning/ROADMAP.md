@@ -44,13 +44,13 @@ Plans:
   3. Player can buy goods at one port and sell at another, with prices that fluctuate based on supply and demand
   4. Player can see their cargo hold, remaining capacity, profit/loss display, and transaction history at all times
   5. Voyage events (storms, pirates, calm seas) appear as decision cards during transit and affect the journey outcome
-**Plans**: TBD
+**Plans:** 4 plans
 
 Plans:
-- [ ] 02-01: GameEngine — turn-based FSM, command pattern, IPC action handlers, and port/route navigation logic
-- [ ] 02-02: Leaflet map with parchment tiles, port markers, ship route animation, and click-to-navigate flow
-- [ ] 02-03: Trade system — supply/demand simulation, buy/sell UI, inventory with cargo limit, profit/loss display, currency notes
-- [ ] 02-04: Voyage events — hand-written event database (20-30 events), decision card UI, consequence application
+- [ ] 02-01-PLAN.md — Port/goods types, 25-port DB seed, voyage engine (haversine), economy module, expanded IPC channels
+- [ ] 02-02-PLAN.md — Leaflet map with parchment tiles, port markers, ship route animation, and click-to-navigate flow
+- [ ] 02-03-PLAN.md — Trade system: buy/sell IPC with ACID transactions, TradePanel, CargoHold, ProfitDisplay
+- [ ] 02-04-PLAN.md — Voyage events: 24-event database, EventCard modal, resolveEvent IPC, full interrupt flow
 
 ### Phase 3: Port Experience
 **Goal**: Arriving at a port is an illustrated, historically rich scene with museum artifacts, ambient sound, and new players are guided through their first voyage
