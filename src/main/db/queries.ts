@@ -717,6 +717,93 @@ export function cacheArtifact(db: Database.Database, artifact: CachedArtifact): 
   );
 }
 
+// ─── Curated Images ───────────────────────────────────────────────────────────
+
+/**
+ * An offline-curated image record linking to a good or port.
+ * Exactly one of goodId or portId will be non-null (enforced by DB CHECK constraint).
+ */
+export interface CuratedImage {
+  id: string;
+  goodId: string | null;
+  portId: string | null;
+  filePath: string;
+  attribution: string;
+  sourceUrl: string | null;
+  createdAt: string;
+}
+
+/**
+ * Seed curated images from resources/data/curated-images.json.
+ * INSERT OR IGNORE — safe to call on every app launch. Empty manifest = no-op.
+ */
+export function seedCuratedImages(db: Database.Database): void {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const manifest = require('../../../resources/data/curated-images.json') as Array<{
+    id: string;
+    goodId?: string;
+    portId?: string;
+    filePath: string;
+    attribution: string;
+    sourceUrl?: string;
+    createdAt?: string;
+  }>;
+
+  const insert = db.prepare(`
+    INSERT OR IGNORE INTO curated_images
+      (id, good_id, port_id, file_path, attribution, source_url, created_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
+  `);
+
+  for (const image of manifest) {
+    insert.run(
+      image.id,
+      image.goodId ?? null,
+      image.portId ?? null,
+      image.filePath,
+      image.attribution,
+      image.sourceUrl ?? null,
+      image.createdAt ?? new Date().toISOString()
+    );
+  }
+}
+
+/**
+ * Get curated images for a trade good. Returns up to 5 results.
+ */
+export function getCuratedImagesForGood(db: Database.Database, goodId: string): CuratedImage[] {
+  return db.prepare(`
+    SELECT id,
+           good_id    AS goodId,
+           port_id    AS portId,
+           file_path  AS filePath,
+           attribution,
+           source_url AS sourceUrl,
+           created_at AS createdAt
+    FROM curated_images
+    WHERE good_id = ?
+    LIMIT 5
+  `).all(goodId) as CuratedImage[];
+}
+
+/**
+ * Get curated images for a port. Returns up to 3 results.
+ */
+export function getCuratedImagesForPort(db: Database.Database, portId: string): CuratedImage[] {
+  return db.prepare(`
+    SELECT id,
+           good_id    AS goodId,
+           port_id    AS portId,
+           file_path  AS filePath,
+           attribution,
+           source_url AS sourceUrl,
+           created_at AS createdAt
+    FROM curated_images
+    WHERE port_id = ?
+    LIMIT 3
+  `).all(portId) as CuratedImage[];
+}
+
 // ─── Trade Transactions — History ─────────────────────────────────────────────
 
 /**

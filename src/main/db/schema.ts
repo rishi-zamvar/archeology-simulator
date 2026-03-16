@@ -124,6 +124,30 @@ export function initializeDatabase(dbPath: string): Database.Database {
     db.prepare(`
       CREATE INDEX IF NOT EXISTS idx_artifact_cache_good_id ON artifact_cache (good_id)
     `).run();
+
+    // curated_images: offline-curated image metadata for goods and ports.
+    // Each row links to either a good (good_id) or a port (port_id) — never neither.
+    // The CHECK constraint enforces that at least one FK is non-null.
+    db.prepare(`
+      CREATE TABLE IF NOT EXISTS curated_images (
+        id          TEXT PRIMARY KEY,
+        good_id     TEXT REFERENCES goods(id),
+        port_id     TEXT REFERENCES ports(id),
+        file_path   TEXT NOT NULL,
+        attribution TEXT NOT NULL,
+        source_url  TEXT,
+        created_at  TEXT NOT NULL DEFAULT (datetime('now')),
+        CHECK ((good_id IS NOT NULL) OR (port_id IS NOT NULL))
+      )
+    `).run();
+
+    db.prepare(`
+      CREATE INDEX IF NOT EXISTS idx_curated_images_good_id ON curated_images (good_id)
+    `).run();
+
+    db.prepare(`
+      CREATE INDEX IF NOT EXISTS idx_curated_images_port_id ON curated_images (port_id)
+    `).run();
   })();
 
   return db;
