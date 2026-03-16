@@ -30,6 +30,7 @@ import {
   getCuratedImagesForPort,
 } from '../db/queries';
 import type { CachedArtifact } from '../db/queries';
+import type { ImageCandidate } from '../../shared/ipc-types';
 import { performAction } from '../../game/engine';
 import { getReachablePorts } from '../../game/voyage';
 import { rollVoyageEvent, resolveEventChoice } from '../../game/events';
@@ -349,6 +350,175 @@ export function registerGameIPCHandlers(db: Database.Database): void {
       fileExists: fs.existsSync(path.join(resourcesBase, image.filePath)),
     }));
   });
+
+  /**
+   * image:search-port-candidates — search for historical illustration candidates for a port.
+   *
+   * Searches Met Museum first, falls back to Wikimedia Commons if Met returns fewer
+   * than 1 valid candidate. Returns ImageCandidate[] with portId set on each entry.
+   * No images are downloaded — this is a candidate discovery step only.
+   *
+   * Port search terms map each port to a historically specific query that avoids
+   * generic results and targets ancient-period illustrations.
+   */
+  ipcMain.handle(
+    'image:search-port-candidates',
+    async (_event, { portId }: { portId: string }): Promise<ImageCandidate[]> => {
+      const PORT_SEARCH_TERMS: Record<string, string> = {
+        alexandria: 'Alexandria harbor Pharos ancient Egypt illustration',
+        carthage:   'Carthage Cothon harbor ancient Phoenician North Africa',
+        rome:       'Ostia harbor Roman port ancient city illustration',
+        athens:     'Piraeus harbor ancient Greece Aegean illustration',
+        antioch:    'Antioch Orontes ancient Levant Syria city',
+      };
+
+      const term = PORT_SEARCH_TERMS[portId];
+      if (!term) {
+        console.warn(`[image:search-port-candidates] Unknown portId: ${portId}`);
+        return [];
+      }
+
+      const candidates: ImageCandidate[] = [];
+
+      // ── Met Museum ────────────────────────────────────────────────────────
+      try {
+        const searchUrl = `https://collectionapi.metmuseum.org/public/collection/v1/search?q=${encodeURIComponent(term)}&hasImages=true&isPublicDomain=true`;
+        const searchResp = await fetch(searchUrl);
+        if (searchResp.ok) {
+          const searchData = await searchResp.json() as { objectIDs?: number[] };
+          const allIds = searchData.objectIDs ?? [];
+
+          // Skip first 2 results (often the same popular items); sample every other
+          // one from index 2 up to ~8 IDs so we have a varied pool.
+          const sampledIds: number[] = [];
+          for (let i = 2; i < allIds.length && sampledIds.length < 8; i += 2) {
+            sampledIds.push(allIds[i]);
+          }
+
+          for (const objId of sampledIds) {
+            if (candidates.length >= 3) break;
+
+            try {
+              const detailResp = await fetch(
+                `https://collectionapi.metmuseum.org/public/collection/v1/objects/${objId}`
+              );
+              if (!detailResp.ok) continue;
+
+              const obj = await detailResp.json() as {
+                objectID: number;
+                isPublicDomain: boolean;
+                primaryImage: string;
+                title: string;
+                artistDisplayName?: string;
+                objectDate?: string;
+                objectURL?: string;
+                department?: string;
+              };
+
+              if (obj.isPublicDomain && obj.primaryImage?.trim()) {
+                const attribution = [
+                  obj.artistDisplayName,
+                  obj.objectDate,
+                  'Metropolitan Museum of Art',
+                ]
+                  .filter(Boolean)
+                  .join(', ');
+
+                candidates.push({
+                  id: `met_${portId}_${obj.objectID}`,
+                  portId,
+                  sourceUrl:   obj.objectURL ?? `https://www.metmuseum.org/art/collection/search/${obj.objectID}`,
+                  imageUrl:    obj.primaryImage,
+                  title:       obj.title || term,
+                  attribution,
+                  source:      'met',
+                });
+              }
+            } catch (err) {
+              console.warn(`[image:search-port-candidates] Met detail fetch failed for ${objId}:`, err);
+            }
+
+            // Sequential 1-second delay between detail calls to avoid hammering the API
+            await new Promise<void>((resolve) => setTimeout(resolve, 1000));
+          }
+        }
+      } catch (err) {
+        console.warn(`[image:search-port-candidates] Met search failed for ${portId}:`, err);
+      }
+
+      // ── Wikimedia Commons fallback ────────────────────────────────────────
+      if (candidates.length < 1) {
+        try {
+          const wikiUrl = `https://commons.wikimedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(term)}&srnamespace=6&srlimit=10&format=json&origin=*`;
+          const wikiResp = await fetch(wikiUrl);
+          if (wikiResp.ok) {
+            const wikiData = await wikiResp.json() as {
+              query?: {
+                search?: Array<{
+                  title: string;
+                  snippet?: string;
+                  pageid: number;
+                }>;
+              };
+            };
+
+            const WIKI_EXCLUDE = ['modern', '20th', 'diagram', 'photograph'];
+
+            const results = wikiData.query?.search ?? [];
+            for (const result of results) {
+              if (candidates.length >= 2) break;
+
+              const lowerTitle = result.title.toLowerCase();
+              if (WIKI_EXCLUDE.some((kw) => lowerTitle.includes(kw))) continue;
+
+              // Build Commons file URL: File:Title → https://commons.wikimedia.org/wiki/File:Title
+              const fileTitle = result.title.startsWith('File:')
+                ? result.title
+                : `File:${result.title}`;
+              const sourceUrl = `https://commons.wikimedia.org/wiki/${encodeURIComponent(fileTitle)}`;
+
+              // Commons thumbnail API — use pageimage via imageinfo
+              const infoUrl = `https://commons.wikimedia.org/w/api.php?action=query&titles=${encodeURIComponent(result.title)}&prop=imageinfo&iiprop=url&format=json&origin=*`;
+              let imageUrl = '';
+              try {
+                const infoResp = await fetch(infoUrl);
+                if (infoResp.ok) {
+                  const infoData = await infoResp.json() as {
+                    query?: {
+                      pages?: Record<string, {
+                        imageinfo?: Array<{ url: string }>;
+                      }>;
+                    };
+                  };
+                  const pages = infoData.query?.pages ?? {};
+                  const page = Object.values(pages)[0];
+                  imageUrl = page?.imageinfo?.[0]?.url ?? '';
+                }
+              } catch {
+                // Skip if we can't get a direct image URL
+              }
+
+              if (!imageUrl) continue;
+
+              candidates.push({
+                id: `wiki_${portId}_${result.pageid}`,
+                portId,
+                sourceUrl,
+                imageUrl,
+                title:       result.title.replace(/^File:/, '').replace(/_/g, ' ').replace(/\.[^.]+$/, ''),
+                attribution: 'Wikimedia Commons (public domain)',
+                source:      'wikimedia',
+              });
+            }
+          }
+        } catch (err) {
+          console.warn(`[image:search-port-candidates] Wikimedia fallback failed for ${portId}:`, err);
+        }
+      }
+
+      return candidates;
+    }
+  );
 
   /**
    * game:resolveEvent — apply event outcome to inventory and transition FSM to idle.

@@ -15,6 +15,25 @@ export type { CachedArtifact } from '../main/db/queries';
 export type { CuratedImage } from '../main/db/queries';
 
 /**
+ * A candidate image sourced from Met Museum or Wikimedia Commons.
+ * Used in Phase 5 image-sourcing flows where the user must approve each
+ * candidate before any download occurs.
+ *
+ * Both portId and goodId are optional so this type covers port sourcing
+ * (05-01) and good sourcing (05-02) with a single interface.
+ */
+export interface ImageCandidate {
+  id: string;
+  portId?: string;
+  goodId?: string;
+  sourceUrl: string;
+  imageUrl: string;
+  title: string;
+  attribution: string;
+  source: 'met' | 'wikimedia';
+}
+
+/**
  * The contextBridge API surface exposed as window.api in the renderer.
  * This is the ONLY way the renderer communicates with the main process.
  */
@@ -49,6 +68,9 @@ export interface IPCBridge {
 
     // Phase 4 Plan 2: curated offline images
     getCuratedImages: (query: { goodId?: string; portId?: string }) => Promise<import('../main/db/queries').CuratedImage[]>;
+
+    // Phase 5 Plan 1: port illustration sourcing
+    searchPortCandidates: (args: { portId: string }) => Promise<ImageCandidate[]>;
   };
   /** Subscribe to a push event from main process. Returns cleanup function. */
   subscribe: (event: string, callback: (data: unknown) => void) => () => void;

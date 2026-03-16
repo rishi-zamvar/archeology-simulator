@@ -53,6 +53,9 @@ const api: IPCBridge = {
     // Phase 4 Plan 2: curated offline images
     getCuratedImages: (query: { goodId?: string; portId?: string }) =>
       ipcRenderer!.invoke('game:get-curated-images', query),
+    // Phase 5 Plan 1: port illustration sourcing
+    searchPortCandidates: (args: { portId: string }) =>
+      ipcRenderer!.invoke('image:search-port-candidates', args),
   },
   subscribe: (event, callback) => {
     const handler = (_: Electron.IpcRendererEvent, data: unknown) =>
