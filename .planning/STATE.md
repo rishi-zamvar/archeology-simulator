@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-03-16)
 
 **Core value:** Students learn ancient Mediterranean history by making decisions as a merchant captain, not by reading about them.
-**Current focus:** Planning next milestone
+**Current focus:** v1.1 — Real image sourcing & integration
 
 ## Current Position
 
-Phase: v1.0 complete — planning v1.1
-Plan: Not started
-Status: Ready for next milestone
-Last activity: 2026-03-16 — v1.0 milestone archived
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-03-16 — Milestone v1.1 started
 
-Progress: v1.0 shipped ✓
+Progress: v1.0 shipped ✓ | v1.1 requirements in progress
 
 ## Performance Metrics
 
