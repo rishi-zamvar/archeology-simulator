@@ -12,6 +12,7 @@
 export type { GameState, GameAction, GameResult } from '../game/types';
 export type { Port, MarketGood, VoyageRoute, PlayerInventory, TransactionRecord, VoyageEvent } from './game-types';
 export type { CachedArtifact } from '../main/db/queries';
+export type { CuratedImage } from '../main/db/queries';
 
 /**
  * The contextBridge API surface exposed as window.api in the renderer.
@@ -45,6 +46,9 @@ export interface IPCBridge {
 
     // Phase 3 Plan 2: museum artifact images
     getArtifacts: (goodId: string) => Promise<import('../main/db/queries').CachedArtifact[]>;
+
+    // Phase 4 Plan 2: curated offline images
+    getCuratedImages: (query: { goodId?: string; portId?: string }) => Promise<import('../main/db/queries').CuratedImage[]>;
   };
   /** Subscribe to a push event from main process. Returns cleanup function. */
   subscribe: (event: string, callback: (data: unknown) => void) => () => void;

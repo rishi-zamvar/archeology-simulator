@@ -10,8 +10,9 @@
 
 import { app, BrowserWindow } from 'electron';
 import path from 'path';
+import fs from 'fs';
 import { initializeDatabase } from './db/schema';
-import { seedPorts, seedGoods, seedPortInventory } from './db/queries';
+import { seedPorts, seedGoods, seedPortInventory, seedCuratedImages } from './db/queries';
 import { registerSaveIPCHandlers } from './ipc/save';
 import { registerGameIPCHandlers } from './ipc/game';
 
@@ -52,6 +53,23 @@ app.whenReady().then(() => {
   seedPorts(db);
   seedGoods(db);
   seedPortInventory(db);
+  seedCuratedImages(db);
+
+  const resourcesBase = process.env['NODE_ENV'] === 'development'
+    ? path.join(__dirname, '../resources')
+    : path.join(app.getAppPath(), 'resources');
+  const curatedRows = db.prepare('SELECT id, file_path FROM curated_images').all() as Array<{ id: string; file_path: string }>;
+  let missingCount = 0;
+  for (const row of curatedRows) {
+    const fullPath = path.join(resourcesBase, row.file_path);
+    if (!fs.existsSync(fullPath)) {
+      console.warn(`[WARN] Curated image not found: ${fullPath}`);
+      missingCount++;
+    }
+  }
+  if (missingCount > 0) {
+    console.warn(`[WARN] ${missingCount} curated image(s) missing from bundle`);
+  }
 
   // Register IPC handlers with the live database instance.
   registerSaveIPCHandlers(db);

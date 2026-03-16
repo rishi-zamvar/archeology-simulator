@@ -10,7 +10,9 @@
  *   game:getPlayerInventory — return player gold and cargo
  */
 
-import { ipcMain, BrowserWindow } from 'electron';
+import { ipcMain, BrowserWindow, app } from 'electron';
+import path from 'path';
+import fs from 'fs';
 import type Database from 'better-sqlite3';
 import {
   loadGameState,
@@ -24,6 +26,8 @@ import {
   getTransactionHistory,
   getArtifactsForGood,
   cacheArtifact,
+  getCuratedImagesForGood,
+  getCuratedImagesForPort,
 } from '../db/queries';
 import type { CachedArtifact } from '../db/queries';
 import { performAction } from '../../game/engine';
@@ -321,6 +325,29 @@ export function registerGameIPCHandlers(db: Database.Database): void {
     }
 
     return results;
+  });
+
+  /**
+   * game:get-curated-images — return curated image metadata for a good or port.
+   * Resolves relative file paths to absolute paths and checks file existence.
+   */
+  ipcMain.handle('game:get-curated-images', async (_event, query: { goodId?: string; portId?: string }) => {
+    let images;
+    if (query.goodId) {
+      images = getCuratedImagesForGood(db, query.goodId);
+    } else if (query.portId) {
+      images = getCuratedImagesForPort(db, query.portId);
+    } else {
+      return [];
+    }
+    const resourcesBase = process.env['NODE_ENV'] === 'development'
+      ? path.join(__dirname, '../../resources')
+      : path.join(app.getAppPath(), 'resources');
+    return images.map(image => ({
+      ...image,
+      filePath: path.join(resourcesBase, image.filePath),
+      fileExists: fs.existsSync(path.join(resourcesBase, image.filePath)),
+    }));
   });
 
   /**

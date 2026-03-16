@@ -50,6 +50,9 @@ const api: IPCBridge = {
     resolveEvent: (eventId, choiceId) => ipcRenderer!.invoke('game:resolveEvent', eventId, choiceId),
     // Phase 3 Plan 2: museum artifact images
     getArtifacts: (goodId) => ipcRenderer!.invoke('game:get-artifacts', goodId),
+    // Phase 4 Plan 2: curated offline images
+    getCuratedImages: (query: { goodId?: string; portId?: string }) =>
+      ipcRenderer!.invoke('game:get-curated-images', query),
   },
   subscribe: (event, callback) => {
     const handler = (_: Electron.IpcRendererEvent, data: unknown) =>
