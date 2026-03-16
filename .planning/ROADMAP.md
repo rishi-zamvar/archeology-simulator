@@ -38,11 +38,11 @@
   1. A `curated_images` table exists in SQLite with columns for file path, attribution, source URL, and port/good reference
   2. A `resources/images/` directory structure exists with subdirectories for ports and each trade good
   3. The Electron IPC bridge exposes a handler that reads curated image metadata from the database and returns it to the renderer
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 04-01: Add curated_images table migration and seed scaffolding
-- [ ] 04-02: Create resources/images/ asset directory and IPC handler for curated image reads
+- [ ] 04-01-PLAN.md — Add curated_images table, CuratedImage interface, query functions, and empty seed manifest
+- [ ] 04-02-PLAN.md — Create resources/images/ directory tree, IPC handler, preload exposure, and startup validation
 
 #### Phase 5: Image Sourcing & Curation
 **Goal**: All 17-20 images are sourced from public domain archives, individually reviewed and approved by the user, then downloaded into the app's asset directory
