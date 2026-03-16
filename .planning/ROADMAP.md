@@ -41,8 +41,8 @@
 **Plans**: 2 plans
 
 Plans:
-- [ ] 04-01-PLAN.md — Add curated_images table, CuratedImage interface, query functions, and empty seed manifest
-- [ ] 04-02-PLAN.md — Create resources/images/ directory tree, IPC handler, preload exposure, and startup validation
+- [x] 04-01-PLAN.md — Add curated_images table, CuratedImage interface, query functions, and empty seed manifest
+- [x] 04-02-PLAN.md — Create resources/images/ directory tree, IPC handler, preload exposure, and startup validation
 
 #### Phase 5: Image Sourcing & Curation
 **Goal**: All 17-20 images are sourced from public domain archives, individually reviewed and approved by the user, then downloaded into the app's asset directory
@@ -85,6 +85,6 @@ Plans:
 | 1. Foundation | v1.0 | 4/4 | Complete | 2026-03-16 |
 | 2. Core Gameplay | v1.0 | 5/5 | Complete | 2026-03-16 |
 | 3. Polish & Packaging | v1.0 | 4/4 | Complete | 2026-03-16 |
-| 4. Image Infrastructure | v1.1 | 0/2 | Not started | - |
+| 4. Image Infrastructure | v1.1 | 2/2 | Complete | 2026-03-16 |
 | 5. Image Sourcing & Curation | v1.1 | 0/3 | Not started | - |
 | 6. UI Integration | v1.1 | 0/2 | Not started | - |

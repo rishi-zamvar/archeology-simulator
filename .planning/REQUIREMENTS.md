@@ -46,6 +46,6 @@
 | IMG-01 | Phase 5 | Pending |
 | IMG-02 | Phase 5 | Pending |
 | IMG-03 | Phase 5 | Pending |
-| INFRA-01 | Phase 4 | Pending |
-| INFRA-02 | Phase 4 | Pending |
+| INFRA-01 | Phase 4 | Complete |
+| INFRA-02 | Phase 4 | Complete |
 | INFRA-03 | Phase 6 | Pending |
