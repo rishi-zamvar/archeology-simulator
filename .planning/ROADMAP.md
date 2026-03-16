@@ -53,12 +53,12 @@ Plans:
   2. Each of the 3 trade goods has 4-5 archaeological artifact photos identified from the same sources
   3. Every candidate image is presented to the user one at a time with its source URL, attribution, and a preview before being accepted
   4. Only user-approved images are downloaded into resources/images/ and recorded in the curated_images table
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 05-01: Source and present port illustration candidates (5 ports, 1 each) — checkpoint before download
-- [ ] 05-02: Source and present trade good artifact candidates (3 goods, 4-5 each) — checkpoint before download
-- [ ] 05-03: Download approved images and populate curated_images table
+- [ ] 05-01-PLAN.md — Search Met/Wikimedia for 5 port illustration candidates and present each to user for approval (checkpoint)
+- [ ] 05-02-PLAN.md — Search Met/Wikimedia for 3 × 4-5 trade good artifact candidates and present each to user for approval (checkpoint)
+- [ ] 05-03-PLAN.md — Download all user-approved images, populate curated-images.json manifest, verify IPC pipeline
 
 #### Phase 6: UI Integration
 **Goal**: Players see real historical art throughout the game — no SVG placeholders, no live API calls for images
