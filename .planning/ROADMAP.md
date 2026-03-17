@@ -90,6 +90,13 @@ Plans:
   2. `resourcesBase` is computed once in a shared utility and imported where needed — the three duplicate computations are gone
   3. A log call in any main-process module produces output in the format `[module] level: message` — no ad-hoc `console.log` calls remain in main-process files
   4. Every IPC handler follows the pattern: validate input, execute in try/catch, return typed response — confirmed by reading each handler
+**Plans**: 4 plans
+
+Plans:
+- [ ] 07-01-PLAN.md — Create logger, paths utility, IPCResponse type, and wrapHandler HOF (foundation)
+- [ ] 07-02-PLAN.md — Migrate save.ts and 7 simple getter handlers in game.ts to wrapHandler
+- [ ] 07-03-PLAN.md — Migrate 8 complex stateful handlers in game.ts and clean up index.ts
+- [ ] 07-04-PLAN.md — Update IPCBridge return types and all renderer call sites to unwrap IPCResponse
 
 #### Phase 8: Surface Cleanup
 **Goal**: The renderer handles IPC failures gracefully, TypeScript compiles without errors, and no unjustified lint suppressions remain
@@ -114,5 +121,5 @@ Plans:
 | 4. Image Infrastructure | v1.1 | 2/2 | Complete | 2026-03-16 |
 | 5. Image Sourcing & Curation | v1.1 | 0/3 | Not started | - |
 | 6. UI Integration | v1.1 | 0/2 | Not started | - |
-| 7. IPC Foundation | v1.2 | 0/TBD | Not started | - |
+| 7. IPC Foundation | v1.2 | 0/4 | Not started | - |
 | 8. Surface Cleanup | v1.2 | 0/TBD | Not started | - |
