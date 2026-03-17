@@ -342,13 +342,62 @@ export function registerGameIPCHandlers(db: Database.Database): void {
       return [];
     }
     const resourcesBase = process.env['NODE_ENV'] === 'development'
-      ? path.join(__dirname, '../../resources')
+      ? path.join(__dirname, '../../../resources')
       : path.join(app.getAppPath(), 'resources');
     return images.map(image => ({
       ...image,
       filePath: path.join(resourcesBase, image.filePath),
       fileExists: fs.existsSync(path.join(resourcesBase, image.filePath)),
     }));
+  });
+
+  /**
+   * game:scan-resource-images — scan resources/images/ for available image files.
+   * Returns { ports: Record<portId, string>, goods: Record<goodId, string[]> }
+   * where values are relative paths suitable for resource-image:// protocol URLs.
+   * No database dependency — purely filesystem-based detection.
+   */
+  ipcMain.handle('game:scan-resource-images', async () => {
+    const resourcesBase = process.env['NODE_ENV'] === 'development'
+      ? path.join(__dirname, '../../../resources')
+      : path.join(app.getAppPath(), 'resources');
+    const imagesDir = path.join(resourcesBase, 'images');
+    const imageExts = new Set(['.jpg', '.jpeg', '.png', '.webp']);
+
+    // Scan port images: resources/images/ports/{portId}.{ext}
+    const ports: Record<string, string> = {};
+    const portsDir = path.join(imagesDir, 'ports');
+    if (fs.existsSync(portsDir)) {
+      for (const file of fs.readdirSync(portsDir)) {
+        const ext = path.extname(file).toLowerCase();
+        const name = path.basename(file, path.extname(file));
+        if (imageExts.has(ext) && name !== '.gitkeep') {
+          ports[name] = `ports/${file}`;
+        }
+      }
+    }
+
+    // Scan good images: resources/images/{goodId}/{filename}.{ext}
+    const goods: Record<string, string[]> = {};
+    if (fs.existsSync(imagesDir)) {
+      for (const dir of fs.readdirSync(imagesDir)) {
+        if (dir === 'ports' || dir === 'ui' || dir === '.gitkeep') continue;
+        const goodDir = path.join(imagesDir, dir);
+        if (!fs.statSync(goodDir).isDirectory()) continue;
+        const files: string[] = [];
+        for (const file of fs.readdirSync(goodDir)) {
+          const ext = path.extname(file).toLowerCase();
+          if (imageExts.has(ext)) {
+            files.push(`${dir}/${file}`);
+          }
+        }
+        if (files.length > 0) {
+          goods[dir] = files;
+        }
+      }
+    }
+
+    return { ports, goods };
   });
 
   /**

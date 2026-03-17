@@ -8,7 +8,7 @@
  * - Register IPC handlers for game:load, game:save, game:action
  */
 
-import { app, BrowserWindow } from 'electron';
+import { app, BrowserWindow, protocol, net } from 'electron';
 import path from 'path';
 import fs from 'fs';
 import { initializeDatabase } from './db/schema';
@@ -41,6 +41,19 @@ function createWindow(): BrowserWindow {
   return win;
 }
 
+// Register custom scheme as privileged so renderer can load resource-image:// URLs.
+// Must be called before app.whenReady().
+protocol.registerSchemesAsPrivileged([
+  {
+    scheme: 'resource-image',
+    privileges: {
+      standard: true,
+      secure: true,
+      supportFetchAPI: true,
+    },
+  },
+]);
+
 // --- App lifecycle ---
 
 app.whenReady().then(() => {
@@ -56,8 +69,25 @@ app.whenReady().then(() => {
   seedCuratedImages(db);
 
   const resourcesBase = process.env['NODE_ENV'] === 'development'
-    ? path.join(__dirname, '../resources')
+    ? path.join(__dirname, '../../resources')
     : path.join(app.getAppPath(), 'resources');
+
+  // Register custom protocol to serve images from resources/images/ directory.
+  // Renderer uses: <img src="resource-image:///ports/alexandria.jpg" />
+  protocol.handle('resource-image', (request) => {
+    const url = new URL(request.url);
+    // Standard scheme treats first path segment as hostname, so reconstruct full path
+    const hostPart = url.hostname || '';
+    const pathPart = decodeURIComponent(url.pathname).replace(/^\/+/, '');
+    const filePath = hostPart ? `${hostPart}/${pathPart}` : pathPart;
+    const absolutePath = path.join(resourcesBase, 'images', filePath);
+    console.log('[resource-image] request:', request.url, '→', absolutePath, 'exists:', fs.existsSync(absolutePath));
+    // Security: ensure resolved path is within resources/images/
+    if (!absolutePath.startsWith(path.join(resourcesBase, 'images'))) {
+      return new Response('Forbidden', { status: 403 });
+    }
+    return net.fetch(`file://${absolutePath}`);
+  });
   const curatedRows = db.prepare('SELECT id, file_path FROM curated_images').all() as Array<{ id: string; file_path: string }>;
   let missingCount = 0;
   for (const row of curatedRows) {
