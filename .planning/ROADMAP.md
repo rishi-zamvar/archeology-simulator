@@ -93,10 +93,10 @@ Plans:
 **Plans**: 4 plans
 
 Plans:
-- [ ] 07-01-PLAN.md — Create logger, paths utility, IPCResponse type, and wrapHandler HOF (foundation)
-- [ ] 07-02-PLAN.md — Migrate save.ts and 7 simple getter handlers in game.ts to wrapHandler
-- [ ] 07-03-PLAN.md — Migrate 8 complex stateful handlers in game.ts and clean up index.ts
-- [ ] 07-04-PLAN.md — Update IPCBridge return types and all renderer call sites to unwrap IPCResponse
+- [x] 07-01-PLAN.md — Create logger, paths utility, IPCResponse type, and wrapHandler HOF (foundation)
+- [x] 07-02-PLAN.md — Migrate save.ts and 7 simple getter handlers in game.ts to wrapHandler
+- [x] 07-03-PLAN.md — Migrate 8 complex stateful handlers in game.ts and clean up index.ts
+- [x] 07-04-PLAN.md — Update IPCBridge return types and all renderer call sites to unwrap IPCResponse
 
 #### Phase 8: Surface Cleanup
 **Goal**: The renderer handles IPC failures gracefully, TypeScript compiles without errors, and no unjustified lint suppressions remain
@@ -121,5 +121,5 @@ Plans:
 | 4. Image Infrastructure | v1.1 | 2/2 | Complete | 2026-03-16 |
 | 5. Image Sourcing & Curation | v1.1 | 0/3 | Not started | - |
 | 6. UI Integration | v1.1 | 0/2 | Not started | - |
-| 7. IPC Foundation | v1.2 | 0/4 | Not started | - |
+| 7. IPC Foundation | v1.2 | 4/4 | Complete | 2026-03-17 |
 | 8. Surface Cleanup | v1.2 | 0/TBD | Not started | - |

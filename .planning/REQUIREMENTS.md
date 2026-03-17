@@ -4,18 +4,18 @@
 
 ### Error Handling
 
-- [ ] **ERR-01**: All IPC handlers wrap database/external calls in try/catch and return consistent error responses
-- [ ] **ERR-02**: Standardized IPC response type `{ success: boolean, data?: T, error?: string }` used across all handlers
+- [x] **ERR-01**: All IPC handlers wrap database/external calls in try/catch and return consistent error responses
+- [x] **ERR-02**: Standardized IPC response type `{ success: boolean, data?: T, error?: string }` used across all handlers
 - [ ] **ERR-03**: Renderer-side IPC calls handle errors gracefully with user-facing feedback
 
 ### Architecture
 
-- [ ] **ARCH-01**: Single `resourcesBase` resolution shared across main process (eliminate 3 duplicate computations)
-- [ ] **ARCH-02**: IPC handler registration follows uniform pattern: validate input → execute → return typed response
+- [x] **ARCH-01**: Single `resourcesBase` resolution shared across main process (eliminate 3 duplicate computations)
+- [x] **ARCH-02**: IPC handler registration follows uniform pattern: validate input → execute → return typed response
 
 ### Debuggability
 
-- [ ] **DBG-01**: Structured logging utility with consistent format (`[module] level: message`) replaces ad-hoc console calls
+- [x] **DBG-01**: Structured logging utility with consistent format (`[module] level: message`) replaces ad-hoc console calls
 
 ### Code Cleanup
 
@@ -37,11 +37,11 @@ None — this is a focused refactoring milestone.
 
 | REQ-ID | Phase | Status |
 |--------|-------|--------|
-| ERR-01 | Phase 7 | Pending |
-| ERR-02 | Phase 7 | Pending |
+| ERR-01 | Phase 7 | Complete |
+| ERR-02 | Phase 7 | Complete |
 | ERR-03 | Phase 8 | Pending |
-| ARCH-01 | Phase 7 | Pending |
-| ARCH-02 | Phase 7 | Pending |
-| DBG-01 | Phase 7 | Pending |
+| ARCH-01 | Phase 7 | Complete |
+| ARCH-02 | Phase 7 | Complete |
+| DBG-01 | Phase 7 | Complete |
 | CLN-01 | Phase 8 | Pending |
 | CLN-02 | Phase 8 | Pending |
