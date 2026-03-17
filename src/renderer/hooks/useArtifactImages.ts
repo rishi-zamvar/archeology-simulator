@@ -29,7 +29,10 @@ export function useArtifactImages(goodIds: string[]): Map<string, CachedArtifact
       .then((results) => {
         if (cancelled) return;
         const map = new Map<string, CachedArtifact[]>();
-        goodIds.forEach((id, idx) => map.set(id, results[idx] ?? []));
+        goodIds.forEach((id, idx) => {
+          const res = results[idx];
+          map.set(id, res?.success ? res.data : []);
+        });
         setArtifacts(map);
       })
       .catch((err: unknown) => {

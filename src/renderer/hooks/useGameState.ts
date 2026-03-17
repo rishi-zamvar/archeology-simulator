@@ -11,13 +11,13 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
-import type { GameState, GameAction, GameResult } from '../../shared/ipc-types';
+import type { GameState, GameAction, GameResult, IPCResponse } from '../../shared/ipc-types';
 
 interface UseGameStateReturn {
   state: GameState | null;
   isLoading: boolean;
   error: Error | null;
-  updateGame: (action: GameAction) => Promise<GameResult>;
+  updateGame: (action: GameAction) => Promise<IPCResponse<GameResult>>;
 }
 
 export function useGameState(): UseGameStateReturn {
@@ -30,9 +30,10 @@ export function useGameState(): UseGameStateReturn {
     let cancelled = false;
 
     window.api.game.load()
-      .then((loaded) => {
+      .then((response) => {
         if (!cancelled) {
-          setState(loaded);
+          if (!response.success) throw new Error(response.error);
+          setState(response.data);
           setIsLoading(false);
         }
       })
@@ -59,7 +60,7 @@ export function useGameState(): UseGameStateReturn {
     return cleanup;
   }, []);
 
-  const updateGame = useCallback(async (action: GameAction): Promise<GameResult> => {
+  const updateGame = useCallback(async (action: GameAction): Promise<IPCResponse<GameResult>> => {
     return window.api.game.action(action);
   }, []);
 

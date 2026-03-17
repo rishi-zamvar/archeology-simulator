@@ -81,10 +81,11 @@ export default function Shell(): React.ReactElement {
   const [portRegions, setPortRegions] = React.useState<Map<string, PortRegion>>(new Map());
 
   useEffect(() => {
-    window.api.game.getPorts().then((ports) => {
+    window.api.game.getPorts().then((res) => {
+      if (!res.success) return;
       const coords = new Map<string, [number, number]>();
       const regions = new Map<string, PortRegion>();
-      ports.forEach((p) => {
+      res.data.forEach((p) => {
         coords.set(p.id, [p.lat, p.lng]);
         regions.set(p.id, p.region);
       });
@@ -104,8 +105,8 @@ export default function Shell(): React.ReactElement {
   // Watch for EncounteredState transitions and fetch the pending event
   useEffect(() => {
     if (gameState?.type === 'encountered') {
-      window.api.game.getPendingEvent().then((event) => {
-        if (event) setPendingEvent(event);
+      window.api.game.getPendingEvent().then((res) => {
+        if (res.success && res.data) setPendingEvent(res.data);
       }).catch(() => {/* non-fatal */});
     }
   }, [gameState?.type]);
@@ -133,12 +134,14 @@ export default function Shell(): React.ReactElement {
 
   const handleBuy = useCallback(async (goodId: string, qty: number) => {
     if (!selectedPortId) return;
-    await window.api.game.buyGood(selectedPortId, goodId, qty);
+    const res = await window.api.game.buyGood(selectedPortId, goodId, qty);
+    if (!res.success) throw new Error(res.error);
   }, [selectedPortId]);
 
   const handleSell = useCallback(async (goodId: string, qty: number) => {
     if (!selectedPortId) return;
-    await window.api.game.sellGood(selectedPortId, goodId, qty);
+    const res = await window.api.game.sellGood(selectedPortId, goodId, qty);
+    if (!res.success) throw new Error(res.error);
   }, [selectedPortId]);
 
   const isSailing = gameState?.type === 'sailing';

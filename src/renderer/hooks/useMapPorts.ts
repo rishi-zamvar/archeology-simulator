@@ -24,9 +24,10 @@ export function useMapPorts(): UseMapPortsReturn {
     let cancelled = false;
 
     window.api.game.getPorts()
-      .then((loaded) => {
+      .then((response) => {
         if (!cancelled) {
-          setPorts(loaded);
+          if (!response.success) throw new Error(response.error);
+          setPorts(response.data);
           setIsLoading(false);
         }
       })

@@ -49,10 +49,11 @@ export default function EventCard({
     setResolving(true);
     try {
       const response = await window.api.game.resolveEvent(event.id, choiceId);
-      if (response.success && response.message) {
-        setResult(response.message);
+      if (response.success) {
+        const msg = response.data.message;
+        setResult(msg);
         // Give player 2 seconds to read the result before dismissing
-        setTimeout(() => onResolved(response.message ?? ''), 2000);
+        setTimeout(() => onResolved(msg), 2000);
       } else {
         const errMsg = response.error ?? 'Something went wrong.';
         setResult(errMsg);

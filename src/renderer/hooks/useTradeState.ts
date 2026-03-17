@@ -34,14 +34,22 @@ export function useTradeState(portId: string | null): TradeStateData {
     setIsLoading(true);
     setError(null);
     try {
-      const [goods, inv, txns] = await Promise.all([
+      const [goodsRes, invRes, txnRes] = await Promise.all([
         window.api.game.getMarketPrices(portId),
         window.api.game.getPlayerInventory(),
         window.api.game.getTransactionHistory(10),
       ]);
-      setMarketGoods(goods);
-      setInventory(inv);
-      setTransactions(txns);
+      if (!goodsRes.success || !invRes.success || !txnRes.success) {
+        throw new Error(
+          (!goodsRes.success ? goodsRes.error : undefined) ??
+          (!invRes.success ? invRes.error : undefined) ??
+          (!txnRes.success ? txnRes.error : undefined) ??
+          'IPC error'
+        );
+      }
+      setMarketGoods(goodsRes.data);
+      setInventory(invRes.data);
+      setTransactions(txnRes.data);
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {

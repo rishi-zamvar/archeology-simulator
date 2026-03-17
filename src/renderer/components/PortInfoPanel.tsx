@@ -47,11 +47,13 @@ export default function PortInfoPanel({
       window.api.game.getPortDetails(portId),
       window.api.game.getReachablePorts(portId),
     ])
-      .then(([portData, reachable]) => {
+      .then(([portRes, reachableRes]) => {
         if (cancelled) return;
-        setPort(portData);
+        if (!portRes.success) throw new Error(portRes.error);
+        if (!reachableRes.success) throw new Error(reachableRes.error);
+        setPort(portRes.data);
         // Sort by distance, take nearest 5
-        const sorted = [...reachable].sort(
+        const sorted = [...reachableRes.data].sort(
           (a, b) => a.route.distanceKm - b.route.distanceKm
         );
         setDestinations(sorted.slice(0, 5));

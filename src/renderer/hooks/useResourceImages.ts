@@ -30,16 +30,17 @@ export function useResourceImages(): ResourceImages {
     let cancelled = false;
 
     window.api.game.scanResourceImages()
-      .then((result) => {
+      .then((response) => {
         if (cancelled) return;
+        if (!response.success) throw new Error(response.error);
         // Convert relative paths to resource-image:// protocol URLs
         const ports: Record<string, string> = {};
-        for (const [portId, relPath] of Object.entries(result.ports)) {
+        for (const [portId, relPath] of Object.entries(response.data.ports)) {
           ports[portId] = `resource-image:///${relPath}`;
         }
         const goods: Record<string, string[]> = {};
-        for (const [goodId, relPaths] of Object.entries(result.goods)) {
-          goods[goodId] = relPaths.map((p) => `resource-image:///${p}`);
+        for (const [goodId, relPaths] of Object.entries(response.data.goods)) {
+          goods[goodId] = relPaths.map((p: string) => `resource-image:///${p}`);
         }
         setState({ ports, goods, ready: true });
       })
