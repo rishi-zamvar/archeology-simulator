@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-03-17)
 ## Current Position
 
 Phase: 7 — IPC Foundation
-Plan: 01 of N (foundation utilities complete)
+Plan: 02 of N (simple handler migration complete)
 Status: In progress
-Last activity: 2026-03-17 — Completed 07-01-PLAN.md (foundation utilities)
+Last activity: 2026-03-17 — Completed 07-02-PLAN.md (simple handler migration)
 
-Progress: [████████████░░░░░░░░] 60% (v1.0 + v1.1 Phase 4 complete, 07-01 done)
+Progress: [█████████████░░░░░░░] 65% (v1.0 + v1.1 Phase 4 complete, 07-01 and 07-02 done)
 
 ## Performance Metrics
 
@@ -28,7 +28,7 @@ Progress: [████████████░░░░░░░░] 60% (v1
 - Phases: 1 complete (Phase 4 done)
 
 **v1.2 Velocity:**
-- Total plans completed: 1
+- Total plans completed: 2
 - Phases: 0 complete (Phase 7 in progress)
 
 ## Accumulated Context
@@ -44,6 +44,9 @@ See PROJECT.md Key Decisions table for full history.
 - 07-01: IPCResponse<T> placed in shared/ipc-types.ts (not main-only) so renderer can reference the type for Phase 8
 - 07-01: wrapHandler is the only place ipcMain.handle is called — handlers are pure async functions with no IPC coupling
 - 07-01: Logger suppresses debug/info in NODE_ENV=test to keep test output clean
+- 07-02: game:load has no validator (no args); game:save uses isValidGameState as the validator function to keep guard logic in one place
+- 07-02: getTransactionHistory has no validator — undefined limit is a valid value the underlying query handles with a default
+- 07-02: game:getPendingEvent migrated despite accessing module-level state — pure getter with no side effects qualifies as simple handler
 
 ### Pending Todos
 
@@ -57,6 +60,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-17T10:01:39Z
-Stopped at: Completed 07-01-PLAN.md (foundation utilities)
+Last session: 2026-03-17T10:06:11Z
+Stopped at: Completed 07-02-PLAN.md (simple handler migration)
 Resume file: None
