@@ -15,6 +15,14 @@ export type { CachedArtifact } from '../main/db/queries';
 export type { CuratedImage } from '../main/db/queries';
 
 /**
+ * Discriminated union returned by every IPC handler.
+ * Handlers NEVER return raw values or throw — always return IPCResponse<T>.
+ */
+export type IPCResponse<T> =
+  | { success: true; data: T }
+  | { success: false; error: string };
+
+/**
  * A candidate image sourced from Met Museum or Wikimedia Commons.
  * Used in Phase 5 image-sourcing flows where the user must approve each
  * candidate before any download occurs.
@@ -71,6 +79,12 @@ export interface IPCBridge {
 
     // Phase 5 Plan 1: port illustration sourcing
     searchPortCandidates: (args: { portId: string }) => Promise<ImageCandidate[]>;
+
+    // Scan resources/images/ for available image files on disk
+    scanResourceImages: () => Promise<{
+      ports: Record<string, string>;
+      goods: Record<string, string[]>;
+    }>;
   };
   /** Subscribe to a push event from main process. Returns cleanup function. */
   subscribe: (event: string, callback: (data: unknown) => void) => () => void;
