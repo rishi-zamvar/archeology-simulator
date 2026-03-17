@@ -11,6 +11,10 @@
  */
 
 import { ipcMain, BrowserWindow, app } from 'electron';
+import { wrapHandler } from '../lib/ipc-wrapper';
+import { createLogger } from '../lib/logger';
+
+const log = createLogger('GameIPC');
 import path from 'path';
 import fs from 'fs';
 import type Database from 'better-sqlite3';
@@ -120,36 +124,41 @@ export function registerGameIPCHandlers(db: Database.Database): void {
   /**
    * game:getPorts — return all seeded ports.
    */
-  ipcMain.handle('game:getPorts', async () => {
+  wrapHandler('game:getPorts', async () => {
     return getAllPorts(db);
   });
 
   /**
    * game:getPortDetails — return a single port by ID.
    */
-  ipcMain.handle('game:getPortDetails', async (_event, portId: string) => {
-    return getPortById(db, portId);
-  });
+  wrapHandler<ReturnType<typeof getPortById>, [string]>(
+    'game:getPortDetails',
+    async (portId) => getPortById(db, portId),
+    (portId) => (!portId || typeof portId !== 'string' ? 'portId required' : null),
+  );
 
   /**
    * game:getMarketPrices — return MarketGood[] for a given port.
    */
-  ipcMain.handle('game:getMarketPrices', async (_event, portId: string) => {
-    return getMarketPrices(db, portId);
-  });
+  wrapHandler<ReturnType<typeof getMarketPrices>, [string]>(
+    'game:getMarketPrices',
+    async (portId) => getMarketPrices(db, portId),
+    (portId) => (!portId || typeof portId !== 'string' ? 'portId required' : null),
+  );
 
   /**
    * game:getReachablePorts — return ports within 5 sailing turns from a given port.
    */
-  ipcMain.handle('game:getReachablePorts', async (_event, fromPortId: string) => {
-    const ports = getAllPorts(db);
-    return getReachablePorts(fromPortId, ports);
-  });
+  wrapHandler<ReturnType<typeof getReachablePorts>, [string]>(
+    'game:getReachablePorts',
+    async (fromPortId) => getReachablePorts(fromPortId, getAllPorts(db)),
+    (fromPortId) => (!fromPortId || typeof fromPortId !== 'string' ? 'portId required' : null),
+  );
 
   /**
    * game:getPlayerInventory — return the player's current inventory.
    */
-  ipcMain.handle('game:getPlayerInventory', async () => {
+  wrapHandler('game:getPlayerInventory', async () => {
     return getPlayerInventory(db);
   });
 
@@ -182,14 +191,15 @@ export function registerGameIPCHandlers(db: Database.Database): void {
   /**
    * game:getTransactionHistory — return last N transaction records (default 10).
    */
-  ipcMain.handle('game:getTransactionHistory', async (_event, limit?: number) => {
-    return getTransactionHistory(db, limit);
-  });
+  wrapHandler<ReturnType<typeof getTransactionHistory>, [number?]>(
+    'game:getTransactionHistory',
+    async (limit) => getTransactionHistory(db, limit),
+  );
 
   /**
    * game:getPendingEvent — return the current in-flight voyage event, or null.
    */
-  ipcMain.handle('game:getPendingEvent', async () => {
+  wrapHandler('game:getPendingEvent', async () => {
     return pendingVoyageEvent;
   });
 
