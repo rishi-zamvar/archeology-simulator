@@ -4,6 +4,7 @@
 
 - ✅ **v1.0 MVP** - Phases 1-3 (shipped 2026-03-16)
 - 🚧 **v1.1 Integration & macOS Polish** - Phases 4-6 (in progress)
+- 🚧 **v1.2 Coding Hygiene** - Phases 7-8 (in progress)
 
 ## Phases
 
@@ -76,9 +77,34 @@ Plans:
 
 ---
 
+### 🚧 v1.2 Coding Hygiene (In Progress)
+
+**Milestone Goal:** Eliminate ad-hoc error handling, duplicated path logic, and TypeScript/lint debt — leaving the codebase with a consistent IPC contract, structured logging, and zero TypeScript errors.
+
+#### Phase 7: IPC Foundation
+**Goal**: The main process has a single, consistent contract for all IPC communication — shared path resolution, typed response shape, structured logging, and uniform handler registration
+**Depends on**: Phase 6 (v1.1 complete)
+**Requirements**: ERR-01, ERR-02, ARCH-01, ARCH-02, DBG-01
+**Success Criteria** (what must be TRUE):
+  1. Every IPC handler returns `{ success: boolean, data?: T, error?: string }` — no handler returns a raw value or throws unhandled
+  2. `resourcesBase` is computed once in a shared utility and imported where needed — the three duplicate computations are gone
+  3. A log call in any main-process module produces output in the format `[module] level: message` — no ad-hoc `console.log` calls remain in main-process files
+  4. Every IPC handler follows the pattern: validate input, execute in try/catch, return typed response — confirmed by reading each handler
+
+#### Phase 8: Surface Cleanup
+**Goal**: The renderer handles IPC failures gracefully, TypeScript compiles without errors, and no unjustified lint suppressions remain
+**Depends on**: Phase 7
+**Requirements**: ERR-03, CLN-01, CLN-02
+**Success Criteria** (what must be TRUE):
+  1. When any IPC call fails (e.g., database error), the player sees a visible error message rather than a silent failure or unhandled promise rejection
+  2. `tsc --noEmit` completes with zero errors — the ShipMarker.tsx MotionLayer interface mismatch is resolved
+  3. Every `eslint-disable` comment either has a written justification in a code comment explaining why it is necessary, or has been removed
+
+---
+
 ## Progress
 
-**Execution Order:** 4 → 5 → 6
+**Execution Order:** 4 → 5 → 6 → 7 → 8
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
@@ -88,3 +114,5 @@ Plans:
 | 4. Image Infrastructure | v1.1 | 2/2 | Complete | 2026-03-16 |
 | 5. Image Sourcing & Curation | v1.1 | 0/3 | Not started | - |
 | 6. UI Integration | v1.1 | 0/2 | Not started | - |
+| 7. IPC Foundation | v1.2 | 0/TBD | Not started | - |
+| 8. Surface Cleanup | v1.2 | 0/TBD | Not started | - |

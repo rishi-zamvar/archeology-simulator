@@ -37,11 +37,11 @@ None — this is a focused refactoring milestone.
 
 | REQ-ID | Phase | Status |
 |--------|-------|--------|
-| ERR-01 | — | Pending |
-| ERR-02 | — | Pending |
-| ERR-03 | — | Pending |
-| ARCH-01 | — | Pending |
-| ARCH-02 | — | Pending |
-| DBG-01 | — | Pending |
-| CLN-01 | — | Pending |
-| CLN-02 | — | Pending |
+| ERR-01 | Phase 7 | Pending |
+| ERR-02 | Phase 7 | Pending |
+| ERR-03 | Phase 8 | Pending |
+| ARCH-01 | Phase 7 | Pending |
+| ARCH-02 | Phase 7 | Pending |
+| DBG-01 | Phase 7 | Pending |
+| CLN-01 | Phase 8 | Pending |
+| CLN-02 | Phase 8 | Pending |
