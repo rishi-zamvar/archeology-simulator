@@ -10,9 +10,10 @@
  *   game:getPlayerInventory — return player gold and cargo
  */
 
-import { ipcMain, BrowserWindow, app } from 'electron';
+import { BrowserWindow } from 'electron';
 import { wrapHandler } from '../lib/ipc-wrapper';
 import { createLogger } from '../lib/logger';
+import { getResourcesBase } from '../lib/paths';
 
 const log = createLogger('GameIPC');
 import path from 'path';
@@ -64,62 +65,63 @@ export function registerGameIPCHandlers(db: Database.Database): void {
   /**
    * game:action — apply action to current state, auto-save, broadcast update.
    */
-  ipcMain.handle('game:action', async (_event, action: GameAction): Promise<GameResult> => {
-    if (!action || typeof action.type !== 'string') {
-      return { success: false, state: INITIAL_STATE, error: 'Invalid action' };
-    }
+  wrapHandler<GameResult, [GameAction]>(
+    'game:action',
+    async (action) => {
+      const current = withTutorialDefault(loadGameState(db) ?? INITIAL_STATE);
+      const result = performAction(current, action);
 
-    const current = withTutorialDefault(loadGameState(db) ?? INITIAL_STATE);
-    const result = performAction(current, action);
+      if (result.success) {
+        try {
+          saveGameStateAtomic(db, result.state);
+        } catch (err) {
+          const message = err instanceof Error ? err.message : String(err);
+          return { success: false, state: current, error: `Save failed: ${message}` };
+        }
 
-    if (result.success) {
-      try {
-        saveGameStateAtomic(db, result.state);
-      } catch (err) {
-        const message = err instanceof Error ? err.message : String(err);
-        return { success: false, state: current, error: `Save failed: ${message}` };
-      }
-
-      // After SET_SAIL, roll for a voyage event. If one fires, interrupt
-      // the sailing state with ENCOUNTER and store the pending event.
-      if (action.type === 'SET_SAIL') {
-        pendingVoyageEvent = null; // clear any stale event from prior voyage
-        const event = rollVoyageEvent(result.state.currentTurn);
-        if (event) {
-          pendingVoyageEvent = event;
-          // Transition FSM: sailing → encountered
-          const encounterResult = performAction(result.state, {
-            type: 'ENCOUNTER',
-            eventType: event.type,
-          });
-          if (encounterResult.success) {
-            try {
-              saveGameStateAtomic(db, encounterResult.state);
-            } catch {
-              // Non-fatal: event won't interrupt but voyage proceeds
-              pendingVoyageEvent = null;
-            }
-            // Broadcast encountered state so renderer opens EventCard
-            for (const win of BrowserWindow.getAllWindows()) {
-              if (!win.isDestroyed()) {
-                win.webContents.send('subscribe:game:updated', encounterResult.state);
+        // After SET_SAIL, roll for a voyage event. If one fires, interrupt
+        // the sailing state with ENCOUNTER and store the pending event.
+        if (action.type === 'SET_SAIL') {
+          pendingVoyageEvent = null; // clear any stale event from prior voyage
+          const event = rollVoyageEvent(result.state.currentTurn);
+          if (event) {
+            pendingVoyageEvent = event;
+            // Transition FSM: sailing → encountered
+            const encounterResult = performAction(result.state, {
+              type: 'ENCOUNTER',
+              eventType: event.type,
+            });
+            if (encounterResult.success) {
+              try {
+                saveGameStateAtomic(db, encounterResult.state);
+              } catch (err) {
+                // Non-fatal: event won't interrupt but voyage proceeds
+                log.warn('Non-fatal: failed to save encounter state', { error: String(err) });
+                pendingVoyageEvent = null;
               }
+              // Broadcast encountered state so renderer opens EventCard
+              for (const win of BrowserWindow.getAllWindows()) {
+                if (!win.isDestroyed()) {
+                  win.webContents.send('subscribe:game:updated', encounterResult.state);
+                }
+              }
+              return { success: true, state: encounterResult.state };
             }
-            return { success: true, state: encounterResult.state };
+          }
+        }
+
+        // Broadcast updated state to all renderer windows.
+        for (const win of BrowserWindow.getAllWindows()) {
+          if (!win.isDestroyed()) {
+            win.webContents.send('subscribe:game:updated', result.state);
           }
         }
       }
 
-      // Broadcast updated state to all renderer windows.
-      for (const win of BrowserWindow.getAllWindows()) {
-        if (!win.isDestroyed()) {
-          win.webContents.send('subscribe:game:updated', result.state);
-        }
-      }
-    }
-
-    return result;
-  });
+      return result;
+    },
+    (action) => (!action || typeof action.type !== 'string' ? 'Invalid action' : null),
+  );
 
   /**
    * game:getPorts — return all seeded ports.
@@ -166,26 +168,38 @@ export function registerGameIPCHandlers(db: Database.Database): void {
    * game:buyGood — atomic buy transaction; returns updated PlayerInventory.
    * Broadcasts game:updated after successful trade.
    */
-  ipcMain.handle(
+  wrapHandler<ReturnType<typeof buyGood>, [string, string, number]>(
     'game:buyGood',
-    async (_event, portId: string, goodId: string, qty: number) => {
+    async (portId, goodId, qty) => {
       const inventory = buyGood(db, portId, goodId, qty);
       broadcastGameUpdated(db);
       return inventory;
-    }
+    },
+    (portId, goodId, qty) => {
+      if (!portId || typeof portId !== 'string') return 'portId required';
+      if (!goodId || typeof goodId !== 'string') return 'goodId required';
+      if (typeof qty !== 'number' || qty <= 0) return 'qty must be a positive number';
+      return null;
+    },
   );
 
   /**
    * game:sellGood — atomic sell transaction; returns updated PlayerInventory.
    * Broadcasts game:updated after successful trade.
    */
-  ipcMain.handle(
+  wrapHandler<ReturnType<typeof sellGood>, [string, string, number]>(
     'game:sellGood',
-    async (_event, portId: string, goodId: string, qty: number) => {
+    async (portId, goodId, qty) => {
       const inventory = sellGood(db, portId, goodId, qty);
       broadcastGameUpdated(db);
       return inventory;
-    }
+    },
+    (portId, goodId, qty) => {
+      if (!portId || typeof portId !== 'string') return 'portId required';
+      if (!goodId || typeof goodId !== 'string') return 'goodId required';
+      if (typeof qty !== 'number' || qty <= 0) return 'qty must be a positive number';
+      return null;
+    },
   );
 
   /**
@@ -214,152 +228,159 @@ export function registerGameIPCHandlers(db: Database.Database): void {
    *  5. If both fail, return a single placeholder record so the renderer always has
    *     something to render (placeholder image path handled on renderer side)
    */
-  ipcMain.handle('game:get-artifacts', async (_event, goodId: string): Promise<CachedArtifact[]> => {
-    // 1. Cache hit
-    const cached = getArtifactsForGood(db, goodId);
-    if (cached.length > 0) return cached;
+  wrapHandler<CachedArtifact[], [string]>(
+    'game:get-artifacts',
+    async (goodId) => {
+      // 1. Cache hit
+      const cached = getArtifactsForGood(db, goodId);
+      if (cached.length > 0) return cached;
 
-    const now = new Date().toISOString();
-    const results: CachedArtifact[] = [];
+      const now = new Date().toISOString();
+      const results: CachedArtifact[] = [];
 
-    try {
-      // 2. Met Museum search — use specific ancient Mediterranean search terms
-      //    to avoid generic results returning the same popular artifact for every good
-      const ARTIFACT_SEARCH_TERMS: Record<string, string> = {
-        wheat: 'ancient Egyptian grain granary',
-        olive_oil: 'Greek amphora olive oil',
-        wine: 'Greek wine krater vessel',
-        textiles: 'ancient linen textile Egyptian',
-        spices: 'incense burner ancient',
-        bronze: 'Greek bronze vessel ancient',
-        timber: 'ancient wood carving ship',
-        pottery: 'Greek vase painting pottery',
-      };
-      const searchTerm = ARTIFACT_SEARCH_TERMS[goodId] ?? goodId;
-      const searchUrl = `https://collectionapi.metmuseum.org/public/collection/v1/search?q=${encodeURIComponent(searchTerm)}&hasImages=true&isPublicDomain=true`;
-      const searchResp = await fetch(searchUrl);
-      if (searchResp.ok) {
-        const searchData = await searchResp.json() as { objectIDs?: number[] };
-        // Skip the first few results (often the same popular items) and pick from a spread
-        const allIds = searchData.objectIDs ?? [];
-        const ids = allIds.length > 10
-          ? [allIds[2], allIds[5], allIds[9]].filter(Boolean)
-          : allIds.slice(0, 3);
+      try {
+        // 2. Met Museum search — use specific ancient Mediterranean search terms
+        //    to avoid generic results returning the same popular artifact for every good
+        const ARTIFACT_SEARCH_TERMS: Record<string, string> = {
+          wheat: 'ancient Egyptian grain granary',
+          olive_oil: 'Greek amphora olive oil',
+          wine: 'Greek wine krater vessel',
+          textiles: 'ancient linen textile Egyptian',
+          spices: 'incense burner ancient',
+          bronze: 'Greek bronze vessel ancient',
+          timber: 'ancient wood carving ship',
+          pottery: 'Greek vase painting pottery',
+        };
+        const searchTerm = ARTIFACT_SEARCH_TERMS[goodId] ?? goodId;
+        const searchUrl = `https://collectionapi.metmuseum.org/public/collection/v1/search?q=${encodeURIComponent(searchTerm)}&hasImages=true&isPublicDomain=true`;
+        const searchResp = await fetch(searchUrl);
+        if (searchResp.ok) {
+          const searchData = await searchResp.json() as { objectIDs?: number[] };
+          // Skip the first few results (often the same popular items) and pick from a spread
+          const allIds = searchData.objectIDs ?? [];
+          const ids = allIds.length > 10
+            ? [allIds[2], allIds[5], allIds[9]].filter(Boolean)
+            : allIds.slice(0, 3);
 
-        if (ids.length > 0) {
-          // 3. Fetch detail for up to 3 objects concurrently
-          const detailResults = await Promise.all(
-            ids.map(async (id) => {
-              try {
-                const resp = await fetch(
-                  `https://collectionapi.metmuseum.org/public/collection/v1/objects/${id}`
-                );
-                if (!resp.ok) return null;
-                return await resp.json() as {
-                  objectID: number;
-                  isPublicDomain: boolean;
-                  primaryImage: string;
-                  title: string;
-                  objectDescription?: string;
-                  medium?: string;
+          if (ids.length > 0) {
+            // 3. Fetch detail for up to 3 objects concurrently
+            const detailResults = await Promise.all(
+              ids.map(async (id) => {
+                try {
+                  const resp = await fetch(
+                    `https://collectionapi.metmuseum.org/public/collection/v1/objects/${id}`
+                  );
+                  if (!resp.ok) return null;
+                  return await resp.json() as {
+                    objectID: number;
+                    isPublicDomain: boolean;
+                    primaryImage: string;
+                    title: string;
+                    objectDescription?: string;
+                    medium?: string;
+                  };
+                } catch (err) {
+                  log.warn('Non-fatal: Met detail fetch failed', { id, error: String(err) });
+                  return null;
+                }
+              })
+            );
+
+            for (const obj of detailResults) {
+              if (obj && obj.isPublicDomain && obj.primaryImage) {
+                const artifact: CachedArtifact = {
+                  id: `met_${goodId}_${obj.objectID}`,
+                  goodId,
+                  museumId: String(obj.objectID),
+                  imageUrl: obj.primaryImage,
+                  title: obj.title || goodId,
+                  description: obj.objectDescription ?? obj.medium ?? '',
+                  cacheTimestamp: now,
                 };
-              } catch {
-                return null;
+                cacheArtifact(db, artifact);
+                results.push(artifact);
               }
-            })
-          );
+            }
+          }
+        }
+      } catch (err) {
+        log.warn('Non-fatal: Met Museum search failed', { goodId, error: String(err) });
+      }
 
-          for (const obj of detailResults) {
-            if (obj && obj.isPublicDomain && obj.primaryImage) {
+      // 4. Wikimedia fallback
+      if (results.length === 0) {
+        try {
+          const wikiUrl = `https://commons.wikimedia.org/w/api.php?action=query&list=allimages&aiprefix=${encodeURIComponent(goodId)}&ailimit=5&format=json&origin=*`;
+          const wikiResp = await fetch(wikiUrl);
+          if (wikiResp.ok) {
+            const wikiData = await wikiResp.json() as {
+              query?: { allimages?: Array<{ url: string; name: string; descriptionurl?: string }> };
+            };
+            const images = wikiData.query?.allimages ?? [];
+            if (images.length > 0) {
+              const img = images[0];
               const artifact: CachedArtifact = {
-                id: `met_${goodId}_${obj.objectID}`,
+                id: `wiki_${goodId}_0`,
                 goodId,
-                museumId: String(obj.objectID),
-                imageUrl: obj.primaryImage,
-                title: obj.title || goodId,
-                description: obj.objectDescription ?? obj.medium ?? '',
+                museumId: `wiki_${goodId}_0`,
+                imageUrl: img.url,
+                title: img.name.replace(/_/g, ' ').replace(/\.[^.]+$/, ''),
+                description: '',
                 cacheTimestamp: now,
               };
               cacheArtifact(db, artifact);
               results.push(artifact);
             }
           }
+        } catch (err) {
+          log.warn('Non-fatal: Wikimedia fallback failed', { goodId, error: String(err) });
         }
       }
-    } catch {
-      // Network error — fall through to Wikimedia
-    }
 
-    // 4. Wikimedia fallback
-    if (results.length === 0) {
-      try {
-        const wikiUrl = `https://commons.wikimedia.org/w/api.php?action=query&list=allimages&aiprefix=${encodeURIComponent(goodId)}&ailimit=5&format=json&origin=*`;
-        const wikiResp = await fetch(wikiUrl);
-        if (wikiResp.ok) {
-          const wikiData = await wikiResp.json() as {
-            query?: { allimages?: Array<{ url: string; name: string; descriptionurl?: string }> };
-          };
-          const images = wikiData.query?.allimages ?? [];
-          if (images.length > 0) {
-            const img = images[0];
-            const artifact: CachedArtifact = {
-              id: `wiki_${goodId}_0`,
-              goodId,
-              museumId: `wiki_${goodId}_0`,
-              imageUrl: img.url,
-              title: img.name.replace(/_/g, ' ').replace(/\.[^.]+$/, ''),
-              description: '',
-              cacheTimestamp: now,
-            };
-            cacheArtifact(db, artifact);
-            results.push(artifact);
-          }
-        }
-      } catch {
-        // Network error — fall through to placeholder
+      // 5. Placeholder so the renderer always receives an array with at least one item
+      if (results.length === 0) {
+        return [
+          {
+            id: `placeholder_${goodId}`,
+            goodId,
+            museumId: 'placeholder',
+            imageUrl: '/assets/placeholder-artifact.png',
+            title: goodId,
+            description: '',
+            cacheTimestamp: now,
+          },
+        ];
       }
-    }
 
-    // 5. Placeholder so the renderer always receives an array with at least one item
-    if (results.length === 0) {
-      return [
-        {
-          id: `placeholder_${goodId}`,
-          goodId,
-          museumId: 'placeholder',
-          imageUrl: '/assets/placeholder-artifact.png',
-          title: goodId,
-          description: '',
-          cacheTimestamp: now,
-        },
-      ];
-    }
-
-    return results;
-  });
+      return results;
+    },
+    (goodId) => (!goodId || typeof goodId !== 'string' ? 'goodId required' : null),
+  );
 
   /**
    * game:get-curated-images — return curated image metadata for a good or port.
    * Resolves relative file paths to absolute paths and checks file existence.
    */
-  ipcMain.handle('game:get-curated-images', async (_event, query: { goodId?: string; portId?: string }) => {
-    let images;
-    if (query.goodId) {
-      images = getCuratedImagesForGood(db, query.goodId);
-    } else if (query.portId) {
-      images = getCuratedImagesForPort(db, query.portId);
-    } else {
-      return [];
-    }
-    const resourcesBase = process.env['NODE_ENV'] === 'development'
-      ? path.join(__dirname, '../../../resources')
-      : path.join(app.getAppPath(), 'resources');
-    return images.map(image => ({
-      ...image,
-      filePath: path.join(resourcesBase, image.filePath),
-      fileExists: fs.existsSync(path.join(resourcesBase, image.filePath)),
-    }));
-  });
+  wrapHandler<Array<Record<string, unknown>>, [{ goodId?: string; portId?: string }]>(
+    'game:get-curated-images',
+    async (query) => {
+      let images;
+      if (query.goodId) {
+        images = getCuratedImagesForGood(db, query.goodId);
+      } else if (query.portId) {
+        images = getCuratedImagesForPort(db, query.portId);
+      } else {
+        return [];
+      }
+      const resourcesBase = getResourcesBase();
+      return images.map(image => ({
+        ...image,
+        filePath: path.join(resourcesBase, image.filePath),
+        fileExists: fs.existsSync(path.join(resourcesBase, image.filePath)),
+      }));
+    },
+    (query) => (!query || (!query.goodId && !query.portId) ? 'query must have goodId or portId' : null),
+  );
 
   /**
    * game:scan-resource-images — scan resources/images/ for available image files.
@@ -367,10 +388,8 @@ export function registerGameIPCHandlers(db: Database.Database): void {
    * where values are relative paths suitable for resource-image:// protocol URLs.
    * No database dependency — purely filesystem-based detection.
    */
-  ipcMain.handle('game:scan-resource-images', async () => {
-    const resourcesBase = process.env['NODE_ENV'] === 'development'
-      ? path.join(__dirname, '../../../resources')
-      : path.join(app.getAppPath(), 'resources');
+  wrapHandler('game:scan-resource-images', async () => {
+    const resourcesBase = getResourcesBase();
     const imagesDir = path.join(resourcesBase, 'images');
     const imageExts = new Set(['.jpg', '.jpeg', '.png', '.webp']);
 
@@ -420,9 +439,9 @@ export function registerGameIPCHandlers(db: Database.Database): void {
    * Port search terms map each port to a historically specific query that avoids
    * generic results and targets ancient-period illustrations.
    */
-  ipcMain.handle(
+  wrapHandler<ImageCandidate[], [{ portId: string }]>(
     'image:search-port-candidates',
-    async (_event, { portId }: { portId: string }): Promise<ImageCandidate[]> => {
+    async ({ portId }) => {
       const PORT_SEARCH_TERMS: Record<string, string> = {
         alexandria: 'Alexandria harbor Pharos ancient Egypt illustration',
         carthage:   'Carthage Cothon harbor ancient Phoenician North Africa',
@@ -433,7 +452,7 @@ export function registerGameIPCHandlers(db: Database.Database): void {
 
       const term = PORT_SEARCH_TERMS[portId];
       if (!term) {
-        console.warn(`[image:search-port-candidates] Unknown portId: ${portId}`);
+        log.warn('Unknown portId for image search', { portId });
         return [];
       }
 
@@ -494,7 +513,7 @@ export function registerGameIPCHandlers(db: Database.Database): void {
                 });
               }
             } catch (err) {
-              console.warn(`[image:search-port-candidates] Met detail fetch failed for ${objId}:`, err);
+              log.warn('Non-fatal: Met detail fetch failed for port candidate', { portId, objId, error: String(err) });
             }
 
             // Sequential 1-second delay between detail calls to avoid hammering the API
@@ -502,7 +521,7 @@ export function registerGameIPCHandlers(db: Database.Database): void {
           }
         }
       } catch (err) {
-        console.warn(`[image:search-port-candidates] Met search failed for ${portId}:`, err);
+        log.warn('Non-fatal: Met search failed for port candidates', { portId, error: String(err) });
       }
 
       // ── Wikimedia Commons fallback ────────────────────────────────────────
@@ -571,12 +590,13 @@ export function registerGameIPCHandlers(db: Database.Database): void {
             }
           }
         } catch (err) {
-          console.warn(`[image:search-port-candidates] Wikimedia fallback failed for ${portId}:`, err);
+          log.warn('Non-fatal: Wikimedia fallback failed for port candidates', { portId, error: String(err) });
         }
       }
 
       return candidates;
-    }
+    },
+    ({ portId }) => (!portId || typeof portId !== 'string' ? 'portId required' : null),
   );
 
   /**
@@ -589,9 +609,9 @@ export function registerGameIPCHandlers(db: Database.Database): void {
    *  4. Clears pendingVoyageEvent
    *  5. Broadcasts the updated state to all windows
    */
-  ipcMain.handle(
+  wrapHandler<{ success: boolean; outcome?: ReturnType<typeof resolveEventChoice>; message?: string; error?: string }, [string, string]>(
     'game:resolveEvent',
-    async (_event, eventId: string, choiceId: string) => {
+    async (eventId, choiceId) => {
       if (!pendingVoyageEvent || pendingVoyageEvent.id !== eventId) {
         return { success: false, error: 'No pending event or event mismatch' };
       }
@@ -664,8 +684,9 @@ export function registerGameIPCHandlers(db: Database.Database): void {
       if (nextResult.success) {
         try {
           saveGameStateAtomic(db, nextResult.state);
-        } catch {
+        } catch (err) {
           // Non-fatal: state stays encountered but we still return success
+          log.warn('Non-fatal: failed to save resolved state', { error: String(err) });
         }
       }
 
@@ -684,7 +705,12 @@ export function registerGameIPCHandlers(db: Database.Database): void {
         outcome,
         message: outcome.message,
       };
-    }
+    },
+    (eventId, choiceId) => {
+      if (!eventId || typeof eventId !== 'string') return 'eventId required';
+      if (!choiceId || typeof choiceId !== 'string') return 'choiceId required';
+      return null;
+    },
   );
 }
 
