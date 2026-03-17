@@ -1,51 +1,47 @@
-# Requirements: v1.1 Integration & macOS Polish
+# Requirements: v1.2 Coding Hygiene
 
-## v1.1 Requirements
+## v1.2 Requirements
 
-### Image Sourcing (IMG)
+### Error Handling
 
-- [ ] **IMG-01**: Each of the 5 ports has 1 curated historical drawing/illustration (public domain) replacing the programmatic SVG placeholder
-- [ ] **IMG-02**: Each of the 3 trade goods has 4-5 curated archaeological artifact photos (public domain) replacing API-fetched images
-- [ ] **IMG-03**: All sourced images are verified real (not AI-generated) and user-approved before inclusion in the app
+- [ ] **ERR-01**: All IPC handlers wrap database/external calls in try/catch and return consistent error responses
+- [ ] **ERR-02**: Standardized IPC response type `{ success: boolean, data?: T, error?: string }` used across all handlers
+- [ ] **ERR-03**: Renderer-side IPC calls handle errors gracefully with user-facing feedback
 
-### Image Infrastructure (INFRA)
+### Architecture
 
-- [ ] **INFRA-01**: Curated images table in SQLite stores image metadata (file path, attribution, source URL, good/port reference)
-- [ ] **INFRA-02**: Curated images bundled as app assets in resources/ directory (offline-first, no API dependency for curated content)
-- [ ] **INFRA-03**: UI displays curated local images from database instead of Met Museum API results or SVG fallbacks
+- [ ] **ARCH-01**: Single `resourcesBase` resolution shared across main process (eliminate 3 duplicate computations)
+- [ ] **ARCH-02**: IPC handler registration follows uniform pattern: validate input → execute → return typed response
 
-## Scope
+### Debuggability
 
-**Ports (5):** Alexandria, Carthage, Rome (Ostia), Athens (Piraeus), Antioch
-**Goods (3):** Grain, Olive Oil, Wine
-**Total images:** ~17-20 (5 port + 12-15 goods)
-**Sources:** Wikimedia Commons, Met Museum Open Access, British Museum, Europeana — public domain only
+- [ ] **DBG-01**: Structured logging utility with consistent format (`[module] level: message`) replaces ad-hoc console calls
 
-## Future Requirements (v1.2+)
+### Code Cleanup
 
-- Additional ports (target 40-60)
-- Additional trade goods (target 8+)
-- Seasonal sailing system
-- Political factions
-- Ship progression and crew
-- Commodity chains
-- Captain's journal
-- Font bundling
+- [ ] **CLN-01**: Fix ShipMarker.tsx TypeScript errors (MotionLayer interface mismatch)
+- [ ] **CLN-02**: Remove or justify all eslint-disable comments
+
+## Future Requirements
+
+None — this is a focused refactoring milestone.
 
 ## Out of Scope
 
-- AI-generated imagery — all visuals must be real public domain art
-- New ports or goods beyond existing 5 ports / 3 goods
-- Gameplay mechanic changes
-- Audio changes
+- Performance optimization — not the focus of this milestone
+- New features or gameplay changes — refactoring only
+- Test coverage — separate milestone concern
+- CI/CD pipeline setup — separate milestone concern
 
 ## Traceability
 
-| Requirement | Phase | Status |
-|-------------|-------|--------|
-| IMG-01 | Phase 5 | Pending |
-| IMG-02 | Phase 5 | Pending |
-| IMG-03 | Phase 5 | Pending |
-| INFRA-01 | Phase 4 | Complete |
-| INFRA-02 | Phase 4 | Complete |
-| INFRA-03 | Phase 6 | Pending |
+| REQ-ID | Phase | Status |
+|--------|-------|--------|
+| ERR-01 | — | Pending |
+| ERR-02 | — | Pending |
+| ERR-03 | — | Pending |
+| ARCH-01 | — | Pending |
+| ARCH-02 | — | Pending |
+| DBG-01 | — | Pending |
+| CLN-01 | — | Pending |
+| CLN-02 | — | Pending |
