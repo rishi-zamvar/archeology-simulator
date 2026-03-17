@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-03-17)
 ## Current Position
 
 Phase: 7 — IPC Foundation
-Plan: 03 of N (complex handler migration + index.ts cleanup complete)
+Plan: 04 of 04 (renderer IPCResponse unwrap complete)
 Status: Phase 7 complete
-Last activity: 2026-03-17 — Completed 07-03-PLAN.md (complex handler migration, index.ts cleanup)
+Last activity: 2026-03-17 — Completed 07-04-PLAN.md (renderer IPCResponse unwrap)
 
-Progress: [██████████████░░░░░░] 70% (v1.0 + v1.1 Phase 4 complete, 07-01, 07-02, 07-03 done)
+Progress: [█████████████████░░░] 86% (v1.0 + v1.1 Phase 4 complete, Phase 7 complete)
 
 ## Performance Metrics
 
@@ -28,8 +28,8 @@ Progress: [██████████████░░░░░░] 70% (v1
 - Phases: 1 complete (Phase 4 done)
 
 **v1.2 Velocity:**
-- Total plans completed: 3
-- Phases: 1 complete (Phase 7 done)
+- Total plans completed: 4
+- Phases: 1 complete (Phase 7 done, all 4 plans)
 
 ## Accumulated Context
 
@@ -50,6 +50,8 @@ See PROJECT.md Key Decisions table for full history.
 - 07-03: game:resolveEvent returns custom { success, outcome, message } — wrapHandler wraps it as IPCResponse<T>.data per contract
 - 07-03: buyGood/sellGood validators enforce qty > 0 matching semantic requirements
 - 07-03: Global process.on error handlers placed before app.whenReady() to catch initialization crashes
+- 07-04: useGameState.updateGame returns IPCResponse<GameResult> so callers can check .success
+- 07-04: Fire-and-forget action calls left with .catch() pattern (no unwrap needed for ignored results)
 
 ### Pending Todos
 
@@ -63,6 +65,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-17T10:13:11Z
-Stopped at: Completed 07-03-PLAN.md (complex handler migration + index.ts cleanup)
+Last session: 2026-03-17T10:17:24Z
+Stopped at: Completed 07-04-PLAN.md (renderer IPCResponse unwrap — Phase 7 complete)
 Resume file: None
