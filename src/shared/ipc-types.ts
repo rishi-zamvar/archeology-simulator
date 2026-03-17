@@ -48,43 +48,43 @@ export interface ImageCandidate {
 export interface IPCBridge {
   game: {
     // Phase 1: core FSM channels
-    load: () => Promise<import('../game/types').GameState>;
-    save: (state: import('../game/types').GameState) => Promise<import('../game/types').GameResult>;
-    action: (action: import('../game/types').GameAction) => Promise<import('../game/types').GameResult>;
+    load: () => Promise<IPCResponse<import('../game/types').GameState>>;
+    save: (state: import('../game/types').GameState) => Promise<IPCResponse<import('../game/types').GameState>>;
+    action: (action: import('../game/types').GameAction) => Promise<IPCResponse<import('../game/types').GameResult>>;
 
     // Phase 2: port and market data channels
-    getPorts: () => Promise<import('./game-types').Port[]>;
-    getPortDetails: (portId: string) => Promise<import('./game-types').Port | null>;
-    getMarketPrices: (portId: string) => Promise<import('./game-types').MarketGood[]>;
-    getReachablePorts: (fromPortId: string) => Promise<Array<{ port: import('./game-types').Port; route: import('./game-types').VoyageRoute }>>;
-    getPlayerInventory: () => Promise<import('./game-types').PlayerInventory>;
+    getPorts: () => Promise<IPCResponse<import('./game-types').Port[]>>;
+    getPortDetails: (portId: string) => Promise<IPCResponse<import('./game-types').Port | null>>;
+    getMarketPrices: (portId: string) => Promise<IPCResponse<import('./game-types').MarketGood[]>>;
+    getReachablePorts: (fromPortId: string) => Promise<IPCResponse<Array<{ port: import('./game-types').Port; route: import('./game-types').VoyageRoute }>>>;
+    getPlayerInventory: () => Promise<IPCResponse<import('./game-types').PlayerInventory>>;
 
     // Phase 2 Plan 3: trade channels
-    buyGood: (portId: string, goodId: string, qty: number) => Promise<import('./game-types').PlayerInventory>;
-    sellGood: (portId: string, goodId: string, qty: number) => Promise<import('./game-types').PlayerInventory>;
-    getTransactionHistory: (limit?: number) => Promise<import('./game-types').TransactionRecord[]>;
+    buyGood: (portId: string, goodId: string, qty: number) => Promise<IPCResponse<import('./game-types').PlayerInventory>>;
+    sellGood: (portId: string, goodId: string, qty: number) => Promise<IPCResponse<import('./game-types').PlayerInventory>>;
+    getTransactionHistory: (limit?: number) => Promise<IPCResponse<import('./game-types').TransactionRecord[]>>;
 
     // Phase 2 Plan 4: voyage event channels
-    getPendingEvent: () => Promise<import('./game-types').VoyageEvent | null>;
+    getPendingEvent: () => Promise<IPCResponse<import('./game-types').VoyageEvent | null>>;
     resolveEvent: (
       eventId: string,
       choiceId: string
-    ) => Promise<{ success: boolean; error?: string; outcome?: import('../game/events').EventOutcome; message?: string }>;
+    ) => Promise<IPCResponse<{ outcome: import('../game/events').EventOutcome; message: string }>>;
 
     // Phase 3 Plan 2: museum artifact images
-    getArtifacts: (goodId: string) => Promise<import('../main/db/queries').CachedArtifact[]>;
+    getArtifacts: (goodId: string) => Promise<IPCResponse<import('../main/db/queries').CachedArtifact[]>>;
 
     // Phase 4 Plan 2: curated offline images
-    getCuratedImages: (query: { goodId?: string; portId?: string }) => Promise<import('../main/db/queries').CuratedImage[]>;
+    getCuratedImages: (query: { goodId?: string; portId?: string }) => Promise<IPCResponse<import('../main/db/queries').CuratedImage[]>>;
 
     // Phase 5 Plan 1: port illustration sourcing
-    searchPortCandidates: (args: { portId: string }) => Promise<ImageCandidate[]>;
+    searchPortCandidates: (args: { portId: string }) => Promise<IPCResponse<ImageCandidate[]>>;
 
     // Scan resources/images/ for available image files on disk
-    scanResourceImages: () => Promise<{
+    scanResourceImages: () => Promise<IPCResponse<{
       ports: Record<string, string>;
       goods: Record<string, string[]>;
-    }>;
+    }>>;
   };
   /** Subscribe to a push event from main process. Returns cleanup function. */
   subscribe: (event: string, callback: (data: unknown) => void) => () => void;
