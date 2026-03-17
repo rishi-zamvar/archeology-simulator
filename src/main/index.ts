@@ -15,6 +15,10 @@ import { initializeDatabase } from './db/schema';
 import { seedPorts, seedGoods, seedPortInventory, seedCuratedImages } from './db/queries';
 import { registerSaveIPCHandlers } from './ipc/save';
 import { registerGameIPCHandlers } from './ipc/game';
+import { createLogger } from './lib/logger';
+import { getResourcesBase } from './lib/paths';
+
+const log = createLogger('Main');
 
 function createWindow(): BrowserWindow {
   const win = new BrowserWindow({
@@ -56,6 +60,15 @@ protocol.registerSchemesAsPrivileged([
 
 // --- App lifecycle ---
 
+process.on('uncaughtException', (err) => {
+  log.error('Uncaught exception — keeping app alive', { error: err.message, stack: err.stack });
+});
+process.on('unhandledRejection', (reason) => {
+  log.error('Unhandled promise rejection — keeping app alive', {
+    reason: reason instanceof Error ? reason.message : String(reason),
+  });
+});
+
 app.whenReady().then(() => {
   // Initialize SQLite database at Electron's userData path.
   // This path is platform-specific and persists across app restarts.
@@ -68,9 +81,7 @@ app.whenReady().then(() => {
   seedPortInventory(db);
   seedCuratedImages(db);
 
-  const resourcesBase = process.env['NODE_ENV'] === 'development'
-    ? path.join(__dirname, '../../resources')
-    : path.join(app.getAppPath(), 'resources');
+  const resourcesBase = getResourcesBase();
 
   // Register custom protocol to serve images from resources/images/ directory.
   // Renderer uses: <img src="resource-image:///ports/alexandria.jpg" />
@@ -81,7 +92,7 @@ app.whenReady().then(() => {
     const pathPart = decodeURIComponent(url.pathname).replace(/^\/+/, '');
     const filePath = hostPart ? `${hostPart}/${pathPart}` : pathPart;
     const absolutePath = path.join(resourcesBase, 'images', filePath);
-    console.log('[resource-image] request:', request.url, '→', absolutePath, 'exists:', fs.existsSync(absolutePath));
+    log.debug('Resource image request', { url: request.url, path: absolutePath, exists: fs.existsSync(absolutePath) });
     // Security: ensure resolved path is within resources/images/
     if (!absolutePath.startsWith(path.join(resourcesBase, 'images'))) {
       return new Response('Forbidden', { status: 403 });
@@ -93,12 +104,12 @@ app.whenReady().then(() => {
   for (const row of curatedRows) {
     const fullPath = path.join(resourcesBase, row.file_path);
     if (!fs.existsSync(fullPath)) {
-      console.warn(`[WARN] Curated image not found: ${fullPath}`);
+      log.warn('Curated image not found', { path: fullPath });
       missingCount++;
     }
   }
   if (missingCount > 0) {
-    console.warn(`[WARN] ${missingCount} curated image(s) missing from bundle`);
+    log.warn('Curated images missing from bundle', { count: missingCount });
   }
 
   // Register IPC handlers with the live database instance.
