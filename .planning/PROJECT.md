@@ -46,16 +46,16 @@ Students learn ancient Mediterranean history — trade networks, cultures, geogr
 - Mobile/tablet versions — desktop Electron only
 - Real-time gameplay — strictly turn-based
 
-## Current Milestone: v1.1 Integration & macOS Polish
+## Current Milestone: v1.2 Coding Hygiene
 
-**Goal:** Replace programmatic SVG port illustrations and API-dependent artifact images with curated, verified real images — historical drawings for ports and archaeological artifact photos for trade goods.
+**Goal:** Refactor the codebase for consistent architecture, graceful error handling, and debuggability across all modules.
 
 **Target features:**
-- Curated archaeological artifact images (4-5 per trade good, 8 goods = ~35-40 images)
-- Curated historical port illustrations (1 per port, 5 ports = 5 images)
-- Image database schema for storing curated image metadata
-- UI integration to display curated images instead of SVG/API fallbacks
-- Credential wiring for museum API access
+- Consistent error handling patterns across main process, IPC handlers, and renderer
+- Uniform architecture for all IPC handlers (request/response shape, validation, error propagation)
+- Graceful degradation when external resources fail (images, database, audio)
+- Structured logging for debuggability
+- Code organization cleanup (dead code removal, consistent file structure)
 
 ## Context
 
@@ -94,4 +94,4 @@ Shipped v1.0 with 7,732 lines of TypeScript across 100 files.
 | Vite 7.3.1 | Latest stable; Vite 8 not released | ✓ Good |
 
 ---
-*Last updated: 2026-03-16 after v1.1 milestone started*
+*Last updated: 2026-03-17 after v1.2 milestone started*
