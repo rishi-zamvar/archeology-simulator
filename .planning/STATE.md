@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-03-17)
 ## Current Position
 
 Phase: 7 — IPC Foundation
-Plan: 02 of N (simple handler migration complete)
-Status: In progress
-Last activity: 2026-03-17 — Completed 07-02-PLAN.md (simple handler migration)
+Plan: 03 of N (complex handler migration + index.ts cleanup complete)
+Status: Phase 7 complete
+Last activity: 2026-03-17 — Completed 07-03-PLAN.md (complex handler migration, index.ts cleanup)
 
-Progress: [█████████████░░░░░░░] 65% (v1.0 + v1.1 Phase 4 complete, 07-01 and 07-02 done)
+Progress: [██████████████░░░░░░] 70% (v1.0 + v1.1 Phase 4 complete, 07-01, 07-02, 07-03 done)
 
 ## Performance Metrics
 
@@ -28,8 +28,8 @@ Progress: [█████████████░░░░░░░] 65% (v1
 - Phases: 1 complete (Phase 4 done)
 
 **v1.2 Velocity:**
-- Total plans completed: 2
-- Phases: 0 complete (Phase 7 in progress)
+- Total plans completed: 3
+- Phases: 1 complete (Phase 7 done)
 
 ## Accumulated Context
 
@@ -47,6 +47,9 @@ See PROJECT.md Key Decisions table for full history.
 - 07-02: game:load has no validator (no args); game:save uses isValidGameState as the validator function to keep guard logic in one place
 - 07-02: getTransactionHistory has no validator — undefined limit is a valid value the underlying query handles with a default
 - 07-02: game:getPendingEvent migrated despite accessing module-level state — pure getter with no side effects qualifies as simple handler
+- 07-03: game:resolveEvent returns custom { success, outcome, message } — wrapHandler wraps it as IPCResponse<T>.data per contract
+- 07-03: buyGood/sellGood validators enforce qty > 0 matching semantic requirements
+- 07-03: Global process.on error handlers placed before app.whenReady() to catch initialization crashes
 
 ### Pending Todos
 
@@ -60,6 +63,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-17T10:06:11Z
-Stopped at: Completed 07-02-PLAN.md (simple handler migration)
+Last session: 2026-03-17T10:13:11Z
+Stopped at: Completed 07-03-PLAN.md (complex handler migration + index.ts cleanup)
 Resume file: None
