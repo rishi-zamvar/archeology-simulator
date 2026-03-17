@@ -6,10 +6,13 @@
  * corrupted data.
  */
 
-import { ipcMain } from 'electron';
 import type Database from 'better-sqlite3';
 import { saveGameStateAtomic, loadGameState } from '../db/queries';
-import type { GameState, GameResult } from '../../game/types';
+import type { GameState } from '../../game/types';
+import { wrapHandler } from '../lib/ipc-wrapper';
+import { createLogger } from '../lib/logger';
+
+const log = createLogger('SaveIPC');
 
 // New games start the tutorial from the beginning (same as game.ts INITIAL_STATE).
 const INITIAL_STATE: GameState = { type: 'idle', currentTurn: 0, tutorialPhase: { type: 'map_intro' } };
@@ -40,26 +43,27 @@ export function registerSaveIPCHandlers(db: Database.Database): void {
    * game:load — Return the saved state, or initial idle state if none exists.
    * Backfills tutorialPhase on old saves that predate the tutorial system.
    */
-  ipcMain.handle('game:load', async (): Promise<GameState> => {
-    const saved = loadGameState(db);
-    if (!saved) return INITIAL_STATE;
-    return withTutorialDefault(saved);
-  });
+  wrapHandler<GameState>(
+    'game:load',
+    async () => {
+      log.info('Loading game state');
+      return withTutorialDefault(loadGameState(db) ?? INITIAL_STATE);
+    },
+  );
 
   /**
-   * game:save — Validate and persist state. Returns { success: boolean }.
+   * game:save — Validate and persist state. Returns the saved GameState.
    */
-  ipcMain.handle('game:save', async (_event, state: unknown): Promise<GameResult> => {
-    if (!isValidGameState(state)) {
-      return { success: false, state: INITIAL_STATE, error: 'Invalid state shape' };
-    }
-
-    try {
-      saveGameStateAtomic(db, state);
-      return { success: true, state };
-    } catch (err) {
-      const message = err instanceof Error ? err.message : String(err);
-      return { success: false, state, error: message };
-    }
-  });
+  wrapHandler<GameState, [unknown]>(
+    'game:save',
+    async (state) => {
+      saveGameStateAtomic(db, state as GameState);
+      log.info('Game state saved');
+      return state as GameState;
+    },
+    (state) => {
+      if (!isValidGameState(state)) return 'Invalid state shape';
+      return null;
+    },
+  );
 }
