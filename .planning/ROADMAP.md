@@ -85,8 +85,9 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 10-01: TBD
-- [ ] 10-02: TBD
+- [ ] 10-01-PLAN.md — SQLite schema, types, query functions, IPC handlers, preload bridge (JRN-01, JRN-05)
+- [ ] 10-02-PLAN.md — Auto-log trades, events, arrivals, departures into journal (JRN-02, JRN-03, JRN-04)
+- [ ] 10-03-PLAN.md — Refactor Logbook.tsx to DB-backed journal with note input (JRN-01, JRN-05)
 
 ### Phase 11: Sailing Animation Polish
 **Goal**: Players see their ship physically move between ports on the map during voyages
@@ -132,6 +133,6 @@ Plans:
 | 7. IPC & Logging | v1.2 | 3/3 | Complete | 2026-03-31 |
 | 8. TypeScript & Error UX | v1.2 | 2/2 | Complete | 2026-03-31 |
 | 9. Seasonal Weather | v1.3 | 1/3 | In Progress|  |
-| 10. Captain's Journal | v1.3 | 0/? | Not started | - |
+| 10. Captain's Journal | v1.3 | 0/3 | Not started | - |
 | 11. Sailing Animation | v1.3 | 0/? | Not started | - |
 | 12. Trade UX & Title Screen | v1.3 | 0/? | Not started | - |
