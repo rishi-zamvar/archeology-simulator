@@ -65,11 +65,12 @@ See [v1.2-ROADMAP.md](milestones/v1.2-ROADMAP.md) for full details.
   3. Storm events occur more frequently during winter voyages than summer voyages
   4. Player sees a mare clausum warning before departing during dangerous winter months
   5. Existing v1.2 save files load without errors after the weather system is added
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 09-01: TBD
-- [ ] 09-02: TBD
+- [ ] 09-01-PLAN.md — weather.ts pure functions + TDD tests (WX-01 through WX-04)
+- [ ] 09-02-PLAN.md — seasonal event weights + voyage duration IPC wiring (WX-02, WX-03)
+- [ ] 09-03-PLAN.md — season header display, mare clausum modal, logbook seasonal text (WX-01, WX-04)
 
 ### Phase 10: Captain's Journal
 **Goal**: Players build a persistent historical record of their trading career that survives restarts
@@ -81,7 +82,7 @@ Plans:
   3. Voyage events (storms, encounters, decisions) automatically appear in the journal with outcomes
   4. Port arrivals and departures are logged with in-game calendar dates
   5. Player can write and save personal notes/reflections in the journal
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
 - [ ] 10-01: TBD
@@ -97,7 +98,7 @@ Plans:
   3. Map camera smoothly follows the ship during the sailing animation
   4. A sailing overlay displays voyage progress, estimated arrival, and current weather conditions
   5. Time passes visibly during the voyage with each time unit triggering an event (including uneventful sailing)
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
 - [ ] 11-01: TBD
@@ -112,7 +113,7 @@ Plans:
   2. Total profit/loss preview updates as the player adjusts the quantity being sold
   3. Player can see where and when each cargo item was originally purchased
   4. Launching the game shows a title screen with game description, new game button, and continue button (if a save exists)
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
 - [ ] 12-01: TBD
