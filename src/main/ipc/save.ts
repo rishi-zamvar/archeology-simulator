@@ -66,4 +66,34 @@ export function registerSaveIPCHandlers(db: Database.Database): void {
       return null;
     },
   );
+
+  /**
+   * game:hasSave — check if a save exists without loading the full state.
+   */
+  wrapHandler<boolean>(
+    'game:hasSave',
+    async () => {
+      const row = db.prepare('SELECT 1 FROM game_state WHERE id = 1').get();
+      return row !== undefined;
+    },
+  );
+
+  /**
+   * game:newGame — reset all game data and return fresh initial state.
+   */
+  wrapHandler<GameState>(
+    'game:newGame',
+    async () => {
+      const reset = db.transaction(() => {
+        db.prepare('DELETE FROM game_state').run();
+        db.prepare('DELETE FROM transaction_history').run();
+        db.prepare('DELETE FROM journal_entries').run();
+        db.prepare('DELETE FROM player_inventory').run();
+        // Re-insert fresh state
+        saveGameStateAtomic(db, INITIAL_STATE);
+      });
+      reset();
+      return INITIAL_STATE;
+    },
+  );
 }

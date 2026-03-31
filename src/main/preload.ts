@@ -56,6 +56,9 @@ const api: IPCBridge = {
     advanceSailingTurn: () => ipcRenderer!.invoke('game:advanceSailingTurn'),
     // Phase 9 Plan 3: seasonal weather — wait for spring
     waitForSpring: () => ipcRenderer!.invoke('game:waitForSpring'),
+    // Phase 12: title screen
+    hasSave: () => ipcRenderer!.invoke('game:hasSave'),
+    newGame: () => ipcRenderer!.invoke('game:newGame'),
     // Scan resources/images/ for available image files
     scanResourceImages: () =>
       ipcRenderer!.invoke('game:scan-resource-images'),

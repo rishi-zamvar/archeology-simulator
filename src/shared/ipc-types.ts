@@ -60,6 +60,10 @@ export interface IPCBridge {
     // Phase 9 Plan 3: seasonal weather — wait for spring
     waitForSpring: () => Promise<IPCResponse<import('../game/types').GameResult>>;
 
+    // Phase 12: title screen
+    hasSave: () => Promise<IPCResponse<boolean>>;
+    newGame: () => Promise<IPCResponse<import('../game/types').GameState>>;
+
     // Scan resources/images/ for available image files on disk
     scanResourceImages: () => Promise<IPCResponse<{
       ports: Record<string, string>;
