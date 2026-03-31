@@ -2,12 +2,14 @@
  * IPC handlers for game channels.
  *
  * registerGameIPCHandlers(db) wires:
- *   game:action   — apply FSM action, auto-save, broadcast update
- *   game:getPorts — return all 25 seeded ports
- *   game:getPortDetails — return a single port by ID
- *   game:getMarketPrices — return MarketGood[] for a port
- *   game:getReachablePorts — return ports reachable within 5 turns
+ *   game:action            — apply FSM action, auto-save, broadcast update
+ *   game:getPorts           — return all 25 seeded ports
+ *   game:getPortDetails     — return a single port by ID
+ *   game:getMarketPrices    — return MarketGood[] for a port
+ *   game:getReachablePorts  — return ports reachable within 5 turns
  *   game:getPlayerInventory — return player gold and cargo
+ *   game:get-curated-images — return curated image metadata for a good or port
+ *   game:scan-resource-images — scan resources/images/ for available files
  */
 
 import { BrowserWindow } from 'electron';
@@ -29,13 +31,9 @@ import {
   buyGood,
   sellGood,
   getTransactionHistory,
-  getArtifactsForGood,
-  cacheArtifact,
   getCuratedImagesForGood,
   getCuratedImagesForPort,
 } from '../db/queries';
-import type { CachedArtifact } from '../db/queries';
-import type { ImageCandidate } from '../../shared/ipc-types';
 import { performAction } from '../../game/engine';
 import { getReachablePorts } from '../../game/voyage';
 import { rollVoyageEvent, resolveEventChoice } from '../../game/events';
@@ -218,146 +216,6 @@ export function registerGameIPCHandlers(db: Database.Database): void {
   });
 
   /**
-   * game:get-artifacts — return up to 3 cached museum artifact images for a trade good.
-   *
-   * Flow:
-   *  1. Check artifact_cache for non-expired rows (24h TTL) → return immediately if found
-   *  2. On cache miss: query Met Museum Collection API (public domain, no auth)
-   *  3. Fetch up to 3 object detail records concurrently; cache each that has an image
-   *  4. If Met returns zero results, fall back to Wikimedia Commons allimages API
-   *  5. If both fail, return a single placeholder record so the renderer always has
-   *     something to render (placeholder image path handled on renderer side)
-   */
-  wrapHandler<CachedArtifact[], [string]>(
-    'game:get-artifacts',
-    async (goodId) => {
-      // 1. Cache hit
-      const cached = getArtifactsForGood(db, goodId);
-      if (cached.length > 0) return cached;
-
-      const now = new Date().toISOString();
-      const results: CachedArtifact[] = [];
-
-      try {
-        // 2. Met Museum search — use specific ancient Mediterranean search terms
-        //    to avoid generic results returning the same popular artifact for every good
-        const ARTIFACT_SEARCH_TERMS: Record<string, string> = {
-          wheat: 'ancient Egyptian grain granary',
-          olive_oil: 'Greek amphora olive oil',
-          wine: 'Greek wine krater vessel',
-          textiles: 'ancient linen textile Egyptian',
-          spices: 'incense burner ancient',
-          bronze: 'Greek bronze vessel ancient',
-          timber: 'ancient wood carving ship',
-          pottery: 'Greek vase painting pottery',
-        };
-        const searchTerm = ARTIFACT_SEARCH_TERMS[goodId] ?? goodId;
-        const searchUrl = `https://collectionapi.metmuseum.org/public/collection/v1/search?q=${encodeURIComponent(searchTerm)}&hasImages=true&isPublicDomain=true`;
-        const searchResp = await fetch(searchUrl);
-        if (searchResp.ok) {
-          const searchData = await searchResp.json() as { objectIDs?: number[] };
-          // Skip the first few results (often the same popular items) and pick from a spread
-          const allIds = searchData.objectIDs ?? [];
-          const ids = allIds.length > 10
-            ? [allIds[2], allIds[5], allIds[9]].filter(Boolean)
-            : allIds.slice(0, 3);
-
-          if (ids.length > 0) {
-            // 3. Fetch detail for up to 3 objects concurrently
-            const detailResults = await Promise.all(
-              ids.map(async (id) => {
-                try {
-                  const resp = await fetch(
-                    `https://collectionapi.metmuseum.org/public/collection/v1/objects/${id}`
-                  );
-                  if (!resp.ok) return null;
-                  return await resp.json() as {
-                    objectID: number;
-                    isPublicDomain: boolean;
-                    primaryImage: string;
-                    title: string;
-                    objectDescription?: string;
-                    medium?: string;
-                  };
-                } catch (err) {
-                  log.warn('Non-fatal: Met detail fetch failed', { id, error: String(err) });
-                  return null;
-                }
-              })
-            );
-
-            for (const obj of detailResults) {
-              if (obj && obj.isPublicDomain && obj.primaryImage) {
-                const artifact: CachedArtifact = {
-                  id: `met_${goodId}_${obj.objectID}`,
-                  goodId,
-                  museumId: String(obj.objectID),
-                  imageUrl: obj.primaryImage,
-                  title: obj.title || goodId,
-                  description: obj.objectDescription ?? obj.medium ?? '',
-                  cacheTimestamp: now,
-                };
-                cacheArtifact(db, artifact);
-                results.push(artifact);
-              }
-            }
-          }
-        }
-      } catch (err) {
-        log.warn('Non-fatal: Met Museum search failed', { goodId, error: String(err) });
-      }
-
-      // 4. Wikimedia fallback
-      if (results.length === 0) {
-        try {
-          const wikiUrl = `https://commons.wikimedia.org/w/api.php?action=query&list=allimages&aiprefix=${encodeURIComponent(goodId)}&ailimit=5&format=json&origin=*`;
-          const wikiResp = await fetch(wikiUrl);
-          if (wikiResp.ok) {
-            const wikiData = await wikiResp.json() as {
-              query?: { allimages?: Array<{ url: string; name: string; descriptionurl?: string }> };
-            };
-            const images = wikiData.query?.allimages ?? [];
-            if (images.length > 0) {
-              const img = images[0];
-              const artifact: CachedArtifact = {
-                id: `wiki_${goodId}_0`,
-                goodId,
-                museumId: `wiki_${goodId}_0`,
-                imageUrl: img.url,
-                title: img.name.replace(/_/g, ' ').replace(/\.[^.]+$/, ''),
-                description: '',
-                cacheTimestamp: now,
-              };
-              cacheArtifact(db, artifact);
-              results.push(artifact);
-            }
-          }
-        } catch (err) {
-          log.warn('Non-fatal: Wikimedia fallback failed', { goodId, error: String(err) });
-        }
-      }
-
-      // 5. Placeholder so the renderer always receives an array with at least one item
-      if (results.length === 0) {
-        return [
-          {
-            id: `placeholder_${goodId}`,
-            goodId,
-            museumId: 'placeholder',
-            imageUrl: '/assets/placeholder-artifact.png',
-            title: goodId,
-            description: '',
-            cacheTimestamp: now,
-          },
-        ];
-      }
-
-      return results;
-    },
-    (goodId) => (!goodId || typeof goodId !== 'string' ? 'goodId required' : null),
-  );
-
-  /**
    * game:get-curated-images — return curated image metadata for a good or port.
    * Resolves relative file paths to absolute paths and checks file existence.
    */
@@ -428,176 +286,6 @@ export function registerGameIPCHandlers(db: Database.Database): void {
 
     return { ports, goods };
   });
-
-  /**
-   * image:search-port-candidates — search for historical illustration candidates for a port.
-   *
-   * Searches Met Museum first, falls back to Wikimedia Commons if Met returns fewer
-   * than 1 valid candidate. Returns ImageCandidate[] with portId set on each entry.
-   * No images are downloaded — this is a candidate discovery step only.
-   *
-   * Port search terms map each port to a historically specific query that avoids
-   * generic results and targets ancient-period illustrations.
-   */
-  wrapHandler<ImageCandidate[], [{ portId: string }]>(
-    'image:search-port-candidates',
-    async ({ portId }) => {
-      const PORT_SEARCH_TERMS: Record<string, string> = {
-        alexandria: 'Alexandria harbor Pharos ancient Egypt illustration',
-        carthage:   'Carthage Cothon harbor ancient Phoenician North Africa',
-        rome:       'Ostia harbor Roman port ancient city illustration',
-        athens:     'Piraeus harbor ancient Greece Aegean illustration',
-        antioch:    'Antioch Orontes ancient Levant Syria city',
-      };
-
-      const term = PORT_SEARCH_TERMS[portId];
-      if (!term) {
-        log.warn('Unknown portId for image search', { portId });
-        return [];
-      }
-
-      const candidates: ImageCandidate[] = [];
-
-      // ── Met Museum ────────────────────────────────────────────────────────
-      try {
-        const searchUrl = `https://collectionapi.metmuseum.org/public/collection/v1/search?q=${encodeURIComponent(term)}&hasImages=true&isPublicDomain=true`;
-        const searchResp = await fetch(searchUrl);
-        if (searchResp.ok) {
-          const searchData = await searchResp.json() as { objectIDs?: number[] };
-          const allIds = searchData.objectIDs ?? [];
-
-          // Skip first 2 results (often the same popular items); sample every other
-          // one from index 2 up to ~8 IDs so we have a varied pool.
-          const sampledIds: number[] = [];
-          for (let i = 2; i < allIds.length && sampledIds.length < 8; i += 2) {
-            sampledIds.push(allIds[i]);
-          }
-
-          for (const objId of sampledIds) {
-            if (candidates.length >= 3) break;
-
-            try {
-              const detailResp = await fetch(
-                `https://collectionapi.metmuseum.org/public/collection/v1/objects/${objId}`
-              );
-              if (!detailResp.ok) continue;
-
-              const obj = await detailResp.json() as {
-                objectID: number;
-                isPublicDomain: boolean;
-                primaryImage: string;
-                title: string;
-                artistDisplayName?: string;
-                objectDate?: string;
-                objectURL?: string;
-                department?: string;
-              };
-
-              if (obj.isPublicDomain && obj.primaryImage?.trim()) {
-                const attribution = [
-                  obj.artistDisplayName,
-                  obj.objectDate,
-                  'Metropolitan Museum of Art',
-                ]
-                  .filter(Boolean)
-                  .join(', ');
-
-                candidates.push({
-                  id: `met_${portId}_${obj.objectID}`,
-                  portId,
-                  sourceUrl:   obj.objectURL ?? `https://www.metmuseum.org/art/collection/search/${obj.objectID}`,
-                  imageUrl:    obj.primaryImage,
-                  title:       obj.title || term,
-                  attribution,
-                  source:      'met',
-                });
-              }
-            } catch (err) {
-              log.warn('Non-fatal: Met detail fetch failed for port candidate', { portId, objId, error: String(err) });
-            }
-
-            // Sequential 1-second delay between detail calls to avoid hammering the API
-            await new Promise<void>((resolve) => setTimeout(resolve, 1000));
-          }
-        }
-      } catch (err) {
-        log.warn('Non-fatal: Met search failed for port candidates', { portId, error: String(err) });
-      }
-
-      // ── Wikimedia Commons fallback ────────────────────────────────────────
-      if (candidates.length < 1) {
-        try {
-          const wikiUrl = `https://commons.wikimedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(term)}&srnamespace=6&srlimit=10&format=json&origin=*`;
-          const wikiResp = await fetch(wikiUrl);
-          if (wikiResp.ok) {
-            const wikiData = await wikiResp.json() as {
-              query?: {
-                search?: Array<{
-                  title: string;
-                  snippet?: string;
-                  pageid: number;
-                }>;
-              };
-            };
-
-            const WIKI_EXCLUDE = ['modern', '20th', 'diagram', 'photograph'];
-
-            const results = wikiData.query?.search ?? [];
-            for (const result of results) {
-              if (candidates.length >= 2) break;
-
-              const lowerTitle = result.title.toLowerCase();
-              if (WIKI_EXCLUDE.some((kw) => lowerTitle.includes(kw))) continue;
-
-              // Build Commons file URL: File:Title → https://commons.wikimedia.org/wiki/File:Title
-              const fileTitle = result.title.startsWith('File:')
-                ? result.title
-                : `File:${result.title}`;
-              const sourceUrl = `https://commons.wikimedia.org/wiki/${encodeURIComponent(fileTitle)}`;
-
-              // Commons thumbnail API — use pageimage via imageinfo
-              const infoUrl = `https://commons.wikimedia.org/w/api.php?action=query&titles=${encodeURIComponent(result.title)}&prop=imageinfo&iiprop=url&format=json&origin=*`;
-              let imageUrl = '';
-              try {
-                const infoResp = await fetch(infoUrl);
-                if (infoResp.ok) {
-                  const infoData = await infoResp.json() as {
-                    query?: {
-                      pages?: Record<string, {
-                        imageinfo?: Array<{ url: string }>;
-                      }>;
-                    };
-                  };
-                  const pages = infoData.query?.pages ?? {};
-                  const page = Object.values(pages)[0];
-                  imageUrl = page?.imageinfo?.[0]?.url ?? '';
-                }
-              } catch {
-                // Skip if we can't get a direct image URL
-              }
-
-              if (!imageUrl) continue;
-
-              candidates.push({
-                id: `wiki_${portId}_${result.pageid}`,
-                portId,
-                sourceUrl,
-                imageUrl,
-                title:       result.title.replace(/^File:/, '').replace(/_/g, ' ').replace(/\.[^.]+$/, ''),
-                attribution: 'Wikimedia Commons (public domain)',
-                source:      'wikimedia',
-              });
-            }
-          }
-        } catch (err) {
-          log.warn('Non-fatal: Wikimedia fallback failed for port candidates', { portId, error: String(err) });
-        }
-      }
-
-      return candidates;
-    },
-    ({ portId }) => (!portId || typeof portId !== 'string' ? 'portId required' : null),
-  );
 
   /**
    * game:resolveEvent — apply event outcome to inventory and transition FSM to idle.

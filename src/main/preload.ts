@@ -48,14 +48,12 @@ const api: IPCBridge = {
     // Phase 2 Plan 4: voyage event channels
     getPendingEvent: () => ipcRenderer!.invoke('game:getPendingEvent'),
     resolveEvent: (eventId, choiceId) => ipcRenderer!.invoke('game:resolveEvent', eventId, choiceId),
-    // Phase 3 Plan 2: museum artifact images
-    getArtifacts: (goodId) => ipcRenderer!.invoke('game:get-artifacts', goodId),
     // Phase 4 Plan 2: curated offline images
     getCuratedImages: (query: { goodId?: string; portId?: string }) =>
       ipcRenderer!.invoke('game:get-curated-images', query),
-    // Phase 5 Plan 1: port illustration sourcing
-    searchPortCandidates: (args: { portId: string }) =>
-      ipcRenderer!.invoke('image:search-port-candidates', args),
+    // Scan resources/images/ for available image files
+    scanResourceImages: () =>
+      ipcRenderer!.invoke('game:scan-resource-images'),
   },
   subscribe: (event, callback) => {
     const handler = (_: Electron.IpcRendererEvent, data: unknown) =>

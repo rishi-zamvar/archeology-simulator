@@ -11,7 +11,6 @@
 
 export type { GameState, GameAction, GameResult } from '../game/types';
 export type { Port, MarketGood, VoyageRoute, PlayerInventory, TransactionRecord, VoyageEvent } from './game-types';
-export type { CachedArtifact } from '../main/db/queries';
 export type { CuratedImage } from '../main/db/queries';
 
 /**
@@ -21,25 +20,6 @@ export type { CuratedImage } from '../main/db/queries';
 export type IPCResponse<T> =
   | { success: true; data: T }
   | { success: false; error: string };
-
-/**
- * A candidate image sourced from Met Museum or Wikimedia Commons.
- * Used in Phase 5 image-sourcing flows where the user must approve each
- * candidate before any download occurs.
- *
- * Both portId and goodId are optional so this type covers port sourcing
- * (05-01) and good sourcing (05-02) with a single interface.
- */
-export interface ImageCandidate {
-  id: string;
-  portId?: string;
-  goodId?: string;
-  sourceUrl: string;
-  imageUrl: string;
-  title: string;
-  attribution: string;
-  source: 'met' | 'wikimedia';
-}
 
 /**
  * The contextBridge API surface exposed as window.api in the renderer.
@@ -71,14 +51,8 @@ export interface IPCBridge {
       choiceId: string
     ) => Promise<IPCResponse<{ outcome: import('../game/events').EventOutcome; message: string }>>;
 
-    // Phase 3 Plan 2: museum artifact images
-    getArtifacts: (goodId: string) => Promise<IPCResponse<import('../main/db/queries').CachedArtifact[]>>;
-
     // Phase 4 Plan 2: curated offline images
     getCuratedImages: (query: { goodId?: string; portId?: string }) => Promise<IPCResponse<import('../main/db/queries').CuratedImage[]>>;
-
-    // Phase 5 Plan 1: port illustration sourcing
-    searchPortCandidates: (args: { portId: string }) => Promise<IPCResponse<ImageCandidate[]>>;
 
     // Scan resources/images/ for available image files on disk
     scanResourceImages: () => Promise<IPCResponse<{
