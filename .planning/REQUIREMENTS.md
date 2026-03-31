@@ -16,7 +16,7 @@
 - [x] **JRN-05**: Player can write personal notes/reflections in the journal
 
 ### Title Screen
-- [ ] **UI-01**: Entry screen with game description, continue (if save exists), and new game option
+- [x] **UI-01**: Entry screen with game description, continue (if save exists), and new game option
 
 ### Sailing Animation
 - [x] **SAIL-01**: Visible dashed route line on map during sailing
@@ -60,7 +60,7 @@
 | JRN-03 | Phase 10 | Complete |
 | JRN-04 | Phase 10 | Complete |
 | JRN-05 | Phase 10 | Complete |
-| UI-01 | Phase 12 | Pending |
+| UI-01 | Phase 12 | Complete |
 | SAIL-01 | Phase 11 | Complete |
 | SAIL-02 | Phase 11 | Complete |
 | SAIL-03 | Phase 11 | Complete |
