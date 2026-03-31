@@ -1,1 +1,58 @@
-[]
+[
+  {
+    "id": "port-athens-01",
+    "portId": "athens",
+    "filePath": "images/ports/athens.jpg",
+    "attribution": "Leo von Klenze, Ideal View of the Acropolis and Areopagus in Athens, 1846, oil on canvas, Neue Pinakothek, Munich",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Akropolis_by_Leo_von_Klenze.jpg"
+  },
+  {
+    "id": "port-corinth-01",
+    "portId": "corinth",
+    "filePath": "images/ports/corinth.jpg",
+    "attribution": "Unknown Artist, Corinth engraving, c.1830",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Corinth_engraving_c1830.jpg"
+  },
+  {
+    "id": "port-sparta-01",
+    "portId": "sparta",
+    "filePath": "images/ports/sparta.jpg",
+    "attribution": "Unknown Artist, Ancient Sparta, date unknown",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Ancient_Sparta.jpg"
+  },
+  {
+    "id": "port-miletos-01",
+    "portId": "miletos",
+    "filePath": "images/ports/miletos.jpg",
+    "attribution": "Adrien Egron, Miletus, 1837, from La Terre-Sainte et les lieux illustres par les apotres",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Miletus,_Illustration_for_La_Terre-Sainte_et_les_lieux_illustr%C3%A9s_par_les_ap%C3%B4tres,_by_Adrien_Egron,_1837_(39).jpg"
+  },
+  {
+    "id": "port-ephesos-01",
+    "portId": "ephesos",
+    "filePath": "images/ports/ephesos.jpg",
+    "attribution": "Unknown Artist, Ancient Ephesus panorama, wood engraving, c.1890",
+    "sourceUrl": "https://www.periodpaper.com/products/1890-wood-engraving-ephesos-efes-ephesus-asia-minor-turkey-landscape-ancient-128227-xha1-228"
+  },
+  {
+    "id": "port-byzantion-01",
+    "portId": "byzantion",
+    "filePath": "images/ports/byzantion.jpg",
+    "attribution": "Felix Ziem, View of Constantinople, c.1850-1900, oil on canvas, National Museum in Warsaw",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:F%C3%A9lix_Ziem_-_View_of_Constantinople_-_M.Ob.535_MNW_-_National_Museum_in_Warsaw.jpg"
+  },
+  {
+    "id": "port-rhodes-01",
+    "portId": "rhodes",
+    "filePath": "images/ports/rhodes.jpg",
+    "attribution": "Barclay, Colossus of Rhodes, 1880",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Colosse_de_Rhodes_(Barclay).jpg"
+  },
+  {
+    "id": "port-knossos-01",
+    "portId": "knossos",
+    "filePath": "images/ports/knossos.jpg",
+    "attribution": "Unknown Artist, Palace of Knossos reconstruction, date unknown",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Le_Palais_de_Knossos_en_Cr%C3%A8te._Reconstitution.jpg"
+  }
+]
