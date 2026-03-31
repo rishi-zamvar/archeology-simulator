@@ -58,6 +58,11 @@ const api: IPCBridge = {
     scanResourceImages: () =>
       ipcRenderer!.invoke('game:scan-resource-images'),
   },
+  // Phase 10: Captain's Journal
+  journal: {
+    getEntries: (limit?: number) => ipcRenderer!.invoke('journal:getEntries', limit),
+    addNote: (title: string, text: string) => ipcRenderer!.invoke('journal:addNote', title, text),
+  },
   subscribe: (event, callback) => {
     const handler = (_: Electron.IpcRendererEvent, data: unknown) =>
       callback(data);

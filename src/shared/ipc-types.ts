@@ -10,7 +10,7 @@
  */
 
 export type { GameState, GameAction, GameResult } from '../game/types';
-export type { Port, MarketGood, VoyageRoute, PlayerInventory, TransactionRecord, VoyageEvent } from './game-types';
+export type { Port, MarketGood, VoyageRoute, PlayerInventory, TransactionRecord, VoyageEvent, JournalEntry } from './game-types';
 export type { CuratedImage } from '../main/db/queries';
 
 /**
@@ -62,6 +62,11 @@ export interface IPCBridge {
       ports: Record<string, string>;
       goods: Record<string, string[]>;
     }>>;
+  };
+  /** Phase 10: Captain's Journal */
+  journal: {
+    getEntries: (limit?: number) => Promise<IPCResponse<import('./game-types').JournalEntry[]>>;
+    addNote: (title: string, text: string) => Promise<IPCResponse<void>>;
   };
   /** Subscribe to a push event from main process. Returns cleanup function. */
   subscribe: (event: string, callback: (data: unknown) => void) => () => void;
