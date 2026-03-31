@@ -69,7 +69,7 @@ See [v1.2-ROADMAP.md](milestones/v1.2-ROADMAP.md) for full details.
 
 Plans:
 - [x] 09-01-PLAN.md — weather.ts pure functions + TDD tests (WX-01 through WX-04)
-- [ ] 09-02-PLAN.md — seasonal event weights + voyage duration IPC wiring (WX-02, WX-03)
+- [x] 09-02-PLAN.md — seasonal event weights + voyage duration IPC wiring (WX-02, WX-03)
 - [ ] 09-03-PLAN.md — season header display, mare clausum modal, logbook seasonal text (WX-01, WX-04)
 
 ### Phase 10: Captain's Journal
