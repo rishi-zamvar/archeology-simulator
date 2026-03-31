@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Integration & macOS Polish
 status: executing
-stopped_at: Completed 07-04-PLAN.md (renderer IPCResponse unwrap — Phase 7 complete)
-last_updated: "2026-03-31T10:28:31.487Z"
-last_activity: 2026-03-31
+stopped_at: Completed 06-01-PLAN.md (curated image attribution UI integration)
+last_updated: "2026-03-31T10:54:00Z"
+last_activity: 2026-03-31 -- Completed 06-01-PLAN.md
 progress:
   total_phases: 3
   completed_phases: 1
-  total_plans: 6
-  completed_plans: 2
-  percent: 86
+  total_plans: 8
+  completed_plans: 3
+  percent: 88
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-17)
 
 **Core value:** Students learn ancient Mediterranean history by making decisions as a merchant captain, not by reading about them.
-**Current focus:** Phase 05 — image-sourcing-curation
+**Current focus:** Phase 06 — ui-integration
 
 ## Current Position
 
-Phase: 6
-Plan: Not started
-Status: Executing Phase 05
-Last activity: 2026-03-31
+Phase: 06 (ui-integration) — EXECUTING
+Plan: 1 of 2 complete
+Status: Executing Phase 06 (Plan 01 done, Plan 02 next)
+Last activity: 2026-03-31 -- Completed 06-01-PLAN.md
 
-Progress: [█████████████████░░░] 86% (v1.0 + v1.1 Phase 4 complete, Phase 7 complete)
+Progress: [█████████████████░░░] 88% (v1.0 + v1.1 Phase 4 complete, Phase 7 complete, 06-01 done)
 
 ## Performance Metrics
 
@@ -71,6 +71,9 @@ See PROJECT.md Key Decisions table for full history.
 - 07-03: Global process.on error handlers placed before app.whenReady() to catch initialization crashes
 - 07-04: useGameState.updateGame returns IPCResponse<GameResult> so callers can check .success
 - 07-04: Fire-and-forget action calls left with .catch() pattern (no unwrap needed for ignored results)
+- 06-01: useResourceImages returns enriched { url, attribution, sourceUrl } via parallel getCuratedImages IPC calls
+- 06-01: Attribution display: semi-transparent overlay for full-bleed port images, figcaption for trade good thumbnails
+- 06-01: Met API fallback (ArtifactImage, useArtifactImages) removed from TradePanel render path
 
 ### Pending Todos
 
@@ -84,6 +87,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-17T10:17:24Z
-Stopped at: Completed 07-04-PLAN.md (renderer IPCResponse unwrap — Phase 7 complete)
+Last session: 2026-03-31T10:54:00Z
+Stopped at: Completed 06-01-PLAN.md (curated image attribution UI integration)
 Resume file: None
