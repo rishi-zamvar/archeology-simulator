@@ -10,9 +10,9 @@
 
 ### Captain's Journal
 - [x] **JRN-01**: Journal entries persisted in SQLite (survive restart and save/load)
-- [ ] **JRN-02**: Trades auto-logged (buy/sell with prices, quantities, port)
-- [ ] **JRN-03**: Voyage events auto-logged (encounters, decisions, outcomes)
-- [ ] **JRN-04**: Port arrivals and departures auto-logged with calendar dates
+- [x] **JRN-02**: Trades auto-logged (buy/sell with prices, quantities, port)
+- [x] **JRN-03**: Voyage events auto-logged (encounters, decisions, outcomes)
+- [x] **JRN-04**: Port arrivals and departures auto-logged with calendar dates
 - [x] **JRN-05**: Player can write personal notes/reflections in the journal
 
 ### Title Screen
@@ -56,9 +56,9 @@
 | WX-03 | Phase 9 | Complete |
 | WX-04 | Phase 9 | Complete |
 | JRN-01 | Phase 10 | Complete |
-| JRN-02 | Phase 10 | Pending |
-| JRN-03 | Phase 10 | Pending |
-| JRN-04 | Phase 10 | Pending |
+| JRN-02 | Phase 10 | Complete |
+| JRN-03 | Phase 10 | Complete |
+| JRN-04 | Phase 10 | Complete |
 | JRN-05 | Phase 10 | Complete |
 | UI-01 | Phase 12 | Pending |
 | SAIL-01 | Phase 11 | Pending |

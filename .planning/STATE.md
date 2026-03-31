@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.3
 milestone_name: Gameplay Depth & Polish
-status: executing
-stopped_at: Completed 10-03-PLAN.md
-last_updated: "2026-03-31T20:48:09.188Z"
+status: verifying
+stopped_at: Completed 10-02-PLAN.md
+last_updated: "2026-03-31T20:48:29.214Z"
 last_activity: 2026-03-31
 progress:
   total_phases: 4
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 6
-  completed_plans: 5
+  completed_plans: 6
   percent: 76
 ---
 
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-03-31)
 
 Phase: 10 (captain-s-journal) — EXECUTING
 Plan: 3 of 3
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-03-31
 
 Progress: [########################------] ~76% (26/~34 plans across all milestones)
@@ -51,6 +51,7 @@ Progress: [########################------] ~76% (26/~34 plans across all milesto
 | Phase 09 P03 | 20min | 3 tasks | 6 files |
 | Phase 10 P01 | 2min | 2 tasks | 7 files |
 | Phase 10 P03 | 1min | 1 tasks | 1 files |
+| Phase 10 P02 | 2min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -67,6 +68,7 @@ See PROJECT.md Key Decisions table for full history.
 - [Phase 09]: Navigation intercept pattern: Shell.tsx checks weather conditions before dispatching SET_SAIL IPC
 - [Phase 10]: Journal uses separate IPC namespace (journal:) rather than extending game: namespace
 - [Phase 10]: Weather/rumor entries generated at render time via useMemo, not stored in DB
+- [Phase 10]: Used selectedPort (not currentPort) from TradingState for journal port lookups
 
 ### Pending Todos
 
@@ -80,6 +82,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-31T20:48:09.186Z
-Stopped at: Completed 10-03-PLAN.md
+Last session: 2026-03-31T20:48:29.212Z
+Stopped at: Completed 10-02-PLAN.md
 Resume file: None
