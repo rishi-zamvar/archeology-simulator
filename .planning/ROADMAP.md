@@ -46,20 +46,21 @@ Plans:
 - [x] 04-02-PLAN.md — Create resources/images/ directory tree, IPC handler, preload exposure, and startup validation
 
 #### Phase 5: Image Sourcing & Curation
-**Goal**: All 17-20 images are sourced from public domain archives, individually reviewed and approved by the user, then downloaded into the app's asset directory
+**Goal**: All 25 ports and 8 trade goods have user-approved historical images sourced from public domain archives or AI-generated, downloaded into the app's asset directory and recorded in curated-images.json
 **Depends on**: Phase 4
 **Requirements**: IMG-01, IMG-02, IMG-03
 **Success Criteria** (what must be TRUE):
-  1. Each of the 5 ports has exactly 1 historical drawing or illustration identified from Wikimedia Commons, Met Open Access, British Museum, or Europeana — with a source URL the user can verify
-  2. Each of the 3 trade goods has 4-5 archaeological artifact photos identified from the same sources
-  3. Every candidate image is presented to the user one at a time with its source URL, attribution, and a preview before being accepted
-  4. Only user-approved images are downloaded into resources/images/ and recorded in the curated_images table
-**Plans**: 3 plans
+  1. Each of the 25 ports has exactly 1 historical illustration (painting, engraving, etching) or AI-generated fallback in resources/images/ports/
+  2. Each of the 8 trade goods has 1-4 ancient art images (mosaics, frescoes, vase paintings, reliefs) in resources/images/{goodId}/
+  3. Every image was presented to the user with source URL, attribution, and preview before being accepted
+  4. curated-images.json contains valid entries for all images with correct portId/goodId, filePath, attribution, and sourceUrl
+**Plans**: 4 plans
 
 Plans:
-- [ ] 05-01-PLAN.md — Search Met/Wikimedia for 5 port illustration candidates and present each to user for approval (checkpoint)
-- [ ] 05-02-PLAN.md — Search Met/Wikimedia for 3 × 4-5 trade good artifact candidates and present each to user for approval (checkpoint)
-- [ ] 05-03-PLAN.md — Download all user-approved images, populate curated-images.json manifest, verify IPC pipeline
+- [ ] 05-01-PLAN.md — Search and curate historical illustrations for 8 Greek ports (interactive approval)
+- [ ] 05-02-PLAN.md — Search and curate historical illustrations for 17 remaining ports across 5 regions (interactive approval)
+- [ ] 05-03-PLAN.md — Search and curate ancient art images for 8 trade goods, 4 images each (interactive approval)
+- [ ] 05-04-PLAN.md — Validate manifest completeness, file integrity, and ID correctness
 
 #### Phase 6: UI Integration
 **Goal**: Players see real historical art throughout the game — no SVG placeholders, no live API calls for images
@@ -119,7 +120,7 @@ Plans:
 | 2. Core Gameplay | v1.0 | 5/5 | Complete | 2026-03-16 |
 | 3. Polish & Packaging | v1.0 | 4/4 | Complete | 2026-03-16 |
 | 4. Image Infrastructure | v1.1 | 2/2 | Complete | 2026-03-16 |
-| 5. Image Sourcing & Curation | v1.1 | 0/3 | Not started | - |
+| 5. Image Sourcing & Curation | v1.1 | 0/4 | Not started | - |
 | 6. UI Integration | v1.1 | 0/2 | Not started | - |
 | 7. IPC Foundation | v1.2 | 4/4 | Complete | 2026-03-17 |
 | 8. Surface Cleanup | v1.2 | 0/TBD | Not started | - |
