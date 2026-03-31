@@ -522,7 +522,7 @@ export function buyGood(
         quantity: cargoItems[existingIdx].quantity + qty,
       };
     } else {
-      cargoItems.push({ goodId, quantity: qty, boughtAtPrice: pricePerUnit, boughtAtPort: portId });
+      cargoItems.push({ goodId, quantity: qty, boughtAtPrice: pricePerUnit, boughtAtPort: portId, boughtAtTurn: turn });
     }
 
     const newGold = gold - totalCost;

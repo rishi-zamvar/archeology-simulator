@@ -56,6 +56,7 @@ export interface CargoItem {
   quantity: number;
   boughtAtPrice: number;
   boughtAtPort: string;
+  boughtAtTurn?: number;
 }
 
 /**

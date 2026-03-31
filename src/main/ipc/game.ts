@@ -428,6 +428,8 @@ export function registerGameIPCHandlers(db: Database.Database): void {
         // Apply cargoDelta
         const freshInv = getPlayerInventory(db);
         const updatedCargo = [...freshInv.cargoItems];
+        const currentState = withTutorialDefault(loadGameState(db) ?? INITIAL_STATE);
+        const eventTurn = currentState.currentTurn;
 
         for (const [goodId, delta] of Object.entries(outcome.cargoDelta)) {
           if (delta === undefined || delta === 0) continue;
@@ -447,6 +449,7 @@ export function registerGameIPCHandlers(db: Database.Database): void {
                 quantity: delta,
                 boughtAtPrice: 0,
                 boughtAtPort: 'salvaged',
+                boughtAtTurn: eventTurn,
               });
             }
           } else if (delta < 0 && idx >= 0) {
