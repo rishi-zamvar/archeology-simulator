@@ -49,7 +49,7 @@ See [v1.2-ROADMAP.md](milestones/v1.2-ROADMAP.md) for full details.
 **Milestone Goal:** Deepen gameplay with seasonal weather affecting voyages, a persistent captain's journal, polished sailing animations with visible ship movement, and trade profit/loss feedback -- turning the simulator from a functional loop into a richer educational experience.
 
 - [ ] **Phase 9: Seasonal Weather System** - Pure game logic deriving season from turn and modifying voyage duration/events
-- [ ] **Phase 10: Captain's Journal** - SQLite-backed journal with auto-logged trades, events, and player reflections
+- [x] **Phase 10: Captain's Journal** - SQLite-backed journal with auto-logged trades, events, and player reflections (completed 2026-03-31)
 - [ ] **Phase 11: Sailing Animation Polish** - Visible ship movement on map with route line, camera tracking, and voyage overlay
 - [ ] **Phase 12: Trade UX & Title Screen** - Profit/loss indicators on trade panel and entry screen for the game
 
@@ -86,8 +86,8 @@ Plans:
 
 Plans:
 - [x] 10-01-PLAN.md — SQLite schema, types, query functions, IPC handlers, preload bridge (JRN-01, JRN-05)
-- [ ] 10-02-PLAN.md — Auto-log trades, events, arrivals, departures into journal (JRN-02, JRN-03, JRN-04)
-- [ ] 10-03-PLAN.md — Refactor Logbook.tsx to DB-backed journal with note input (JRN-01, JRN-05)
+- [x] 10-02-PLAN.md — Auto-log trades, events, arrivals, departures into journal (JRN-02, JRN-03, JRN-04)
+- [x] 10-03-PLAN.md — Refactor Logbook.tsx to DB-backed journal with note input (JRN-01, JRN-05)
 
 ### Phase 11: Sailing Animation Polish
 **Goal**: Players see their ship physically move between ports on the map during voyages
@@ -133,6 +133,6 @@ Plans:
 | 7. IPC & Logging | v1.2 | 3/3 | Complete | 2026-03-31 |
 | 8. TypeScript & Error UX | v1.2 | 2/2 | Complete | 2026-03-31 |
 | 9. Seasonal Weather | v1.3 | 1/3 | In Progress|  |
-| 10. Captain's Journal | v1.3 | 1/3 | In Progress|  |
+| 10. Captain's Journal | v1.3 | 3/3 | Complete   | 2026-03-31 |
 | 11. Sailing Animation | v1.3 | 0/? | Not started | - |
 | 12. Trade UX & Title Screen | v1.3 | 0/? | Not started | - |

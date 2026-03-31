@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.3
 milestone_name: Gameplay Depth & Polish
 status: executing
-stopped_at: Completed 10-01-PLAN.md
-last_updated: "2026-03-31T20:44:45.401Z"
+stopped_at: Completed 10-03-PLAN.md
+last_updated: "2026-03-31T20:48:09.188Z"
 last_activity: 2026-03-31
 progress:
   total_phases: 4
   completed_phases: 1
   total_plans: 6
-  completed_plans: 4
+  completed_plans: 5
   percent: 76
 ---
 
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-03-31)
 ## Current Position
 
 Phase: 10 (captain-s-journal) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 Status: Ready to execute
 Last activity: 2026-03-31
 
@@ -50,6 +50,7 @@ Progress: [########################------] ~76% (26/~34 plans across all milesto
 | Phase 09 P02 | 16min | 2 tasks | 7 files |
 | Phase 09 P03 | 20min | 3 tasks | 6 files |
 | Phase 10 P01 | 2min | 2 tasks | 7 files |
+| Phase 10 P03 | 1min | 1 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -65,6 +66,7 @@ See PROJECT.md Key Decisions table for full history.
 - [Phase 09]: rollVoyageEvent uses optional seasonalWeights with ?? fallback for backward compatibility
 - [Phase 09]: Navigation intercept pattern: Shell.tsx checks weather conditions before dispatching SET_SAIL IPC
 - [Phase 10]: Journal uses separate IPC namespace (journal:) rather than extending game: namespace
+- [Phase 10]: Weather/rumor entries generated at render time via useMemo, not stored in DB
 
 ### Pending Todos
 
@@ -78,6 +80,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-31T20:44:45.399Z
-Stopped at: Completed 10-01-PLAN.md
+Last session: 2026-03-31T20:48:09.186Z
+Stopped at: Completed 10-03-PLAN.md
 Resume file: None
