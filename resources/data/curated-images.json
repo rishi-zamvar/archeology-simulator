@@ -173,5 +173,229 @@
     "filePath": "images/ports/gadir.jpg",
     "attribution": "AI-generated reconstruction, ancient Phoenician colony of Gadir, 18th century engraving style",
     "sourceUrl": ""
+  },
+  {
+    "id": "good-wheat-01",
+    "goodId": "wheat",
+    "filePath": "images/wheat/wheat_01.jpg",
+    "attribution": "AI-generated, Roman floor mosaic style, golden wheat sheaves in circular pattern",
+    "sourceUrl": ""
+  },
+  {
+    "id": "good-wheat-02",
+    "goodId": "wheat",
+    "filePath": "images/wheat/wheat_02.jpg",
+    "attribution": "AI-generated, Egyptian tomb relief style, stalks of wheat carved in stone",
+    "sourceUrl": ""
+  },
+  {
+    "id": "good-wheat-03",
+    "goodId": "wheat",
+    "filePath": "images/wheat/wheat_03.jpg",
+    "attribution": "AI-generated, Pompeii fresco style, still life of wheat sheaves and bread",
+    "sourceUrl": ""
+  },
+  {
+    "id": "good-wheat-04",
+    "goodId": "wheat",
+    "filePath": "images/wheat/wheat_04.jpg",
+    "attribution": "AI-generated, Greek red-figure vase painting style, wheat stalks on black ceramic",
+    "sourceUrl": ""
+  },
+  {
+    "id": "good-olive_oil-01",
+    "goodId": "olive_oil",
+    "filePath": "images/olive_oil/olive_oil_01.jpg",
+    "attribution": "AI-generated, Roman mosaic style, olive branch with amphora of oil",
+    "sourceUrl": ""
+  },
+  {
+    "id": "good-olive_oil-02",
+    "goodId": "olive_oil",
+    "filePath": "images/olive_oil/olive_oil_02.jpg",
+    "attribution": "AI-generated, Greek black-figure vase painting style, olive tree on ceramic",
+    "sourceUrl": ""
+  },
+  {
+    "id": "good-olive_oil-03",
+    "goodId": "olive_oil",
+    "filePath": "images/olive_oil/olive_oil_03.jpg",
+    "attribution": "AI-generated, Pompeii fresco style, olive branches and oil flask",
+    "sourceUrl": ""
+  },
+  {
+    "id": "good-olive_oil-04",
+    "goodId": "olive_oil",
+    "filePath": "images/olive_oil/olive_oil_04.jpg",
+    "attribution": "AI-generated, Stone relief style, carved olive branches with fruit",
+    "sourceUrl": ""
+  },
+  {
+    "id": "good-wine-01",
+    "goodId": "wine",
+    "filePath": "images/wine/wine_01.jpg",
+    "attribution": "AI-generated, Pompeii fresco style, grapevines with wine crater and cups",
+    "sourceUrl": ""
+  },
+  {
+    "id": "good-wine-02",
+    "goodId": "wine",
+    "filePath": "images/wine/wine_02.jpg",
+    "attribution": "AI-generated, Roman mosaic style, grape clusters in medallion pattern",
+    "sourceUrl": ""
+  },
+  {
+    "id": "good-wine-03",
+    "goodId": "wine",
+    "filePath": "images/wine/wine_03.jpg",
+    "attribution": "AI-generated, Greek red-figure vase painting style, grapevines and amphora",
+    "sourceUrl": ""
+  },
+  {
+    "id": "good-wine-04",
+    "goodId": "wine",
+    "filePath": "images/wine/wine_04.jpg",
+    "attribution": "AI-generated, North African mosaic style, grape harvest with vines",
+    "sourceUrl": ""
+  },
+  {
+    "id": "good-textiles-01",
+    "goodId": "textiles",
+    "filePath": "images/textiles/textiles_01.jpg",
+    "attribution": "AI-generated, Greek red-figure vase painting style, loom with woven cloth",
+    "sourceUrl": ""
+  },
+  {
+    "id": "good-textiles-02",
+    "goodId": "textiles",
+    "filePath": "images/textiles/textiles_02.jpg",
+    "attribution": "AI-generated, Roman mosaic style, folded bolts of dyed fabric",
+    "sourceUrl": ""
+  },
+  {
+    "id": "good-textiles-03",
+    "goodId": "textiles",
+    "filePath": "images/textiles/textiles_03.jpg",
+    "attribution": "AI-generated, Egyptian tomb painting style, flax plants and linen cloth",
+    "sourceUrl": ""
+  },
+  {
+    "id": "good-textiles-04",
+    "goodId": "textiles",
+    "filePath": "images/textiles/textiles_04.jpg",
+    "attribution": "AI-generated, Pompeii fresco style, draped textiles in rich colors",
+    "sourceUrl": ""
+  },
+  {
+    "id": "good-spices-01",
+    "goodId": "spices",
+    "filePath": "images/spices/spices_01.jpg",
+    "attribution": "AI-generated, Roman mosaic style, bowls of ground spices",
+    "sourceUrl": ""
+  },
+  {
+    "id": "good-spices-02",
+    "goodId": "spices",
+    "filePath": "images/spices/spices_02.jpg",
+    "attribution": "AI-generated, Egyptian tomb relief style, frankincense and myrrh",
+    "sourceUrl": ""
+  },
+  {
+    "id": "good-spices-03",
+    "goodId": "spices",
+    "filePath": "images/spices/spices_03.jpg",
+    "attribution": "AI-generated, Pompeii fresco style, spice jars and aromatic plants",
+    "sourceUrl": ""
+  },
+  {
+    "id": "good-spices-04",
+    "goodId": "spices",
+    "filePath": "images/spices/spices_04.jpg",
+    "attribution": "AI-generated, Byzantine mosaic style, exotic spices with gold tiles",
+    "sourceUrl": ""
+  },
+  {
+    "id": "good-bronze-01",
+    "goodId": "bronze",
+    "filePath": "images/bronze/bronze_01.jpg",
+    "attribution": "AI-generated, Greek black-figure vase painting style, bronze weapons",
+    "sourceUrl": ""
+  },
+  {
+    "id": "good-bronze-02",
+    "goodId": "bronze",
+    "filePath": "images/bronze/bronze_02.jpg",
+    "attribution": "AI-generated, Assyrian stone relief style, bronze tools carved in stone",
+    "sourceUrl": ""
+  },
+  {
+    "id": "good-bronze-03",
+    "goodId": "bronze",
+    "filePath": "images/bronze/bronze_03.jpg",
+    "attribution": "AI-generated, Roman mosaic style, bronze vessels and mirrors",
+    "sourceUrl": ""
+  },
+  {
+    "id": "good-bronze-04",
+    "goodId": "bronze",
+    "filePath": "images/bronze/bronze_04.jpg",
+    "attribution": "AI-generated, Pompeii fresco style, bronze cookware and statuettes",
+    "sourceUrl": ""
+  },
+  {
+    "id": "good-timber-01",
+    "goodId": "timber",
+    "filePath": "images/timber/timber_01.jpg",
+    "attribution": "AI-generated, Egyptian tomb relief style, cedar logs on a barge",
+    "sourceUrl": ""
+  },
+  {
+    "id": "good-timber-02",
+    "goodId": "timber",
+    "filePath": "images/timber/timber_02.jpg",
+    "attribution": "AI-generated, Assyrian palace relief style, cedar trees being felled",
+    "sourceUrl": ""
+  },
+  {
+    "id": "good-timber-03",
+    "goodId": "timber",
+    "filePath": "images/timber/timber_03.jpg",
+    "attribution": "AI-generated, Roman mosaic style, ship timber and shipbuilding tools",
+    "sourceUrl": ""
+  },
+  {
+    "id": "good-timber-04",
+    "goodId": "timber",
+    "filePath": "images/timber/timber_04.jpg",
+    "attribution": "AI-generated, Greek red-figure vase painting style, tree trunks on ceramic",
+    "sourceUrl": ""
+  },
+  {
+    "id": "good-pottery-01",
+    "goodId": "pottery",
+    "filePath": "images/pottery/pottery_01.jpg",
+    "attribution": "AI-generated, Greek red-figure vase painting style, decorated amphoras and kraters",
+    "sourceUrl": ""
+  },
+  {
+    "id": "good-pottery-02",
+    "goodId": "pottery",
+    "filePath": "images/pottery/pottery_02.jpg",
+    "attribution": "AI-generated, Roman mosaic style, fine pottery vessels in medallion",
+    "sourceUrl": ""
+  },
+  {
+    "id": "good-pottery-03",
+    "goodId": "pottery",
+    "filePath": "images/pottery/pottery_03.jpg",
+    "attribution": "AI-generated, Pompeii fresco style, shelf of painted pottery",
+    "sourceUrl": ""
+  },
+  {
+    "id": "good-pottery-04",
+    "goodId": "pottery",
+    "filePath": "images/pottery/pottery_04.jpg",
+    "attribution": "AI-generated, Egyptian tomb painting style, clay vessels and jars",
+    "sourceUrl": ""
   }
 ]
