@@ -1,699 +1,349 @@
 # Phase 5: Image Sourcing & Curation - Research
 
-**Researched:** 2026-03-16
-**Domain:** Public domain image sourcing, API integration, image lifecycle management
-**Confidence:** HIGH (API documentation verified, patterns established from Phase 3 artifact caching)
+**Researched:** 2026-03-31
+**Domain:** Interactive image sourcing, museum APIs, historical art discovery
+**Confidence:** MEDIUM (interactive workflow + web search dependent)
 
 ## Summary
 
-Phase 5 orchestrates user-guided curation of 17-20 public domain images (5 port illustrations + 12-15 artifact photos across 3 trade goods). The existing Phase 4 infrastructure (curated_images table, resources/ directories, seedCuratedImages) is ready. Phase 5 adds the acquisition workflow: search public domain APIs, present candidates to the user for approval, download approved images, and record metadata.
+Phase 5 is fundamentally different from other phases: it is an **interactive curation workflow**, not autonomous code generation. The executor (Claude) searches for images, presents candidates to the user with inline previews, the user picks by number, and Claude downloads the approved images and updates the manifest.
 
-**Key insight:** This is an *interactive* phase, not autonomous. The executor pauses to show each image candidate (source URL, attribution, preview) and waits for user approval/rejection before downloading. This requires a presentation pattern, not just batch processing.
+The existing infrastructure from Phase 4 is complete: `curated_images` table with proper schema, `seedCuratedImages()` reading from `resources/data/curated-images.json`, query functions with limits (3 per port, 5 per good), IPC handler with absolute path resolution, and directory structure with `resources/images/ports/` (already has 27 placeholder files) and `resources/images/{good_name}/` (8 directories with `.gitkeep` files).
 
-**Primary recommendation:** Use Met Museum API as primary source (90%+ hit rate for archaeological artifacts), Wikimedia Commons as fallback. Implement a simple approval UI (URL + attribution display) before download. Store images as JPG/PNG in resources/images/{good,port}/ directories. Metadata already has source_url and attribution fields ready.
+The core challenge is **finding appropriate images at scale** (25 ports + 8 goods x 4-5 images each) while maintaining quality through user approval. Port images (drawn/illustrated scenes of ancient harbors) will be harder to source than trade good images (ancient art depicting commodities).
 
----
+**Primary recommendation:** Split into 4 plans: (1) Greek ports, (2) remaining ports by region, (3) trade goods, (4) manifest finalization. Each plan follows the same search-present-approve-download pattern.
 
 ## Standard Stack
 
-### Core APIs (Public Domain)
+This phase uses no new libraries. All operations use tools already available in Claude Code.
 
-| Source | API Type | Coverage | Public Domain Rate | Why Standard |
-|--------|----------|----------|-------------------|-------------|
-| Met Museum | REST JSON | 406,000+ public domain works | 100% of results are public domain | Gold standard for ancient Mediterranean artifacts; extensive Greek/Roman pottery, amphorae, vessels; no API key required; CC0 licensed |
-| Wikimedia Commons | MediaWiki API | 50M+ community-curated files | Variable (user-tagged) | Fallback when Met fails; community annotations; good for illustrations and historical drawings; requires license verification |
-| Europeana | REST JSON | 50M+ European heritage | Public when reusability=open | Second-tier fallback for European artifacts; requires API key; covers British Museum, state museums; slower than Met |
-| British Museum | Collection Online (web) | 2M+ objects | Partial public domain | Manual curation only (no formal API); useful for spot-checking specific artifacts; slow for bulk search |
+### Core Tools
+| Tool | Purpose | Why |
+|------|---------|-----|
+| WebSearch | Find candidate images across archives and web | Primary discovery mechanism |
+| WebFetch | Download images from URLs, verify accessibility | Image retrieval |
+| Bash (curl) | Download image files to disk | Reliable binary file download |
+| Read (image) | Display images inline for user approval | Claude Code can read/display images |
+| Write/Bash | Update curated-images.json manifest | JSON file manipulation |
 
-### Helper Libraries
-
-| Library | Version | Purpose | Why |
-|---------|---------|---------|-----|
-| fetch (Node.js builtin) | 18+ | HTTP requests to APIs | Already in use (Phase 3 artifact handler); no extra dependency |
-| fs (Node.js builtin) | builtin | Image file writing | Stream images directly to disk; efficient for large files |
-| path (Node.js builtin) | builtin | Directory/file path resolution | Cross-platform path handling |
-| sharp (optional, NOT required) | ^0.32+ | Image resizing/validation | Only if thumbnailing or validation needed; adds 30MB to bundle |
-
-### Installation
-
-No new dependencies needed. Existing fetch, fs, path are builtin to Node.js.
-
----
+### Image Sources (Priority Order)
+| Source | URL Pattern | Strengths | Limitations |
+|--------|-------------|-----------|-------------|
+| Wikimedia Commons | `commons.wikimedia.org/wiki/File:*` | Largest public domain collection, reliable URLs | Requires navigating to actual file URL |
+| Met Open Access | `images.metmuseum.org/CRDImages/*/original/*` | High-res, CC0, structured API | Limited to Met collection |
+| Artvee | `artvee.com/dl/*` | Curated public domain art, easy download | Smaller collection |
+| British Museum | `britishmuseum.org/collection/*` | Excellent ancient world coverage | No formal API, web scraping needed |
+| Europeana | `europeana.eu/item/*` | Aggregates European collections | Variable image quality |
+| Google Arts & Culture | `artsandculture.google.com/*` | Huge collection | Downloads may be restricted |
+| General Web Search | Various | Catches illustrations not in archives | Requires source verification |
 
 ## Architecture Patterns
 
-### Image Sourcing Workflow (Phase 5 Pattern)
+### Interactive Approval Workflow Pattern
+
+Each search-and-approve cycle follows this structure:
 
 ```
-1. Search API (Met → Wikimedia → Europeana)
-   └─ Collect candidate URLs, titles, attributions
-2. Present to User (IPC round-trip)
-   └─ Show: image preview (or thumbnail URL), source URL, attribution, museum link
-   └─ User: APPROVE / REJECT / SKIP
-3. Download if Approved
-   └─ Save to resources/images/{good,port}/
-   └─ Record metadata: id, file_path, attribution, source_url
-   └─ Update curated-images.json manifest
-4. Re-seed Database
-   └─ seedCuratedImages loads manifest on next launch
+1. SEARCH: WebSearch for "[port/good] + [search terms]"
+2. EVALUATE: Visit top results with WebFetch, assess relevance
+3. DOWNLOAD CANDIDATES: curl images to temp location
+4. PRESENT: Show numbered list with inline image previews to user
+5. AWAIT: User picks by number
+6. FINALIZE: Move approved images to resources/images/{type}/
+7. RECORD: Add entry to curated-images.json manifest
 ```
 
-### API Search Patterns
+### Manifest Entry Format
 
-#### Met Museum Search (High Confidence)
+Each entry in `resources/data/curated-images.json` must match the schema expected by `seedCuratedImages()`:
 
-```typescript
-// Source: https://metmuseum.github.io/
-// Search for artifacts matching trade good + historical context
-
-// Example: Grain (Egyptian amphorae)
-const query = "ancient Egyptian grain amphora storage vessel";
-const url = new URL("https://collectionapi.metmuseum.org/public/collection/v1/search");
-url.searchParams.set("q", query);
-url.searchParams.set("hasImages", "true");
-url.searchParams.set("isPublicDomain", "true");
-const resp = await fetch(url.toString());
-const { objectIDs } = await resp.json() as { objectIDs?: number[] };
-
-// Fetch details for promising candidates (skip first 2, sample spread)
-const detailPromises = objectIDs
-  ?.slice(2, 15)
-  .filter((_, i) => i % 2 === 0) // Sample every other one
-  .map(id =>
-    fetch(`https://collectionapi.metmuseum.org/public/collection/v1/objects/${id}`)
-      .then(r => r.json() as Promise<MetObject>)
-  ) ?? [];
-
-// Extract: object.title, object.primaryImage (URL), object.objectDescription
-// Verify: isPublicDomain === true, primaryImage is non-empty
-```
-
-#### Wikimedia Commons Fallback
-
-```typescript
-// Source: https://commons.wikimedia.org/wiki/Commons:API/MediaWiki
-// For illustrations or when Met search yields <3 results
-
-const good = "olive_oil";
-const url = new URL("https://commons.wikimedia.org/w/api.php");
-url.searchParams.set("action", "query");
-url.searchParams.set("list", "search");
-url.searchParams.set("srsearch", `ancient ${good} vessel amphora`);
-url.searchParams.set("srnamespace", "6"); // File namespace only
-url.searchParams.set("srlimit", "10");
-url.searchParams.set("format", "json");
-url.searchParams.set("origin", "*"); // CORS
-
-const resp = await fetch(url.toString());
-const { query } = await resp.json() as { query?: { search?: FileInfo[] } };
-
-// Verify license in page details (requires separate call per file)
-// Acceptable licenses: CC0, CC BY, PD (public domain tag)
-```
-
-#### Europeana Fallback (Requires API Key)
-
-```typescript
-// Source: https://apis.europeana.eu/en
-// Last-resort source for European museum artifacts
-// Requires registration at https://pro.europeana.eu/page/get-api
-
-const apiKey = process.env.EUROPEANA_API_KEY; // Must be set
-const query = "ancient Mediterranean artifact 600-900 BCE";
-const url = new URL("https://api.europeana.eu/record/v2/search.json");
-url.searchParams.set("query", query);
-url.searchParams.set("rows", "10");
-url.searchParams.set("reusability", "open"); // Public domain only
-url.searchParams.set("wskey", apiKey);
-
-const resp = await fetch(url.toString());
-const { items } = await resp.json() as { items?: EuropeanaItem[] };
-
-// Extract: item.title, item.edmPreview (image URL), item.dcCreator
-```
-
-### User Approval Pattern
-
-```typescript
-// Main process → Renderer: present each candidate
-interface ImageCandidate {
-  id: string; // unique ID for tracking
-  sourceUrl: string; // Full museum URL (clickable)
-  imageUrl: string; // Thumbnail/preview URL
-  title: string;
-  attribution: string; // Museum + artist if known
-  source: "met" | "wikimedia" | "europeana"; // which API
+```json
+{
+  "id": "port-athens-01",
+  "portId": "athens",
+  "filePath": "images/ports/athens.jpg",
+  "attribution": "View of the Port of Piraeus, c. 1850, by Unknown Artist",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Example.jpg"
 }
-
-// Renderer shows:
-// - Preview image (or placeholder if thumbnail unavailable)
-// - Title
-// - Attribution
-// - Source URL (linked)
-// - Buttons: APPROVE / REJECT / SKIP
-
-// Renderer → Main: user decision
-ipcMain.handle("image:approve-candidate", async (event, { candidateId, filePath }) => {
-  // Download image from candidate.imageUrl
-  // Save to resources/images/{good,port}/{candidateId}.jpg
-  // Update manifest entry
-});
 ```
 
-### Manifest-Driven Seeding
-
-```typescript
-// Phase 4 established this pattern; Phase 5 populates it
-
-// File: resources/data/curated-images.json
-// Format: Array of fully-qualified records
-
-[
-  {
-    "id": "alexandria_harbor",
-    "portId": "alexandria",
-    "filePath": "resources/images/ports/alexandria_harbor.jpg",
-    "attribution": "Metropolitan Museum of Art, Gift of J.P. Morgan, 1917",
-    "sourceUrl": "https://www.metmuseum.org/art/collection/search/123456",
-    "createdAt": "2026-03-16T14:30:00Z"
-  },
-  {
-    "id": "grain_amphora_1",
-    "goodId": "grain",
-    "filePath": "resources/images/grain/storage_vessel_1.jpg",
-    "attribution": "Wikimedia Commons, User: MuseumBot",
-    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Ancient_Greek_Amphora.jpg",
-    "createdAt": "2026-03-16T14:35:00Z"
-  }
-]
-
-// seedCuratedImages loads this manifest at app startup
-// INSERT OR IGNORE prevents duplicates
+For trade goods:
+```json
+{
+  "id": "good-wheat-01",
+  "goodId": "wheat",
+  "filePath": "images/wheat/wheat_01.jpg",
+  "attribution": "Wheat harvest scene, Roman mosaic, 3rd century CE, Bardo Museum",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Example.jpg"
+}
 ```
 
----
+Key fields:
+- `id`: Unique string, format `port-{portId}-{nn}` or `good-{goodId}-{nn}`
+- `portId` or `goodId`: Must match the IDs in the database (e.g., `athens`, `olive_oil`)
+- `filePath`: Relative to `resources/` directory (e.g., `images/ports/athens.jpg`)
+- `attribution`: Human-readable credit string
+- `sourceUrl`: Original source URL (optional but recommended)
+
+### File Naming Convention
+
+**Ports:** `resources/images/ports/{portId}.jpg` (one image per port, replacing existing placeholders)
+- Example: `resources/images/ports/athens.jpg`
+
+**Trade goods:** `resources/images/{goodId}/{goodId}_{nn}.jpg` (multiple images per good)
+- Example: `resources/images/wheat/wheat_01.jpg`, `resources/images/wheat/wheat_02.jpg`
+
+### Existing Port IDs (from seed data)
+```
+athens, corinth, sparta, miletos, ephesos, byzantion, rhodes, knossos,
+syracuse, massalia, taras, ostia,
+carthage, utica, leptis,
+alexandria, naukratis, memphis,
+tyre, sidon, byblos, kition, salamis_cy,
+emporion, gadir
+```
+
+Note: The context mentions "20 ports (7 regions)" but the detailed list in the context actually names 25 ports. The DB seeds 25. Plans should cover all 25.
+
+### Existing Port Images to Replace
+The `resources/images/ports/` directory already contains 27 files (including `rome.jpg` and `antioch.jpg` which are not in the port list). These are the current placeholder images that will be replaced with user-curated selections. The existing files should be **overwritten** with the new approved images. `rome.jpg` and `antioch.jpg` should be removed during cleanup.
 
 ## Don't Hand-Roll
 
 | Problem | Don't Build | Use Instead | Why |
 |---------|-------------|-------------|-----|
-| Image download with retry/resume | Custom download loop with partial writes | Node.js fs.createWriteStream + fetch.body.pipeTo | Stream handling, buffering, and error recovery are complex; fs handles truncation and seeks automatically |
-| License verification for public domain | Custom scraper of license pages | Parse API response metadata (`isPublicDomain`, `reusability=open`, license tags) | API metadata is authoritative; web scraping is fragile and violates ToS; museums update licenses dynamically |
-| Image format conversion/resizing | Custom ImageMagick wrapping | Accept images as-is from API (JPG/PNG); skip resizing | Met/Wikimedia already serve optimized formats; adding image processing inflates bundle by 30MB+ and introduces system dependencies |
-| Attribution display | Custom attribution parser | Use museum-provided attribution field directly | Museums include human-readable attribution in metadata; custom parsing introduces errors and copyright risks |
-| Caching/deduplication of download attempts | Custom in-memory Map of tried URLs | Use manifest with `createdAt` timestamp + database query | Manifest and DB are source of truth; in-memory cache loses data on restart |
-
-**Key insight:** The Met Museum API is *designed* for this use case — it guarantees public domain status, provides high-resolution images, and includes full attribution metadata. Use what it provides; don't re-validate or transform.
-
----
+| Image downloading | Custom HTTP client | `curl -L -o file url` | Handles redirects, SSL, binary safely |
+| Image format detection | File extension parsing | `file --mime-type` command | Reliable MIME detection |
+| JSON manifest editing | Manual string manipulation | Read JSON, parse, append, write | Avoid corruption |
+| Inline image preview | External viewer | Claude Code's `Read` tool on image files | Built-in multimodal capability |
+| Met API search | Custom wrapper | Direct `curl` to `collectionapi.metmuseum.org/public/collection/v1/search` | Simple REST, no auth needed |
 
 ## Common Pitfalls
 
-### Pitfall 1: Relying on `hasImages` Flag Without Verifying `primaryImage` URL
+### Pitfall 1: Image URLs That Don't Direct-Download
+**What goes wrong:** Many museum/archive pages show images embedded in HTML but the direct image URL requires navigating thumbnails or specific download endpoints.
+**Why it happens:** Museums serve images through viewers, not direct links.
+**How to avoid:** For Wikimedia, extract the actual file URL from the File: page. For Met, use the `primaryImage` field from the API response. Always verify the downloaded file is an actual image (check file size > 1KB and MIME type).
+**Warning signs:** Downloaded file is HTML instead of image, file size suspiciously small.
 
-**What goes wrong:** Met API returns `hasImages: true` but `primaryImage` is empty string or null. Code assumes image is available, downloads fail or show broken image.
+### Pitfall 2: Search Terms Too Specific or Too Generic
+**What goes wrong:** Searching "ancient port of Naukratis harbor illustration" returns nothing. Searching "ancient port" returns 10,000 irrelevant results.
+**Why it happens:** Obscure ports have little artistic coverage; generic terms are too broad.
+**How to avoid:** Use layered search strategy:
+1. Start specific: "[port name] ancient illustration painting engraving"
+2. Broaden: "[port name] historical art"
+3. Alternative names: "[modern name] ancient harbor" (e.g., "Jbeil ancient harbor" for Byblos)
+4. Regional: "[region] ancient port illustration" (e.g., "Phoenician port illustration")
+5. Last resort: AI generation fallback
 
-**Why it happens:** `hasImages` indicates *any* image associated with the object (thumbnail, diagram, etc.), not necessarily the primary high-resolution image used for display.
+### Pitfall 3: Curated-Images Manifest Gets Out of Sync
+**What goes wrong:** Images downloaded but manifest not updated, or manifest references files that don't exist.
+**Why it happens:** Multi-step workflow with manual coordination.
+**How to avoid:** After each batch of approved images, immediately update curated-images.json. Verify with a final check that every manifest entry has a corresponding file on disk.
 
-**How to avoid:** Always check: `if (obj.primaryImage && obj.primaryImage.trim().length > 0)` before attempting download.
+### Pitfall 4: Port ID Mismatches
+**What goes wrong:** Manifest uses `leptis_magna` but DB has `leptis`. Image never shows up.
+**Why it happens:** Port IDs in the DB are abbreviated/simplified.
+**How to avoid:** Always reference the exact port IDs from the seed data (listed above). Cross-check every manifest entry's `portId` against the database.
 
-**Warning signs:** Manifest contains records with `filePath: null` or 404 errors when loading images.
+### Pitfall 5: Overwhelming User with Too Many Choices at Once
+**What goes wrong:** Presenting 60 images for 20 ports in one batch. User loses context.
+**Why it happens:** Trying to be efficient by batching everything.
+**How to avoid:** Present 2-3 candidates per port/good, one item at a time. Let user pick, then move on to next item.
 
----
+### Pitfall 6: Forgetting AI-Generation Fallback
+**What goes wrong:** Spending excessive time searching for images of obscure ports when no historical illustrations exist.
+**Why it happens:** Assumption that every port has artistic coverage.
+**How to avoid:** Set a time/attempt limit per port. If 2-3 searches yield nothing suitable, move to AI generation immediately. Likely candidates for AI fallback: Naukratis, Utica, Kition, Salamis (Cyprus), Emporion.
 
-### Pitfall 2: Forgetting to Verify `isPublicDomain` Flag on Each Object
+## Search Strategy Guide
 
-**What goes wrong:** Met API search includes copyrighted objects alongside public domain ones. Downloading and bundling copyrighted images violates ToS and legal obligations.
+### Port Images: Effective Search Queries
 
-**Why it happens:** Search endpoint doesn't filter by `isPublicDomain`; only the detail endpoint (`/objects/{id}`) includes this flag. Developers skip the detail fetch to save API calls.
+**Tier 1 - Famous ports (likely abundant results):**
+Athens/Piraeus, Alexandria, Carthage, Tyre, Ostia, Syracuse, Rhodes, Ephesus, Constantinople/Byzantion
 
-**How to avoid:** Treat `isPublicDomain` as a gate: only add to results if `obj.isPublicDomain === true`. Never assume search results are safe.
+Search: `"[ancient name] harbor" OR "[ancient name] port" painting OR engraving OR illustration`
 
-**Warning signs:** Manifests with `sourceUrl` pointing to objects with copyright symbols (©), licensed images, or "Image use restricted" notices.
+**Tier 2 - Well-known but fewer illustrations:**
+Corinth, Massalia/Marseille, Sidon, Byblos, Memphis, Sparta, Miletos, Knossos/Crete
 
----
+Search: `"ancient [name]" illustration OR painting OR engraving harbor OR city`
 
-### Pitfall 3: Image URLs Changing Over Time (Link Rot)
+**Tier 3 - Obscure, likely need fallback:**
+Naukratis, Utica, Leptis Magna, Kition, Salamis Cyprus, Emporion, Gadir, Taras
 
-**What goes wrong:** `primaryImage` URL is valid when downloaded, but museum changes CDN/URLs, bundle contains 404 links after build.
+Search: `"[name]" OR "[modern name]" ancient OR historical illustration`
+Fallback: AI generation in 18th-19th century engraving style
 
-**Why it happens:** Museums migrate infrastructure; old URLs stop redirecting.
+### Trade Good Images: Effective Search Queries
 
-**How to avoid:** Download and *embed* image files into bundle at build time, don't link to CDN. Store `sourceUrl` (human-clickable attribution link) separately from `filePath` (local resource).
+Ancient art depicting specific commodities is well-represented in museum collections:
 
-**Warning signs:** App displays broken images after app update; `sourceUrl` links work but `filePath` doesn't exist.
+| Good | Best Search Terms | Likely Sources |
+|------|-------------------|----------------|
+| wheat | "Roman wheat harvest mosaic", "Ceres grain fresco", "ancient wheat sheaves relief" | Pompeii frescoes, North African mosaics |
+| olive_oil | "ancient olive harvest mosaic", "Greek olive oil amphora painting", "olive press relief" | Greek vases, Roman mosaics |
+| wine | "Dionysus wine mosaic", "ancient grape harvest fresco", "Roman wine amphora" | Pompeii, Greek vases (very abundant) |
+| textiles | "ancient loom fresco", "Penelope weaving vase", "Roman textile mosaic" | Greek vases, Pompeii |
+| spices | "ancient spice trade relief", "frankincense caravan", "Roman spice merchant" | Harder to find, may need fallback |
+| bronze | "ancient bronze workshop", "Greek metalworking vase", "bronze smithing relief" | Greek vases, Roman reliefs |
+| timber | "ancient shipbuilding relief", "Lebanese cedar transport", "timber trade ancient" | Egyptian reliefs (excellent), Assyrian |
+| pottery | "ancient potter's workshop vase", "Greek potter wheel painting", "ceramic workshop" | Greek vases (very abundant) |
 
----
+### Source-Specific Search Patterns
 
-### Pitfall 4: User Approval Workflow Becoming Async Hell
-
-**What goes wrong:** Showing one candidate at a time across IPC boundaries creates cascading promises; error in one candidate breaks the whole flow; no way to batch-approve multiple images.
-
-**Why it happens:** Each candidate requires a round-trip IPC call (main ↔ renderer). Naive sequential implementation creates long chains of awaits.
-
-**How to avoid:** Collect all candidates first (batch search phase), present all in a UI list, let user mark approve/reject in bulk, then batch-download. Or: limit to 1 candidate per voyage event (non-blocking).
-
-**Warning signs:** Executor reports "approval step takes 10 minutes for 5 images" or "app hangs while waiting for user".
-
----
-
-### Pitfall 5: Not Cleaning Up Failed Downloads from Manifest
-
-**What goes wrong:** User approves image, download starts, network fails halfway. Image file is corrupted/truncated. Manifest still lists it as curated. App loads broken image repeatedly.
-
-**Why it happens:** Manifest is updated *before* download completes, or on download failure, manifest isn't rolled back.
-
-**How to avoid:** Write manifest *after* verifying image file integrity (check file size > 0, parse as image if possible). Or: use `.tmp` extension during download, rename on success, delete on failure.
-
-**Warning signs:** Manifest contains images that fail to load; console errors about "invalid image format".
-
----
-
-### Pitfall 6: Ancient Mediterranean Search Terms Being Too Generic
-
-**What goes wrong:** Search for "grain" returns any object with word "grain" in description (30,000+ results). Executor approves first 5, gets cooking vessels, modern sculptures, botanicals instead of ancient amphores.
-
-**Why it happens:** Met search is full-text, not faceted by era/region.
-
-**How to avoid:** Use specific compound terms: `"ancient [good] amphora storage vessel"`, `"Greek [good] krater vessel"`, `"Roman [good] dolium"`. For ports: `"[ancient city name] harbor illustration"`, `"[port region] ancient drawing"`.
-
-**Warning signs:** Approved images show objects from wrong time period (medieval, modern) or wrong context (art, not archaeology).
-
----
-
-## Code Examples
-
-### Met Museum Search Implementation
-
-```typescript
-// Source: https://metmuseum.github.io/
-async function searchMetMuseum(goodId: string): Promise<MetCandidate[]> {
-  const searchTerms: Record<string, string> = {
-    grain:       "ancient Egyptian grain storage amphora",
-    olive_oil:   "ancient Greek olive oil amphora vessel",
-    wine:        "ancient Greek wine krater vessel",
-  };
-
-  const query = searchTerms[goodId] ?? goodId;
-  const url = new URL("https://collectionapi.metmuseum.org/public/collection/v1/search");
-  url.searchParams.set("q", query);
-  url.searchParams.set("hasImages", "true");
-  url.searchParams.set("isPublicDomain", "true");
-
-  try {
-    const searchResp = await fetch(url.toString());
-    if (!searchResp.ok) throw new Error(`Search failed: ${searchResp.status}`);
-
-    const { objectIDs } = await searchResp.json() as { objectIDs?: number[] };
-    if (!objectIDs || objectIDs.length === 0) return [];
-
-    // Sample from middle of results (skip popular items at start)
-    const sampleIds = objectIDs.slice(3, 20).filter((_, i) => i % 2 === 0);
-
-    const candidates: MetCandidate[] = [];
-    for (const id of sampleIds) {
-      try {
-        const detailResp = await fetch(
-          `https://collectionapi.metmuseum.org/public/collection/v1/objects/${id}`
-        );
-        if (!detailResp.ok) continue;
-
-        const obj = await detailResp.json() as MetObject;
-
-        // Gate: must be public domain AND have primary image
-        if (!obj.isPublicDomain || !obj.primaryImage?.trim()) continue;
-
-        candidates.push({
-          id: `met_${goodId}_${obj.objectID}`,
-          sourceUrl: `https://www.metmuseum.org/art/collection/search/${obj.objectID}`,
-          imageUrl: obj.primaryImage,
-          title: obj.title || `Museum Object ${obj.objectID}`,
-          attribution: `Metropolitan Museum of Art, New York`,
-          source: "met",
-        });
-      } catch {
-        // Skip individual failures, continue to next candidate
-        continue;
-      }
-    }
-
-    return candidates.slice(0, 5); // Return up to 5 candidates per good
-  } catch (err) {
-    console.error("[Met search] error:", err);
-    return [];
-  }
-}
+**Met Museum API:**
+```bash
+curl "https://collectionapi.metmuseum.org/public/collection/v1/search?q=ancient+port+harbor&isPublicDomain=true"
+# Returns { total: N, objectIDs: [123, 456, ...] }
+# Then fetch each: curl "https://collectionapi.metmuseum.org/public/collection/v1/objects/123"
+# Image URL in response: primaryImage field
 ```
 
-### Wikimedia Commons Fallback
-
-```typescript
-// Source: https://commons.wikimedia.org/wiki/Commons:API
-async function searchWikimedia(goodId: string): Promise<WikiCandidate[]> {
-  const query = `ancient ${goodId} amphora vessel artifact`;
-  const url = new URL("https://commons.wikimedia.org/w/api.php");
-  url.searchParams.set("action", "query");
-  url.searchParams.set("list", "search");
-  url.searchParams.set("srsearch", query);
-  url.searchParams.set("srnamespace", "6"); // File namespace
-  url.searchParams.set("srlimit", "10");
-  url.searchParams.set("format", "json");
-  url.searchParams.set("origin", "*");
-
-  try {
-    const resp = await fetch(url.toString());
-    if (!resp.ok) throw new Error(`Wikimedia search failed: ${resp.status}`);
-
-    const { query: { search } } = await resp.json() as any;
-    if (!search || search.length === 0) return [];
-
-    // Wikimedia requires separate fetch to check license (in page content)
-    // For now, trust community tagging in filename (simple heuristic)
-    const candidates = search
-      .filter((result: any) =>
-        !result.title.includes("modern") &&
-        !result.title.includes("20th") &&
-        !result.title.includes("diagram")
-      )
-      .slice(0, 3)
-      .map((result: any) => ({
-        id: `wiki_${goodId}_${result.pageid}`,
-        sourceUrl: `https://commons.wikimedia.org/wiki/File:${encodeURIComponent(result.title)}`,
-        imageUrl: result.url || "",
-        title: result.title.replace(/_/g, " ").replace(/\..*$/, ""),
-        attribution: "Wikimedia Commons",
-        source: "wikimedia" as const,
-      }));
-
-    return candidates;
-  } catch (err) {
-    console.error("[Wikimedia search] error:", err);
-    return [];
-  }
-}
+**Wikimedia Commons:**
+```bash
+# Search via API
+curl "https://commons.wikimedia.org/w/api.php?action=query&list=search&srsearch=ancient+Athens+harbor+painting&srnamespace=6&format=json"
+# Get file URL from filename
+curl "https://commons.wikimedia.org/w/api.php?action=query&titles=File:Example.jpg&prop=imageinfo&iiprop=url&format=json"
 ```
 
-### Download & Save Image
-
-```typescript
-// Source: Node.js fs + fetch (builtin)
-import fs from "fs";
-import path from "path";
-
-async function downloadImage(
-  imageUrl: string,
-  destPath: string
-): Promise<boolean> {
-  try {
-    // Ensure directory exists
-    const dir = path.dirname(destPath);
-    await fs.promises.mkdir(dir, { recursive: true });
-
-    // Download with timeout
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
-
-    const resp = await fetch(imageUrl, {
-      signal: controller.signal,
-      headers: { "User-Agent": "ArcheologySimulator/1.0" },
-    });
-    clearTimeout(timeoutId);
-
-    if (!resp.ok) {
-      console.error(`Download failed: ${resp.status} for ${imageUrl}`);
-      return false;
-    }
-
-    // Verify content-type is image
-    const contentType = resp.headers.get("content-type") || "";
-    if (!contentType.startsWith("image/")) {
-      console.error(`Invalid content-type: ${contentType}`);
-      return false;
-    }
-
-    // Write to temporary file first
-    const tmpPath = `${destPath}.tmp`;
-    const fileStream = fs.createWriteStream(tmpPath);
-
-    // Pipe with error handling
-    await new Promise((resolve, reject) => {
-      resp.body!.pipe(fileStream)
-        .on("finish", resolve)
-        .on("error", reject);
-    });
-
-    // Verify file size > 0
-    const stats = await fs.promises.stat(tmpPath);
-    if (stats.size === 0) {
-      await fs.promises.unlink(tmpPath);
-      console.error("Downloaded file is empty");
-      return false;
-    }
-
-    // Atomic rename
-    await fs.promises.rename(tmpPath, destPath);
-    return true;
-  } catch (err) {
-    console.error("[Download] error:", err);
-    return false;
-  }
-}
+**Direct download:**
+```bash
+curl -L -o "resources/images/ports/athens.jpg" "https://upload.wikimedia.org/wikipedia/commons/..."
 ```
 
-### Update Manifest & Seed
+## Image Availability Assessment
 
-```typescript
-// Source: Phase 4 established seedCuratedImages; Phase 5 populates manifest
-interface CuratedImageRecord {
-  id: string;
-  goodId?: string;
-  portId?: string;
-  filePath: string;
-  attribution: string;
-  sourceUrl?: string;
-  createdAt?: string;
-}
+### Ports - Expected Availability (Confidence: LOW - educated guesses)
 
-async function addToManifest(record: CuratedImageRecord): Promise<void> {
-  const manifestPath = "resources/data/curated-images.json";
+| Port | Illustration Likelihood | Notes |
+|------|------------------------|-------|
+| Athens/Piraeus | HIGH | Many 18th-19th c. paintings and engravings |
+| Alexandria | HIGH | Famous subject, Pharos lighthouse depictions |
+| Carthage | HIGH | Romantic-era paintings of Carthaginian harbor |
+| Tyre | HIGH | Biblical/historical illustrations abundant |
+| Rhodes | HIGH | Colossus depictions include harbor views |
+| Ephesos | HIGH | Many archaeological reconstructions |
+| Syracuse | HIGH | Siege of Syracuse paintings, harbor views |
+| Byzantion/Constantinople | HIGH | Ottoman-era and earlier harbor paintings |
+| Corinth | MEDIUM | Some engravings, canal drawings may help |
+| Massalia/Marseille | MEDIUM | Historical harbor paintings exist |
+| Sidon | MEDIUM | Some 19th century engravings |
+| Byblos | MEDIUM | Archaeological site illustrations |
+| Ostia | MEDIUM | Reconstruction drawings exist |
+| Memphis | MEDIUM | Egyptian archaeological illustrations |
+| Knossos | MEDIUM | Palace reconstructions, Evans illustrations |
+| Sparta | MEDIUM | Not a port city; Gythion harbor less depicted |
+| Miletos | MEDIUM | Some archaeological reconstructions |
+| Gadir/Cadiz | MEDIUM | Historical port paintings may exist |
+| Leptis Magna | LOW | Some archaeological photos, few illustrations |
+| Taras/Taranto | LOW | Few historical illustrations |
+| Naukratis | LOW | Very obscure, likely needs AI fallback |
+| Utica | LOW | Very obscure, likely needs AI fallback |
+| Kition/Larnaca | LOW | Few historical illustrations |
+| Salamis (Cyprus) | LOW | Few historical illustrations |
+| Emporion | LOW | Archaeological site, few artistic depictions |
 
-  // Read existing manifest
-  let manifest: CuratedImageRecord[] = [];
-  try {
-    const content = await fs.promises.readFile(manifestPath, "utf-8");
-    manifest = JSON.parse(content);
-  } catch {
-    // File doesn't exist yet, start with empty array
-  }
+Estimated: ~9 ports will have good historical illustrations, ~8 will need creative searching, ~8 may need AI-generated fallback.
 
-  // Avoid duplicates by ID
-  if (manifest.some(img => img.id === record.id)) {
-    console.warn(`Image ${record.id} already in manifest, skipping`);
-    return;
-  }
+### Trade Goods - Expected Availability (Confidence: LOW - educated guesses)
 
-  // Add with timestamp
-  manifest.push({
-    ...record,
-    createdAt: record.createdAt || new Date().toISOString(),
-  });
+| Good | Ancient Art Likelihood | Best Medium |
+|------|----------------------|-------------|
+| wine | VERY HIGH | Greek vases (Dionysus scenes), Pompeii frescoes |
+| pottery | HIGH | Greek vases showing potters at work |
+| olive_oil | HIGH | Greek vases, Roman mosaics |
+| wheat | HIGH | Roman harvest mosaics, Egyptian reliefs |
+| textiles | MEDIUM | Greek vases (weaving scenes), few mosaics |
+| bronze | MEDIUM | Greek vases (smithing), some reliefs |
+| timber | MEDIUM | Egyptian reliefs (cedar transport), Assyrian |
+| spices | LOW | Few direct ancient depictions, may need creative searching |
 
-  // Write back
-  await fs.promises.writeFile(
-    manifestPath,
-    JSON.stringify(manifest, null, 2),
-    "utf-8"
-  );
+## Plan Structure Recommendation
 
-  console.log(`Added ${record.id} to manifest`);
-}
-```
+Given the scale (25 ports + 8 goods x ~4 images), this phase should be split into **4 plans**:
 
----
+### Plan 1: Greek Ports (8 ports)
+Athens, Corinth, Sparta, Miletos, Ephesos, Byzantion, Rhodes, Knossos
+- Search, present 2-3 candidates each, user approves
+- Download approved images, update manifest incrementally
+- Estimated: most should have good results, 1-2 may need fallback
+
+### Plan 2: Remaining Ports (17 ports)
+Italy (Syracuse, Massalia, Taras, Ostia), North Africa (Carthage, Utica, Leptis), Egypt (Alexandria, Naukratis, Memphis), Levant (Tyre, Sidon, Byblos, Kition, Salamis), Iberia (Emporion, Gadir)
+- Same workflow as Plan 1
+- More fallback AI generation likely needed
+- This is the largest plan; could be split further if executor finds it unwieldy
+
+### Plan 3: Trade Goods (8 goods x 4-5 images)
+All 8 trade goods, 2-3 candidates per image slot
+- Wine and pottery first (easiest), spices last (hardest)
+- AI fallback for shortfalls
+- Estimated 32-40 images total
+
+### Plan 4: Manifest Finalization & Verification
+- Build/verify complete curated-images.json from all approved images
+- Verify every file exists on disk
+- Verify every portId/goodId matches database
+- Test seedCuratedImages() loads correctly
+- Remove unused files (rome.jpg, antioch.jpg)
+- Git commit all images and manifest
+
+### Why 4 Plans (Not More, Not Fewer)
+
+- **Not 1-2:** Too many items per plan. The interactive approval loop means each plan takes significant wall-clock time. Splitting allows natural checkpoints.
+- **Not 7+:** Each plan has overhead (setup, verification). The workflow is repetitive, so grouping by type (ports/goods) is efficient.
+- **4 is right:** Ports split into 2 batches (Greek first as warmup/template, rest follows), goods as one batch, finalization as cleanup.
 
 ## State of the Art
 
-| Old Approach | Current Approach | When Changed | Impact |
-|--------------|------------------|--------------|--------|
-| Batch-download all images at once | User-guided approval per image (interactive) | Phase 5 (2026) | Better UX (user controls curation) but adds IPC complexity |
-| Link to external CDN images | Download and embed in bundle | Phase 5 (2026) | Offline-first app; no link rot; larger bundle (+5-10MB for images) |
-| Manual museum website scraping | Official APIs (Met, Europeana) | Phase 5 (2026) | Reliable, no ToS violations, structured metadata |
-| Single search term per good | Compound archaeological terms | Phase 5 (2026) | Better relevance (fewer medieval/modern results) |
-
-**Deprecated/outdated:**
-- Manual CSV curation → Manifest-driven seeding (cleaner, git-trackable)
-- API-fetched artifact_cache images for gameplay → Curated offline images for visual polish
-
----
-
-## Image Format & Size Specifications
-
-### Format Recommendations
-
-| Format | Use Case | Pros | Cons |
-|--------|----------|------|------|
-| JPG | Photos of real artifacts (default) | Smaller file size (1-3 MB per image), meets Met/museum export format | Lossy compression; not ideal for line drawings |
-| PNG | Illustrations, line drawings, port sketches | Lossless; transparent background support | Larger file size (2-5 MB) |
-
-### Target Specifications
-
-- **Port illustrations:** 1200x800 px minimum, 300 DPI preferred (but 72 DPI accepted for screen)
-- **Artifact photos:** 800x600 px minimum
-- **Total bundle size:** Aim for <15 MB for all 17-20 images (average ~750 KB per image)
-- **Compression:** Use museum-provided images (already optimized); don't re-compress locally
-
-### Storage Location
-
-```
-resources/images/
-├── ports/
-│   ├── alexandria.jpg
-│   ├── carthage.jpg
-│   ├── rome.jpg
-│   ├── athens.jpg
-│   └── antioch.jpg
-├── grain/
-│   ├── storage_1.jpg
-│   ├── storage_2.jpg
-│   ├── storage_3.jpg
-│   ├── storage_4.jpg
-│   └── storage_5.jpg
-├── olive_oil/
-│   ├── vessel_1.jpg
-│   ├── vessel_2.jpg
-│   ├── vessel_3.jpg
-│   ├── vessel_4.jpg
-│   └── vessel_5.jpg
-└── wine/
-    ├── krater_1.jpg
-    ├── krater_2.jpg
-    ├── krater_3.jpg
-    ├── krater_4.jpg
-    └── krater_5.jpg
-```
-
----
-
-## Search Term Strategy by Category
-
-### Ports (5 × 1 illustration each)
-
-Use historical city name + "harbor" + "ancient" + era qualifier:
-
-| Port | Effective Search Terms | Museums to Try |
-|------|------------------------|-----------------|
-| Alexandria | "Alexandria harbor Pharos illustration", "ancient Egypt port city" | Met, Europeana |
-| Carthage | "Carthage Cothon harbor ancient Phoenician", "North Africa port city drawing" | Met, Wikimedia (historical maps) |
-| Rome (Ostia) | "Ostia harbor Roman port Tiber", "ancient Rome maritime city" | Met, British Museum |
-| Athens (Piraeus) | "Piraeus harbor ancient Greece Aegean", "Greek trireme harbor illustration" | Met, Wikimedia |
-| Antioch | "Antioch Orontes harbor Levant ancient", "Syria trade port city" | Europeana, Met |
-
-### Trade Goods (3 × 4-5 artifacts each)
-
-Use good + vessel type + ancient + era:
-
-| Good | Effective Search Terms | Sample Vessel Types |
-|------|------------------------|---------------------|
-| Grain | "ancient grain amphora storage", "Egyptian granary vessel", "Roman dolium" | Amphora, dolium, granary model |
-| Olive Oil | "ancient olive oil amphora vessel", "Greek oil krater", "storage jar oil" | Amphora, oinochoe, alabastron |
-| Wine | "ancient wine krater vessel", "Greek wine amphora", "Roman wine storage" | Krater, wine amphora, lagynos |
-
----
+| Old Approach | Current Approach | Impact |
+|--------------|------------------|--------|
+| Live Met API calls at runtime | Offline curated images in manifest | Faster, no network dependency |
+| Generic placeholder images | User-curated historically accurate art | Much better visual quality |
+| Single image per good | 4-5 images per good | Visual variety in UI |
 
 ## Open Questions
 
-### Question 1: Should Executor Batch-Download or Present One-by-One?
+1. **AI generation tool:** Which tool should the executor use for fallback AI generation? This depends on what tools are available in the execution environment. The planner should note this as executor's discretion.
 
-**What we know:**
-- Phase 5 requirements say "presented to the user one at a time"
-- This implies interactive approval, not batch
+2. **Existing port images:** The 27 files in `resources/images/ports/` were placed there previously. Context says "fresh search for everything" so they should all be replaced. But the user may want to see the existing ones as candidates too -- planner should leave this to executor judgment.
 
-**What's unclear:**
-- Should batch search happen first (show all 17-20 candidates), then approve/reject in UI?
-- Or search + present in sequence (find 1 candidate, show, get approval, search next)?
+3. **Port count:** Context says "20 ports" but lists 25 in the detailed breakdown and DB seeds 25. Plans should cover all 25 to match the database.
 
-**Recommendation:**
-Batch search first (all 5 ports + all 3 goods), collect ~40-50 candidates, then present in a grid/list UI for bulk approval. This is faster and less UI-churning than sequential modal dialogs.
-
----
-
-### Question 2: How to Handle Approval Rejection / Image Not Found?
-
-**What we know:**
-- User might reject an image as "not appropriate" or "wrong era"
-- Search might return no results for a given good
-
-**What's unclear:**
-- If user rejects all 5 candidates for "olive oil", do we re-search with different terms?
-- If Met fails and Wikimedia finds nothing, do we auto-fill with placeholder?
-
-**Recommendation:**
-Re-search with alternative terms (1 retry per good). If still no results, mark as "needs manual curation" in manifest with `"status": "pending_manual"` and skip. Don't ship with placeholders; gaps are preferable to wrong images.
-
----
-
-### Question 3: API Rate Limiting and Batching?
-
-**What we know:**
-- Met Museum API has no rate limit (publicly documented)
-- Wikimedia Commons has soft rate limits
-- Europeana allows 500 requests/day
-
-**What's unclear:**
-- How many simultaneous requests is safe?
-- Should we batch over multiple executions?
-
-**Recommendation:**
-For Phase 5, fire API searches in sequence (not parallel), with 1-second delays between API calls. Total time: ~30 seconds for all searches. This is one-time curation work, so speed is less important than reliability.
-
----
+4. **spices difficulty:** "Spices" is the hardest good to find ancient art for. Plan 3 should flag this for early AI fallback assessment.
 
 ## Sources
 
 ### Primary (HIGH confidence)
-
-- **Met Museum Collection API** - https://metmuseum.github.io/
-  - Verified: API documentation current, 406,000+ public domain works, CC0 license, no API key required
-  - Topics: Search API, Object detail endpoint, public domain flag, primary image URLs
-
-- **Wikimedia Commons API** - https://commons.wikimedia.org/wiki/Commons:API/MediaWiki
-  - Verified: MediaWiki API accessible, file namespace queryable, CORS-enabled
-  - Topics: Image search, license metadata, file structure
-
-- **Europeana APIs** - https://apis.europeana.eu/en
-  - Verified: REST API, reusability filtering, public domain query parameter
-  - Topics: European cultural heritage, public domain marking, API key registration
+- Project source code: `src/main/db/schema.ts` lines 128-150 (curated_images table schema)
+- Project source code: `src/main/db/queries.ts` lines 740-805 (seedCuratedImages, getCuratedImagesForGood/Port)
+- Project source code: `src/main/ipc/game.ts` lines 360-366 (game:get-curated-images handler)
+- Project file: `resources/data/curated-images.json` (empty manifest `[]`)
+- Existing directory structure: `resources/images/` (verified via filesystem)
 
 ### Secondary (MEDIUM confidence)
+- [Met Museum Open Access API](https://metmuseum.github.io/) - CC0 collection with REST API
+- [Wikimedia Commons API](https://commons.wikimedia.org/wiki/Commons:API/MediaWiki) - MediaWiki API for search and file URLs
+- [Artvee](https://artvee.com/) - Curated public domain art, high-res downloads
+- [Yale Library Classical Studies Image Resources](https://guides.library.yale.edu/c.php?g=295868&p=1975425) - 1,700+ images of ancient Mediterranean civilizations
 
-- [Met Museum Open Access Policy](https://www.metmuseum.org/hubs/open-access) - Public domain scope, licensing terms
-- [Node.js fetch + streams pattern](https://dev.to/masbagal/saving-image-from-url-using-node-js-5an6) - Image download implementation verified with multiple sources
-- [Electron asset bundling practices](https://www.debugandrelease.com/how-to-load-images-in-electron-applications/) - Image format recommendations for desktop apps
-
-### Tertiary (LOW confidence — context only)
-
-- Ancient Mediterranean trade terminology (amphora types, vessel names) sourced from Wikipedia/World History Encyclopedia — useful for search terms but not authoritative for API design
-
----
+### Tertiary (LOW confidence)
+- Image availability estimates per port/good (based on general knowledge, not verified counts)
+- British Museum programmatic access (no formal public API confirmed)
+- AI generation fallback capabilities (depends on executor environment)
 
 ## Metadata
 
 **Confidence breakdown:**
-- Standard Stack (APIs): HIGH — Official documentation verified, in production use
-- Architecture Patterns: HIGH — Phase 3 artifact handler exists as precedent; Phase 4 database schema confirmed
-- Code Examples: HIGH — Patterns verified against actual Met Museum API responses
-- Search Terms: MEDIUM — Tested conceptually but not against live API; executor will refine empirically
-- Image Formats: HIGH — Based on museum export standards and Electron bundling docs
+- Infrastructure/schema: HIGH - verified from source code
+- Manifest format: HIGH - verified from seedCuratedImages() function
+- Search strategies: MEDIUM - based on knowledge of archive APIs and web search patterns
+- Image availability estimates: LOW - educated guesses, not verified searches
+- Plan structure: MEDIUM - based on scale analysis and workflow patterns
 
-**Research date:** 2026-03-16
-**Valid until:** 2026-04-16 (API docs are stable; refresh if museum policies change)
-
----
-
-## Next Steps for Planning
-
-1. **IPC Handler:** Create `image:search-candidates` → returns array of candidates from all APIs
-2. **Approval UI:** Add modal/panel in renderer to show candidate preview + attribution + buttons
-3. **Download Handler:** Create `image:approve-and-download` → handles download + manifest update
-4. **Testing:** Verify ~3 candidates return from each API for each good; spot-check for era/relevance
-5. **Batch Seeding:** Ensure seedCuratedImages runs after manifest is populated
+**Research date:** 2026-03-31
+**Valid until:** 2026-04-30 (stable domain, no fast-moving dependencies)
