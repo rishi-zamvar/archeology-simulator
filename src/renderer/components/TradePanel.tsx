@@ -172,6 +172,8 @@ export default function TradePanel({
                     <figure style={{
                       margin: 0,
                       width: 120,
+                      minWidth: 120,
+                      maxWidth: 120,
                       borderRadius: 4,
                       overflow: 'hidden',
                       border: '1px solid #d4c4a8',
@@ -179,7 +181,7 @@ export default function TradePanel({
                       <img
                         src={entry.url}
                         alt={good.name}
-                        style={{ width: '100%', height: 120, objectFit: 'cover' }}
+                        style={{ width: '100%', height: 120, objectFit: 'cover', objectPosition: 'center' }}
                       />
                       {entry.attribution && (
                         <figcaption
