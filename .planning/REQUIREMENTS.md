@@ -9,11 +9,11 @@
 - [x] **WX-04**: Mare clausum warning shown before departing during dangerous winter months
 
 ### Captain's Journal
-- [ ] **JRN-01**: Journal entries persisted in SQLite (survive restart and save/load)
+- [x] **JRN-01**: Journal entries persisted in SQLite (survive restart and save/load)
 - [ ] **JRN-02**: Trades auto-logged (buy/sell with prices, quantities, port)
 - [ ] **JRN-03**: Voyage events auto-logged (encounters, decisions, outcomes)
 - [ ] **JRN-04**: Port arrivals and departures auto-logged with calendar dates
-- [ ] **JRN-05**: Player can write personal notes/reflections in the journal
+- [x] **JRN-05**: Player can write personal notes/reflections in the journal
 
 ### Title Screen
 - [ ] **UI-01**: Entry screen with game description, continue (if save exists), and new game option
@@ -55,11 +55,11 @@
 | WX-02 | Phase 9 | Complete |
 | WX-03 | Phase 9 | Complete |
 | WX-04 | Phase 9 | Complete |
-| JRN-01 | Phase 10 | Pending |
+| JRN-01 | Phase 10 | Complete |
 | JRN-02 | Phase 10 | Pending |
 | JRN-03 | Phase 10 | Pending |
 | JRN-04 | Phase 10 | Pending |
-| JRN-05 | Phase 10 | Pending |
+| JRN-05 | Phase 10 | Complete |
 | UI-01 | Phase 12 | Pending |
 | SAIL-01 | Phase 11 | Pending |
 | SAIL-02 | Phase 11 | Pending |

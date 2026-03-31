@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.3
 milestone_name: Gameplay Depth & Polish
-status: verifying
-stopped_at: Completed 09-03-PLAN.md
-last_updated: "2026-03-31T20:20:04.367Z"
+status: executing
+stopped_at: Completed 10-01-PLAN.md
+last_updated: "2026-03-31T20:44:45.401Z"
 last_activity: 2026-03-31
 progress:
   total_phases: 4
   completed_phases: 1
-  total_plans: 3
-  completed_plans: 3
+  total_plans: 6
+  completed_plans: 4
   percent: 76
 ---
 
@@ -21,13 +21,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-31)
 
 **Core value:** Students learn ancient Mediterranean history by making decisions as a merchant captain, not by reading about them.
-**Current focus:** Phase 09 — seasonal-weather
+**Current focus:** Phase 10 — captain-s-journal
 
 ## Current Position
 
-Phase: 10
-Plan: Not started
-Status: Phase complete — ready for verification
+Phase: 10 (captain-s-journal) — EXECUTING
+Plan: 2 of 3
+Status: Ready to execute
 Last activity: 2026-03-31
 
 Progress: [########################------] ~76% (26/~34 plans across all milestones)
@@ -49,6 +49,7 @@ Progress: [########################------] ~76% (26/~34 plans across all milesto
 | Phase 09 P01 | 14min | 2 tasks | 2 files |
 | Phase 09 P02 | 16min | 2 tasks | 7 files |
 | Phase 09 P03 | 20min | 3 tasks | 6 files |
+| Phase 10 P01 | 2min | 2 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -63,6 +64,7 @@ See PROJECT.md Key Decisions table for full history.
 - [Phase 09]: Duration multiplier applied at IPC call site only -- voyage.ts stays pure (distance-only)
 - [Phase 09]: rollVoyageEvent uses optional seasonalWeights with ?? fallback for backward compatibility
 - [Phase 09]: Navigation intercept pattern: Shell.tsx checks weather conditions before dispatching SET_SAIL IPC
+- [Phase 10]: Journal uses separate IPC namespace (journal:) rather than extending game: namespace
 
 ### Pending Todos
 
@@ -76,6 +78,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-31T20:15:32.168Z
-Stopped at: Completed 09-03-PLAN.md
+Last session: 2026-03-31T20:44:45.399Z
+Stopped at: Completed 10-01-PLAN.md
 Resume file: None
