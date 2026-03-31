@@ -99,11 +99,11 @@ Plans:
   3. Map camera smoothly follows the ship during the sailing animation
   4. A sailing overlay displays voyage progress, estimated arrival, and current weather conditions
   5. Time passes visibly during the voyage with each time unit triggering an event (including uneventful sailing)
-**Plans**: 3 plans
+**Plans**: 2 plans
 
 Plans:
-- [ ] 11-01: TBD
-- [ ] 11-02: TBD
+- [ ] 11-01-PLAN.md — Per-turn sailing IPC, FSM changes, animation utilities, types (SAIL-02, SAIL-05)
+- [ ] 11-02-PLAN.md — Route line, segmented ship animation, camera follow, sailing overlay (SAIL-01, SAIL-02, SAIL-03, SAIL-04, SAIL-05)
 
 ### Phase 12: Trade UX & Title Screen
 **Goal**: Players see profit/loss before confirming trades and encounter a proper entry screen when launching the game
@@ -134,5 +134,5 @@ Plans:
 | 8. TypeScript & Error UX | v1.2 | 2/2 | Complete | 2026-03-31 |
 | 9. Seasonal Weather | v1.3 | 1/3 | In Progress|  |
 | 10. Captain's Journal | v1.3 | 3/3 | Complete    | 2026-03-31 |
-| 11. Sailing Animation | v1.3 | 0/? | Not started | - |
+| 11. Sailing Animation | v1.3 | 0/2 | Not started | - |
 | 12. Trade UX & Title Screen | v1.3 | 0/? | Not started | - |
