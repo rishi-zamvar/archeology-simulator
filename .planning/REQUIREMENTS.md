@@ -20,10 +20,10 @@
 
 ### Sailing Animation
 - [ ] **SAIL-01**: Visible dashed route line on map during sailing
-- [ ] **SAIL-02**: Animation duration proportional to route distance
+- [x] **SAIL-02**: Animation duration proportional to route distance
 - [ ] **SAIL-03**: Map camera pans to follow ship during animation
 - [ ] **SAIL-04**: Sailing overlay showing voyage progress, ETA, and weather
-- [ ] **SAIL-05**: Time passes visibly during voyage — each time unit triggers an event (including uneventful sailing)
+- [x] **SAIL-05**: Time passes visibly during voyage — each time unit triggers an event (including uneventful sailing)
 
 ### Trade UX
 - [ ] **TRD-01**: Profit/loss per item shown (green/red) before confirming a sale
@@ -62,10 +62,10 @@
 | JRN-05 | Phase 10 | Complete |
 | UI-01 | Phase 12 | Pending |
 | SAIL-01 | Phase 11 | Pending |
-| SAIL-02 | Phase 11 | Pending |
+| SAIL-02 | Phase 11 | Complete |
 | SAIL-03 | Phase 11 | Pending |
 | SAIL-04 | Phase 11 | Pending |
-| SAIL-05 | Phase 11 | Pending |
+| SAIL-05 | Phase 11 | Complete |
 | TRD-01 | Phase 12 | Pending |
 | TRD-02 | Phase 12 | Pending |
 | TRD-03 | Phase 12 | Pending |
