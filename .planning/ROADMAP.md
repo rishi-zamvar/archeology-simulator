@@ -70,11 +70,11 @@ Plans:
   1. Arriving at any of the 5 ports displays the curated historical illustration instead of the programmatic SVG
   2. Opening the market for any of the 3 trade goods displays the curated artifact photos instead of Met API results
   3. The app loads and displays all images with no network requests — fully offline
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 06-01: Swap port scene component to load from curated_images table
-- [ ] 06-02: Swap trade good image component to load from curated_images table and remove Met API fallback path
+- [ ] 06-01-PLAN.md — Wire attribution into useResourceImages hook, add attribution display to PortScene and TradePanel, remove Met API fallback from TradePanel
+- [ ] 06-02-PLAN.md — Delete dead Met API code: ArtifactImage, useArtifactImages, IPC handlers, preload entries, types, DB queries
 
 ---
 
