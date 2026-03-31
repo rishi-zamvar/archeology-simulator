@@ -14,11 +14,15 @@ import path from 'node:path';
 /**
  * Returns the absolute path to the resources/ directory.
  *
- * - Development: resolves relative to __dirname (src/main/lib → ../../resources)
- * - Production:  resolves relative to app.getAppPath() (the asar root)
+ * app.getAppPath() returns the directory containing package.json:
+ *   - Development: the project root (e.g. /path/to/archeology-simulator)
+ *   - Production:  the asar root
+ *
+ * Previously used __dirname, but that points to the *compiled* output
+ * (dist/main/lib/) which is one level deeper than the source tree,
+ * causing the relative path to resolve to dist/resources/ instead of
+ * the project-root resources/.
  */
 export function getResourcesBase(): string {
-  return process.env['NODE_ENV'] === 'development'
-    ? path.join(__dirname, '../../resources')
-    : path.join(app.getAppPath(), 'resources');
+  return path.join(app.getAppPath(), 'resources');
 }
