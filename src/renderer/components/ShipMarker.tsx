@@ -20,10 +20,12 @@ import type { SailingState } from '../../game/types';
 import 'leaflet.motion/dist/leaflet.motion.js';
 
 // leaflet.motion layer type (duck-typed since there are no TS bindings)
-interface MotionLayer extends L.Layer {
+interface MotionLayer {
   motionStart: () => void;
   motionStop: () => void;
-  on: (event: string, fn: () => void) => this;
+  on: (event: string, fn: (...args: unknown[]) => void) => MotionLayer;
+  addTo: (map: L.Map) => MotionLayer;
+  remove: () => MotionLayer;
 }
 
 // Cast for accessing the motion API added to L by the side-effect import
@@ -83,7 +85,7 @@ export default function ShipMarker({ sailingState, portCoords }: ShipMarkerProps
     // Remove any previous motion layer
     if (motionLayerRef.current) {
       motionLayerRef.current.motionStop();
-      map.removeLayer(motionLayerRef.current);
+      map.removeLayer(motionLayerRef.current as unknown as L.Layer);
       motionLayerRef.current = null;
     }
 
@@ -123,7 +125,7 @@ export default function ShipMarker({ sailingState, portCoords }: ShipMarkerProps
       cleanedUp = true;
       if (motionLayerRef.current) {
         motionLayerRef.current.motionStop();
-        map.removeLayer(motionLayerRef.current);
+        map.removeLayer(motionLayerRef.current as unknown as L.Layer);
         motionLayerRef.current = null;
       }
     };
