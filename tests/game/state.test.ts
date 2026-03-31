@@ -59,13 +59,12 @@ describe('handleAction() — FSM valid transitions', () => {
 });
 
 describe('handleAction() — FSM invalid transitions throw', () => {
-  it('trading + SET_SAIL throws "Invalid transition: trading -> SET_SAIL"', async () => {
+  it('trading + SET_SAIL transitions to sailing (sail directly from trade view)', async () => {
     const { handleAction } = await import('../../src/game/state');
     const current: GameState = { type: 'trading', currentTurn: 2, selectedPort: 'Carthage' };
     const action: GameAction = { type: 'SET_SAIL', destination: 'Rome', eta: 3 };
-    expect(() => handleAction(current, action)).toThrowError(
-      'Invalid transition: trading -> SET_SAIL'
-    );
+    const next = handleAction(current, action);
+    expect(next.type).toBe('sailing');
   });
 
   it('idle + ARRIVE throws "Invalid transition: idle -> ARRIVE"', async () => {
