@@ -1,54 +1,34 @@
----
-gsd_state_version: 1.0
-milestone: v1.1
-milestone_name: Integration & macOS Polish
-status: completed
-stopped_at: Completed 08-01-PLAN.md (surface cleanup -- v1.2 complete)
-last_updated: "2026-03-31T11:50:24.203Z"
-last_activity: 2026-03-31
-progress:
-  total_phases: 5
-  completed_phases: 4
-  total_plans: 13
-  completed_plans: 9
-  percent: 100
----
-
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-03-17)
+See: .planning/PROJECT.md (updated 2026-03-31)
 
 **Core value:** Students learn ancient Mediterranean history by making decisions as a merchant captain, not by reading about them.
-**Current focus:** v1.2 Coding Hygiene complete. Next: v1.1 Phase 5 (Image Sourcing)
+**Current focus:** Phase 9 - Seasonal Weather System (v1.3 Gameplay Depth & Polish)
 
 ## Current Position
 
-Phase: 08
-Plan: Not started
-Status: v1.2 Coding Hygiene milestone complete
-Last activity: 2026-03-31
+Phase: 9 of 12 (Seasonal Weather System)
+Plan: 0 of ? in current phase
+Status: Ready to plan
+Last activity: 2026-03-31 -- Roadmap created for v1.3 Gameplay Depth & Polish
 
-Progress: [████████████████████] 100% (v1.0 + v1.1 Phase 4 + Phase 6 + v1.2 Phase 7 + Phase 8 complete)
+Progress: [########################------] ~76% (26/~34 plans across all milestones)
 
 ## Performance Metrics
 
-**v1.0 Velocity:**
+**Velocity:**
+- Total plans completed: 26 (13 v1.0 + 8 v1.1 + 5 v1.2)
+- Phases completed: 8
 
-- Total plans completed: 13
-- Phases: 3
-- Timeline: 1 day
+**By Milestone:**
 
-**v1.1 Velocity:**
-
-- Total plans completed: 3
-- Phases: 2 complete (Phase 4 done, Phase 6 done)
-
-**v1.2 Velocity:**
-
-- Total plans completed: 5
-- Phases: 2 complete (Phase 7 done, all 4 plans; Phase 8 done, 1 plan)
+| Milestone | Phases | Plans | Timeline |
+|-----------|--------|-------|----------|
+| v1.0 MVP | 3 | 13 | 1 day |
+| v1.1 Integration | 3 | 8 | same day |
+| v1.2 Hygiene | 2 | 5 | same day |
 
 ## Accumulated Context
 
@@ -56,29 +36,9 @@ Progress: [████████████████████] 100% (v
 
 See PROJECT.md Key Decisions table for full history.
 
-- v1.0: SVG port illustrations were a known compromise -- v1.1 replaced them with real historical art
-- v1.0: Met Museum API for artifact images -- v1.1 added curated offline fallbacks
-- v1.2: DBG-01 (structured logging) grouped with Phase 7 IPC Foundation rather than its own phase -- depth=quick favors combining infrastructure work
-- v1.2: ERR-03 (renderer-side error feedback) deferred to Phase 8 because it depends on the typed response shape from Phase 7 being in place first
-- 07-01: IPCResponse<T> placed in shared/ipc-types.ts (not main-only) so renderer can reference the type for Phase 8
-- 07-01: wrapHandler is the only place ipcMain.handle is called -- handlers are pure async functions with no IPC coupling
-- 07-01: Logger suppresses debug/info in NODE_ENV=test to keep test output clean
-- 07-02: game:load has no validator (no args); game:save uses isValidGameState as the validator function to keep guard logic in one place
-- 07-02: getTransactionHistory has no validator -- undefined limit is a valid value the underlying query handles with a default
-- 07-02: game:getPendingEvent migrated despite accessing module-level state -- pure getter with no side effects qualifies as simple handler
-- 07-03: game:resolveEvent returns custom { success, outcome, message } -- wrapHandler wraps it as IPCResponse<T>.data per contract
-- 07-03: buyGood/sellGood validators enforce qty > 0 matching semantic requirements
-- 07-03: Global process.on error handlers placed before app.whenReady() to catch initialization crashes
-- 07-04: useGameState.updateGame returns IPCResponse<GameResult> so callers can check .success
-- 07-04: Fire-and-forget action calls left with .catch() pattern (no unwrap needed for ignored results)
-- 08-01: MotionLayer uses standalone duck-typed interface instead of extending L.Layer -- avoids impossible type compatibility
-- 08-01: Error toast positioned top-right to avoid overlap with bottom-center eventToast
-- 08-01: Ship animation and getPendingEvent catches kept as non-fatal (console.warn only)
-- 06-01: useResourceImages returns enriched { url, attribution, sourceUrl } via parallel getCuratedImages IPC calls
-- 06-01: Attribution display: semi-transparent overlay for full-bleed port images, figcaption for trade good thumbnails
-- 06-01: Met API fallback (ArtifactImage, useArtifactImages) removed from TradePanel render path
-- 06-02: Keep artifact_cache table in DB migrations (inert, removing migrations is risky)
-- 06-02: All curated image functions left untouched as the active runtime path
+- v1.2: IPCResponse<T> + wrapHandler pattern -- all new IPC channels (journal) must follow this
+- v1.2: Structured logging [module] level: message -- weather and journal modules must use this
+- v1.2: MotionLayer duck-typed interface -- sailing animation work builds on this
 
 ### Pending Todos
 
@@ -86,10 +46,12 @@ None.
 
 ### Blockers/Concerns
 
-- CI workflow not yet triggered (needs GitHub remote + first push -- low priority)
+- leaflet.motion unmaintained (~2021) -- Phase 11 needs voyageId stabilization or rAF fallback evaluation
+- v1.2 save files must load after weather fields added to GameState (migrateGameState needed)
+- CI workflow not yet triggered (low priority, carried from v1.2)
 
 ## Session Continuity
 
-Last session: 2026-03-31T11:48:22Z
-Stopped at: Completed 08-01-PLAN.md (surface cleanup -- v1.2 complete)
+Last session: 2026-03-31
+Stopped at: v1.3 roadmap created, ready to plan Phase 9
 Resume file: None

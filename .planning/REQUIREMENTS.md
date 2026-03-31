@@ -51,21 +51,21 @@
 
 | REQ-ID | Phase | Status |
 |--------|-------|--------|
-| WX-01 | TBD | Pending |
-| WX-02 | TBD | Pending |
-| WX-03 | TBD | Pending |
-| WX-04 | TBD | Pending |
-| JRN-01 | TBD | Pending |
-| JRN-02 | TBD | Pending |
-| JRN-03 | TBD | Pending |
-| JRN-04 | TBD | Pending |
-| JRN-05 | TBD | Pending |
-| UI-01 | TBD | Pending |
-| SAIL-01 | TBD | Pending |
-| SAIL-02 | TBD | Pending |
-| SAIL-03 | TBD | Pending |
-| SAIL-04 | TBD | Pending |
-| SAIL-05 | TBD | Pending |
-| TRD-01 | TBD | Pending |
-| TRD-02 | TBD | Pending |
-| TRD-03 | TBD | Pending |
+| WX-01 | Phase 9 | Pending |
+| WX-02 | Phase 9 | Pending |
+| WX-03 | Phase 9 | Pending |
+| WX-04 | Phase 9 | Pending |
+| JRN-01 | Phase 10 | Pending |
+| JRN-02 | Phase 10 | Pending |
+| JRN-03 | Phase 10 | Pending |
+| JRN-04 | Phase 10 | Pending |
+| JRN-05 | Phase 10 | Pending |
+| UI-01 | Phase 12 | Pending |
+| SAIL-01 | Phase 11 | Pending |
+| SAIL-02 | Phase 11 | Pending |
+| SAIL-03 | Phase 11 | Pending |
+| SAIL-04 | Phase 11 | Pending |
+| SAIL-05 | Phase 11 | Pending |
+| TRD-01 | Phase 12 | Pending |
+| TRD-02 | Phase 12 | Pending |
+| TRD-03 | Phase 12 | Pending |
