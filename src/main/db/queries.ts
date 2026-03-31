@@ -543,6 +543,16 @@ export function buyGood(
       VALUES (?, ?, ?, 'buy', ?, ?, ?)
     `).run(turn, portId, goodId, qty, pricePerUnit, totalCost);
 
+    // Auto-log to captain's journal (Phase 10 — JRN-02)
+    const goodInfo = db.prepare('SELECT name FROM goods WHERE id = ?').get(goodId) as { name: string } | undefined;
+    const portInfo = db.prepare('SELECT ancient_name FROM ports WHERE id = ?').get(portId) as { ancient_name: string } | undefined;
+    const goodName = goodInfo?.name ?? goodId;
+    const portName = portInfo?.ancient_name ?? portId;
+    insertJournalEntry(db, turn, 'trade',
+      `Bought ${qty} ${goodName} at ${portName}`,
+      { goodId, goodName, qty, pricePerUnit, totalValue: totalCost, portId, portName, action: 'buy' as const }
+    );
+
     // Update supply/demand: buying increases demand pressure (decrement supply)
     db.prepare(`
       UPDATE port_inventory
@@ -651,6 +661,16 @@ export function sellGood(
       INSERT INTO transaction_history (turn, port_id, good_id, action, quantity, price_per_unit, total_value)
       VALUES (?, ?, ?, 'sell', ?, ?, ?)
     `).run(turn, portId, goodId, qty, pricePerUnit, totalRevenue);
+
+    // Auto-log to captain's journal (Phase 10 — JRN-02)
+    const goodInfo = db.prepare('SELECT name FROM goods WHERE id = ?').get(goodId) as { name: string } | undefined;
+    const portInfo = db.prepare('SELECT ancient_name FROM ports WHERE id = ?').get(portId) as { ancient_name: string } | undefined;
+    const goodName = goodInfo?.name ?? goodId;
+    const portName = portInfo?.ancient_name ?? portId;
+    insertJournalEntry(db, turn, 'trade',
+      `Sold ${qty} ${goodName} at ${portName}`,
+      { goodId, goodName, qty, pricePerUnit, totalValue: totalRevenue, portId, portName, action: 'sell' as const }
+    );
 
     // Update supply/demand: selling here increases supply
     db.prepare(`
