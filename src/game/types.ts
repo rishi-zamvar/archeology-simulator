@@ -48,6 +48,9 @@ export type SailingState = {
   departurePortId?: string;
   route?: VoyageRoute;
   tutorialPhase?: TutorialPhase;
+  // Phase 11 additions — per-turn voyage tracking
+  voyageTurnsTotal?: number;     // total turns for this voyage
+  voyageTurnsElapsed?: number;   // turns completed so far (0 at start)
 };
 
 export type EncounteredState = {
