@@ -1,15 +1,15 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.2
-milestone_name: Coding Hygiene
-status: complete
-stopped_at: Completed 08-01-PLAN.md (surface cleanup)
-last_updated: "2026-03-31T11:48:22Z"
-last_activity: 2026-03-31 -- Phase 08 complete (v1.2 milestone done)
+milestone: v1.1
+milestone_name: Integration & macOS Polish
+status: completed
+stopped_at: Completed 08-01-PLAN.md (surface cleanup -- v1.2 complete)
+last_updated: "2026-03-31T11:50:24.203Z"
+last_activity: 2026-03-31
 progress:
-  total_phases: 3
-  completed_phases: 3
-  total_plans: 9
+  total_phases: 5
+  completed_phases: 4
+  total_plans: 13
   completed_plans: 9
   percent: 100
 ---
@@ -25,10 +25,10 @@ See: .planning/PROJECT.md (updated 2026-03-17)
 
 ## Current Position
 
-Phase: 08 (surface-cleanup) -- COMPLETE
-Plan: 1 of 1 -- COMPLETE
+Phase: 08
+Plan: Not started
 Status: v1.2 Coding Hygiene milestone complete
-Last activity: 2026-03-31 -- Completed 08-01-PLAN.md
+Last activity: 2026-03-31
 
 Progress: [████████████████████] 100% (v1.0 + v1.1 Phase 4 + Phase 6 + v1.2 Phase 7 + Phase 8 complete)
 
