@@ -36,7 +36,7 @@ export interface IPCBridge {
     getPorts: () => Promise<IPCResponse<import('./game-types').Port[]>>;
     getPortDetails: (portId: string) => Promise<IPCResponse<import('./game-types').Port | null>>;
     getMarketPrices: (portId: string) => Promise<IPCResponse<import('./game-types').MarketGood[]>>;
-    getReachablePorts: (fromPortId: string) => Promise<IPCResponse<Array<{ port: import('./game-types').Port; route: import('./game-types').VoyageRoute }>>>;
+    getReachablePorts: (fromPortId: string, currentTurn?: number) => Promise<IPCResponse<Array<{ port: import('./game-types').Port; route: import('./game-types').VoyageRoute }>>>;
     getPlayerInventory: () => Promise<IPCResponse<import('./game-types').PlayerInventory>>;
 
     // Phase 2 Plan 3: trade channels
@@ -53,6 +53,9 @@ export interface IPCBridge {
 
     // Phase 4 Plan 2: curated offline images
     getCuratedImages: (query: { goodId?: string; portId?: string }) => Promise<IPCResponse<import('../main/db/queries').CuratedImage[]>>;
+
+    // Phase 9 Plan 3: seasonal weather — wait for spring
+    waitForSpring: () => Promise<IPCResponse<import('../game/types').GameResult>>;
 
     // Scan resources/images/ for available image files on disk
     scanResourceImages: () => Promise<IPCResponse<{

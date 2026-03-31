@@ -21,12 +21,14 @@ interface ReachableDestination {
 
 interface PortInfoPanelProps {
   portId: string;
+  currentTurn?: number;
   onClose: () => void;
   onNavigate: (destinationPortId: string) => void;
 }
 
 export default function PortInfoPanel({
   portId,
+  currentTurn,
   onClose,
   onNavigate,
 }: PortInfoPanelProps): React.ReactElement {
@@ -45,7 +47,7 @@ export default function PortInfoPanel({
     // Fetch port details and reachable destinations in parallel
     Promise.all([
       window.api.game.getPortDetails(portId),
-      window.api.game.getReachablePorts(portId),
+      window.api.game.getReachablePorts(portId, currentTurn),
     ])
       .then(([portRes, reachableRes]) => {
         if (cancelled) return;
@@ -68,7 +70,7 @@ export default function PortInfoPanel({
     return () => {
       cancelled = true;
     };
-  }, [portId]);
+  }, [portId, currentTurn]);
 
   const handleSail = useCallback(
     (destPortId: string) => {

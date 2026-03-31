@@ -26,6 +26,7 @@ import ShipMarker from './ShipMarker';
 import EventCard from './EventCard';
 import TutorialModal from './TutorialModal';
 import Logbook from './Logbook';
+import MareClausumModal from './MareClausumModal';
 import { useTradeState } from '../hooks/useTradeState';
 import { useGeneratedAmbient } from '../hooks/useGeneratedAmbient';
 import { getWeatherModifiers } from '../../game/weather';
@@ -61,6 +62,8 @@ export default function Shell(): React.ReactElement {
 
   // Full-map overlay — shown when player clicks mini-map from port scene
   const [showFullMap, setShowFullMap] = useState(false);
+  // Mare clausum modal — set to destination port ID when navigating in winter
+  const [mareClausumDest, setMareClausumDest] = useState<string | null>(null);
 
   const { state: gameState } = useGameState();
   const { marketGoods, inventory, transactions, error: tradeError } = useTradeState(selectedPortId);
@@ -135,11 +138,32 @@ export default function Shell(): React.ReactElement {
 
   function handleNavigate(destinationPortId: string) {
     setShowFullMap(false);
+    const mods = getWeatherModifiers(gameState?.currentTurn ?? 0);
+    if (mods.isMareClasum) {
+      setMareClausumDest(destinationPortId);
+      return;
+    }
     window.api.game.action({
       type: 'SET_SAIL',
       destination: destinationPortId,
       eta: 0,
     }).catch((err: unknown) => showError('Failed to set sail: ' + (err instanceof Error ? err.message : 'Unknown error')));
+  }
+
+  function handleSailAnyway(destPortId: string) {
+    setMareClausumDest(null);
+    window.api.game.action({
+      type: 'SET_SAIL',
+      destination: destPortId,
+      eta: 0,
+    }).catch((err: unknown) => showError('Failed to set sail: ' + (err instanceof Error ? err.message : 'Unknown error')));
+  }
+
+  function handleWaitForSpring() {
+    setMareClausumDest(null);
+    window.api.game.waitForSpring().catch((err: unknown) =>
+      showError('Failed to wait for spring: ' + (err instanceof Error ? err.message : 'Unknown error'))
+    );
   }
 
   const handleBuy = useCallback(async (goodId: string, qty: number) => {
@@ -217,6 +241,7 @@ export default function Shell(): React.ReactElement {
         >
           <PortInfoPanel
             portId={selectedPortId}
+            currentTurn={gameState?.currentTurn ?? 0}
             onClose={() => { setSelectedPort(null); toggleLeftPanel(); }}
             onNavigate={handleNavigate}
           />
@@ -464,6 +489,17 @@ export default function Shell(): React.ReactElement {
             x
           </button>
         </div>
+      )}
+
+      {/* ── Mare clausum warning modal ────────────────────────────────── */}
+      {mareClausumDest && (
+        <MareClausumModal
+          destinationPortId={mareClausumDest}
+          currentTurn={gameState?.currentTurn ?? 0}
+          onSailAnyway={handleSailAnyway}
+          onWaitForSpring={handleWaitForSpring}
+          onDismiss={() => setMareClausumDest(null)}
+        />
       )}
 
       {/* ── Tutorial modal (bottom-center, above everything) ────────── */}

@@ -40,7 +40,7 @@ const api: IPCBridge = {
     getPorts: () => ipcRenderer!.invoke('game:getPorts'),
     getPortDetails: (portId) => ipcRenderer!.invoke('game:getPortDetails', portId),
     getMarketPrices: (portId) => ipcRenderer!.invoke('game:getMarketPrices', portId),
-    getReachablePorts: (fromPortId) => ipcRenderer!.invoke('game:getReachablePorts', fromPortId),
+    getReachablePorts: (fromPortId, currentTurn) => ipcRenderer!.invoke('game:getReachablePorts', fromPortId, currentTurn),
     getPlayerInventory: () => ipcRenderer!.invoke('game:getPlayerInventory'),
     // Phase 2 Plan 3: trade channels
     buyGood: (portId, goodId, qty) => ipcRenderer!.invoke('game:buyGood', portId, goodId, qty),
@@ -52,6 +52,8 @@ const api: IPCBridge = {
     // Phase 4 Plan 2: curated offline images
     getCuratedImages: (query: { goodId?: string; portId?: string }) =>
       ipcRenderer!.invoke('game:get-curated-images', query),
+    // Phase 9 Plan 3: seasonal weather — wait for spring
+    waitForSpring: () => ipcRenderer!.invoke('game:waitForSpring'),
     // Scan resources/images/ for available image files
     scanResourceImages: () =>
       ipcRenderer!.invoke('game:scan-resource-images'),

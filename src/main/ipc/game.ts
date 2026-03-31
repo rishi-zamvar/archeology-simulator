@@ -37,6 +37,7 @@ import {
 import { performAction } from '../../game/engine';
 import { getReachablePorts } from '../../game/voyage';
 import { rollVoyageEvent, resolveEventChoice } from '../../game/events';
+import { getWeatherModifiers } from '../../game/weather';
 import type { GameAction, GameResult, GameState, TutorialPhase } from '../../game/types';
 import type { VoyageEvent } from '../../shared/game-types';
 
@@ -81,7 +82,13 @@ export function registerGameIPCHandlers(db: Database.Database): void {
         // the sailing state with ENCOUNTER and store the pending event.
         if (action.type === 'SET_SAIL') {
           pendingVoyageEvent = null; // clear any stale event from prior voyage
-          const event = rollVoyageEvent(result.state.currentTurn);
+          const mods = getWeatherModifiers(result.state.currentTurn);
+          const event = rollVoyageEvent(
+            result.state.currentTurn,
+            undefined,
+            undefined,
+            { storm: mods.stormWeight, pirate: mods.pirateWeight, calm: mods.calmWeight }
+          );
           if (event) {
             pendingVoyageEvent = event;
             // Transition FSM: sailing → encountered
@@ -149,9 +156,21 @@ export function registerGameIPCHandlers(db: Database.Database): void {
   /**
    * game:getReachablePorts — return ports within 5 sailing turns from a given port.
    */
-  wrapHandler<ReturnType<typeof getReachablePorts>, [string]>(
+  wrapHandler<ReturnType<typeof getReachablePorts>, [string, number?]>(
     'game:getReachablePorts',
-    async (fromPortId) => getReachablePorts(fromPortId, getAllPorts(db)),
+    async (fromPortId, currentTurn) => {
+      const ports = getReachablePorts(fromPortId, getAllPorts(db));
+      if (currentTurn === undefined) return ports;
+      const mods = getWeatherModifiers(currentTurn);
+      // Apply duration multiplier to each route — round up, minimum 1
+      return ports.map(entry => ({
+        ...entry,
+        route: {
+          ...entry.route,
+          durationTurns: Math.max(1, Math.ceil(entry.route.durationTurns * mods.durationMultiplier)),
+        },
+      }));
+    },
     (fromPortId) => (!fromPortId || typeof fromPortId !== 'string' ? 'portId required' : null),
   );
 
