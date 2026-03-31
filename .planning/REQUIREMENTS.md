@@ -19,10 +19,10 @@
 - [ ] **UI-01**: Entry screen with game description, continue (if save exists), and new game option
 
 ### Sailing Animation
-- [ ] **SAIL-01**: Visible dashed route line on map during sailing
+- [x] **SAIL-01**: Visible dashed route line on map during sailing
 - [x] **SAIL-02**: Animation duration proportional to route distance
-- [ ] **SAIL-03**: Map camera pans to follow ship during animation
-- [ ] **SAIL-04**: Sailing overlay showing voyage progress, ETA, and weather
+- [x] **SAIL-03**: Map camera pans to follow ship during animation
+- [x] **SAIL-04**: Sailing overlay showing voyage progress, ETA, and weather
 - [x] **SAIL-05**: Time passes visibly during voyage — each time unit triggers an event (including uneventful sailing)
 
 ### Trade UX
@@ -61,10 +61,10 @@
 | JRN-04 | Phase 10 | Complete |
 | JRN-05 | Phase 10 | Complete |
 | UI-01 | Phase 12 | Pending |
-| SAIL-01 | Phase 11 | Pending |
+| SAIL-01 | Phase 11 | Complete |
 | SAIL-02 | Phase 11 | Complete |
-| SAIL-03 | Phase 11 | Pending |
-| SAIL-04 | Phase 11 | Pending |
+| SAIL-03 | Phase 11 | Complete |
+| SAIL-04 | Phase 11 | Complete |
 | SAIL-05 | Phase 11 | Complete |
 | TRD-01 | Phase 12 | Pending |
 | TRD-02 | Phase 12 | Pending |

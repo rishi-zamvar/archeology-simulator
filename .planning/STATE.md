@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.3
 milestone_name: Gameplay Depth & Polish
-status: executing
-stopped_at: Completed 11-01-PLAN.md
-last_updated: "2026-03-31T22:06:27.598Z"
+status: verifying
+stopped_at: Completed 11-02-PLAN.md
+last_updated: "2026-03-31T22:13:24.770Z"
 last_activity: 2026-03-31
 progress:
   total_phases: 4
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 8
-  completed_plans: 7
+  completed_plans: 8
   percent: 76
 ---
 
@@ -27,8 +27,8 @@ See: .planning/PROJECT.md (updated 2026-03-31)
 
 Phase: 11 (sailing-animation-polish) — EXECUTING
 Plan: 2 of 2
-Status: Executing Phase 11
-Last activity: 2026-03-31 -- Phase 11 execution started
+Status: Phase complete — ready for verification
+Last activity: 2026-03-31
 
 Progress: [########################------] ~76% (26/~34 plans across all milestones)
 
@@ -53,6 +53,7 @@ Progress: [########################------] ~76% (26/~34 plans across all milesto
 | Phase 10 P03 | 1min | 1 tasks | 1 files |
 | Phase 10 P02 | 2min | 2 tasks | 2 files |
 | Phase 11 P01 | 4min | 2 tasks | 7 files |
+| Phase 11 P02 | 5min | 3 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -72,6 +73,8 @@ See PROJECT.md Key Decisions table for full history.
 - [Phase 10]: Used selectedPort (not currentPort) from TradingState for journal port lookups
 - [Phase 11]: SET_SAIL no longer rolls events -- events roll per-turn via advanceSailingTurn
 - [Phase 11]: pendingSailingContext preserves voyage state across encounter resolution for RESUME_SAILING
+- [Phase 11]: Per-segment leaflet.motion animation avoids unreliable pause/resume on single long animation
+- [Phase 11]: game:updated subscription for encounter wait instead of polling gameState ref
 
 ### Pending Todos
 
@@ -85,6 +88,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-31T22:06:27.596Z
-Stopped at: Completed 11-01-PLAN.md
+Last session: 2026-03-31T22:13:24.768Z
+Stopped at: Completed 11-02-PLAN.md
 Resume file: None
