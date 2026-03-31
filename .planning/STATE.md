@@ -2,7 +2,7 @@
 gsd_state_version: 1.0
 milestone: v1.3
 milestone_name: Gameplay Depth & Polish
-status: verifying
+status: executing
 stopped_at: Completed 11-01-PLAN.md
 last_updated: "2026-03-31T22:06:27.598Z"
 last_activity: 2026-03-31
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-31)
 
 **Core value:** Students learn ancient Mediterranean history by making decisions as a merchant captain, not by reading about them.
-**Current focus:** Phase 10 — captain-s-journal
+**Current focus:** Phase 11 — sailing-animation-polish
 
 ## Current Position
 
-Phase: 11
-Plan: Not started
-Status: Phase complete — ready for verification
-Last activity: 2026-03-31
+Phase: 11 (sailing-animation-polish) — EXECUTING
+Plan: 2 of 2
+Status: Executing Phase 11
+Last activity: 2026-03-31 -- Phase 11 execution started
 
 Progress: [########################------] ~76% (26/~34 plans across all milestones)
 
