@@ -100,6 +100,7 @@ export default function Shell(): React.ReactElement {
     if (tradingState) {
       setSelectedPort(tradingState.selectedPort);
     }
+  // Justification: intentionally depends only on tradingState?.selectedPort, not the full tradingState object, to avoid infinite re-render loop when tradingState reference changes
   }, [tradingState?.selectedPort, setSelectedPort]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Watch for EncounteredState transitions and fetch the pending event

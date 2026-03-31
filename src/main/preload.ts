@@ -20,6 +20,7 @@ let contextBridge: Electron.ContextBridge | undefined;
 let ipcRenderer: Electron.IpcRenderer | undefined;
 
 try {
+  // Justification: conditional require for Electron APIs allows this module to be tested outside Electron context
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const electron = require('electron') as typeof import('electron');
   contextBridge = electron.contextBridge;

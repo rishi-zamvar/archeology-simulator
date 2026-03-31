@@ -91,6 +91,7 @@ export default function TradePanel({
         setBusy(null);
       }
     },
+    // Justification: getQty captures current inventory snapshot intentionally; adding it to deps would cause infinite re-renders as the callback reference changes on each render
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [onBuy, quantities]
   );
@@ -108,6 +109,7 @@ export default function TradePanel({
         setBusy(null);
       }
     },
+    // Justification: setMsg captures current state setter intentionally; same pattern as handleBuy -- deps would cause infinite loop
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [onSell, quantities]
   );

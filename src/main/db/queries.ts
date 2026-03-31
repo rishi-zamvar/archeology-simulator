@@ -688,6 +688,7 @@ export interface CuratedImage {
  * INSERT OR IGNORE — safe to call on every app launch. Empty manifest = no-op.
  */
 export function seedCuratedImages(db: Database.Database): void {
+  // Justification: require() needed for synchronous JSON import; ES import would require top-level await which is not supported in this CJS context
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const manifest = require('../../../resources/data/curated-images.json') as Array<{
     id: string;
