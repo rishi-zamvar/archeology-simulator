@@ -133,6 +133,6 @@ Plans:
 | 7. IPC & Logging | v1.2 | 3/3 | Complete | 2026-03-31 |
 | 8. TypeScript & Error UX | v1.2 | 2/2 | Complete | 2026-03-31 |
 | 9. Seasonal Weather | v1.3 | 1/3 | In Progress|  |
-| 10. Captain's Journal | v1.3 | 3/3 | Complete   | 2026-03-31 |
+| 10. Captain's Journal | v1.3 | 3/3 | Complete    | 2026-03-31 |
 | 11. Sailing Animation | v1.3 | 0/? | Not started | - |
 | 12. Trade UX & Title Screen | v1.3 | 0/? | Not started | - |
