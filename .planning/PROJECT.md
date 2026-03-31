@@ -4,7 +4,7 @@
 
 A turn-based ancient Mediterranean trade simulator where the player is a merchant captain sailing between ports in 600-900 BCE. Built as an Electron + React desktop app aimed at students and educators, it combines historically grounded gameplay with real museum artifacts, academic source data, and dynamic economic systems to teach ancient history through interactive decision-making. Think Oregon Trail meets ancient Mediterranean commerce.
 
-Shipped v1.0 with full gameplay loop: map navigation, port-to-port sailing with events, buy/sell trading, illustrated port scenes, museum artifact images, ambient audio, and tutorial.
+Shipped v1.0 (2026-03-16), v1.1 (2026-03-31), v1.2 (2026-03-31). Full gameplay loop with 25 ports, curated historical art, offline image serving, structured IPC, and zero TypeScript errors.
 
 ## Core Value
 
@@ -19,7 +19,7 @@ Students learn ancient Mediterranean history — trade networks, cultures, geogr
 - ✓ Port arrival with illustrated scenes and clickable Market/Harbor — v1.0
 - ✓ Trade system with supply/demand pricing — v1.0
 - ✓ Ship with cargo capacity and inventory UI — v1.0
-- ✓ Museum artifact images from Met Museum API with cache — v1.0
+- ✓ Museum artifact images from Met Museum API with cache — v1.0 (replaced by curated images in v1.1)
 - ✓ Ambient Mediterranean audio (Web Audio synthesis) — v1.0
 - ✓ SQLite persistence with auto-save — v1.0
 - ✓ Guided tutorial (skippable) — v1.0
@@ -28,8 +28,12 @@ Students learn ancient Mediterranean history — trade networks, cultures, geogr
 
 ### Active
 
-- [ ] Real archaeological artifact images sourced and curated (4-5 per trade good)
-- [ ] Real historical port illustrations sourced and curated (1 per port)
+- ✓ Real archaeological artifact images sourced and curated (4 per trade good) — v1.1
+- ✓ Real historical port illustrations sourced and curated (1 per port) — v1.1
+- ✓ Consistent IPC contract with IPCResponse<T> and wrapHandler — v1.2
+- ✓ Structured logging replacing ad-hoc console calls — v1.2
+- ✓ Zero TypeScript errors, justified lint suppressions — v1.2
+- ✓ Visible error feedback for IPC failures — v1.2
 - [ ] Seasonal sailing system with weather affecting routes
 - [ ] Political faction system with reputation
 - [ ] Ship progression and crew management
@@ -46,16 +50,14 @@ Students learn ancient Mediterranean history — trade networks, cultures, geogr
 - Mobile/tablet versions — desktop Electron only
 - Real-time gameplay — strictly turn-based
 
-## Current Milestone: v1.2 Coding Hygiene
+## Current State
 
-**Goal:** Refactor the codebase for consistent architecture, graceful error handling, and debuggability across all modules.
+All milestones shipped (v1.0, v1.1, v1.2). No active milestone.
 
-**Target features:**
-- Consistent error handling patterns across main process, IPC handlers, and renderer
-- Uniform architecture for all IPC handlers (request/response shape, validation, error propagation)
-- Graceful degradation when external resources fail (images, database, audio)
-- Structured logging for debuggability
-- Code organization cleanup (dead code removal, consistent file structure)
+**Shipped:**
+- v1.0 MVP — Playable trade simulator with 25 ports, events, audio, tutorial
+- v1.1 Integration — 57 curated images (ports + trade goods), fully offline, attribution displays
+- v1.2 Coding Hygiene — IPCResponse<T>, structured logging, zero tsc errors, error toast
 
 ## Context
 
@@ -63,9 +65,9 @@ Shipped v1.0 with 7,732 lines of TypeScript across 100 files.
 
 **Tech stack:** Electron 35, React 19, Vite 7.3, TypeScript, better-sqlite3, Leaflet, Tailwind CSS 4, Web Audio API
 
-**Current state:** Fully playable with 5 ports, 8 trade goods, 24 voyage events. Port illustrations are programmatic SVG (6 regional variants). Trade good images come from Met Museum API with SQLite cache. Audio is synthesized via Web Audio API.
+**Current state:** Fully playable with 25 ports, 8 trade goods, 24 voyage events. 57 curated historical images served offline via resource-image:// protocol. Consistent IPC contract (IPCResponse<T>), structured logging, zero tsc errors.
 
-**Known gaps:** Only 5 ports seeded (target 40-60). Port illustrations are SVG placeholders, not real historical art. Trade good images rely on live Met Museum API — should have curated fallbacks. Google Fonts loaded from CDN, not bundled.
+**Known gaps:** Target 40-60 ports (currently 25). Google Fonts loaded from CDN, not bundled. No CI/CD pipeline. No test suite.
 
 ## Constraints
 
@@ -89,9 +91,9 @@ Shipped v1.0 with 7,732 lines of TypeScript across 100 files.
 | GameState discriminated union | Type-safe FSM with exhaustive switch | ✓ Good |
 | contextBridge IPC (window.api) | Secure renderer↔main boundary | ✓ Good |
 | Web Audio synthesis over audio files | Zero external dependencies; prior MP3 sourcing failed | ✓ Good |
-| SVG port illustrations over external images | Zero external dependencies; prior PNG sourcing failed | ⚠️ Revisit — source real historical art |
+| SVG port illustrations over external images | Zero external dependencies; prior PNG sourcing failed | ✓ Replaced with curated art in v1.1 |
 | better-sqlite3 12.6.2 | Latest stable; 12.7.0 doesn't exist | ✓ Good |
 | Vite 7.3.1 | Latest stable; Vite 8 not released | ✓ Good |
 
 ---
-*Last updated: 2026-03-17 after v1.2 milestone started*
+*Last updated: 2026-03-31 after v1.1 + v1.2 milestones shipped*
