@@ -12,6 +12,7 @@
  */
 
 import React, { useState, useEffect, useRef } from 'react';
+import { getSeasonalWeatherDescription } from '../../game/weather';
 
 export interface LogEntry {
   turn: number;
@@ -20,22 +21,6 @@ export interface LogEntry {
   type: 'weather' | 'rumor' | 'arrival' | 'departure' | 'event' | 'trade';
 }
 
-// Generate a pseudo-random weather report based on the turn number
-function generateWeather(turn: number): string {
-  const conditions = [
-    'Clear skies and calm seas. A favorable day for sailing.',
-    'Light winds from the west. The sea is gentle.',
-    'Overcast with a warm breeze. Visibility is fair.',
-    'Strong northerly winds. Waves crest at the bow.',
-    'Scattered clouds and moderate swells from the east.',
-    'Hazy morning mist clinging to the coastline.',
-    'Brilliant sun with occasional gusts. Good sailing weather.',
-    'Grey skies threaten rain, but the wind holds steady.',
-    'A stillness on the water. The oarsmen earn their keep today.',
-    'Choppy seas and shifting winds. The helmsman stays alert.',
-  ];
-  return conditions[turn % conditions.length];
-}
 
 // Generate trader rumors based on turn
 function generateRumor(turn: number): string | null {
@@ -71,9 +56,12 @@ interface LogbookProps {
   currentTurn: number;
   gameStateType: string;
   portName?: string;
+  season?: string;
+  monthName?: string;
+  seasonTint?: string;
 }
 
-export default function Logbook({ currentTurn, gameStateType, portName }: LogbookProps): React.ReactElement {
+export default function Logbook({ currentTurn, gameStateType, portName, season, monthName, seasonTint }: LogbookProps): React.ReactElement {
   const [open, setOpen] = useState(false);
   const [entries, setEntries] = useState<LogEntry[]>([]);
   const lastProcessedTurn = useRef(-1);
@@ -92,7 +80,7 @@ export default function Logbook({ currentTurn, gameStateType, portName }: Logboo
       newEntries.push({
         turn: currentTurn,
         date,
-        text: generateWeather(currentTurn),
+        text: getSeasonalWeatherDescription(currentTurn),
         type: 'weather',
       });
 
@@ -175,7 +163,9 @@ export default function Logbook({ currentTurn, gameStateType, portName }: Logboo
           display: 'flex',
           alignItems: 'center',
           gap: '0.5rem',
-          backgroundColor: 'rgba(253, 248, 240, 0.95)',
+          background: seasonTint
+            ? `linear-gradient(${seasonTint}, ${seasonTint}), rgba(253, 248, 240, 0.95)`
+            : 'rgba(253, 248, 240, 0.95)',
           border: '1px solid #c4956a',
           borderRadius: open ? '6px 6px 0 0' : 6,
           padding: '0.4rem 1rem',
@@ -190,7 +180,7 @@ export default function Logbook({ currentTurn, gameStateType, portName }: Logboo
         }}
       >
         <span style={{ fontSize: '0.8rem' }}>{open ? '\u25BE' : '\u25B4'}</span>
-        <span>{currentDate}</span>
+        <span>Turn {currentTurn} &mdash; {season ? season.charAt(0).toUpperCase() + season.slice(1) : ''} ({monthName ?? ''})</span>
         <span style={{ color: '#7a5c45', fontWeight: 400 }}>\u00B7</span>
         <span style={{ fontFamily: "'Lora', serif", fontWeight: 400, textTransform: 'none' as const, fontSize: '0.6rem' }}>
           Captain&apos;s Log

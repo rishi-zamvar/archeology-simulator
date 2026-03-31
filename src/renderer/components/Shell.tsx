@@ -28,6 +28,7 @@ import TutorialModal from './TutorialModal';
 import Logbook from './Logbook';
 import { useTradeState } from '../hooks/useTradeState';
 import { useGeneratedAmbient } from '../hooks/useGeneratedAmbient';
+import { getWeatherModifiers } from '../../game/weather';
 import type { SailingState, TradingState } from '../../game/types';
 import type { VoyageEvent, PortRegion } from '../../shared/game-types';
 
@@ -152,6 +153,16 @@ export default function Shell(): React.ReactElement {
     const res = await window.api.game.sellGood(selectedPortId, goodId, qty);
     if (!res.success) throw new Error(res.error);
   }, [selectedPortId]);
+
+  // Derive seasonal weather modifiers for header display and mare clausum checks
+  const weatherMods = getWeatherModifiers(gameState?.currentTurn ?? 0);
+
+  const SEASON_TINTS: Record<string, string> = {
+    summer: 'rgba(255, 200, 80, 0.15)',
+    winter: 'rgba(100, 130, 180, 0.15)',
+    spring: 'rgba(100, 180, 100, 0.1)',
+    autumn: 'rgba(200, 140, 60, 0.1)',
+  };
 
   const isSailing = gameState?.type === 'sailing';
   const sailingState = isSailing ? (gameState as SailingState) : null;
@@ -364,6 +375,9 @@ export default function Shell(): React.ReactElement {
         currentTurn={gameState?.currentTurn ?? 0}
         gameStateType={gameState?.type ?? 'idle'}
         portName={portDisplayName || undefined}
+        season={weatherMods.season}
+        monthName={weatherMods.monthName}
+        seasonTint={SEASON_TINTS[weatherMods.season]}
       />
 
       {/* ── Cargo + Ledger drop-up (bottom-left) ────────────────── */}
