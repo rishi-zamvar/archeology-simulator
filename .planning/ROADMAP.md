@@ -73,8 +73,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 06-01-PLAN.md — Wire attribution into useResourceImages hook, add attribution display to PortScene and TradePanel, remove Met API fallback from TradePanel
-- [ ] 06-02-PLAN.md — Delete dead Met API code: ArtifactImage, useArtifactImages, IPC handlers, preload entries, types, DB queries
+- [x] 06-01-PLAN.md — Wire attribution into useResourceImages hook, add attribution display to PortScene and TradePanel, remove Met API fallback from TradePanel
+- [x] 06-02-PLAN.md — Delete dead Met API code: ArtifactImage, useArtifactImages, IPC handlers, preload entries, types, DB queries
 
 ---
 
@@ -121,6 +121,6 @@ Plans:
 | 3. Polish & Packaging | v1.0 | 4/4 | Complete | 2026-03-16 |
 | 4. Image Infrastructure | v1.1 | 2/2 | Complete | 2026-03-16 |
 | 5. Image Sourcing & Curation | v1.1 | 0/4 | Not started | - |
-| 6. UI Integration | v1.1 | 0/2 | Not started | - |
+| 6. UI Integration | v1.1 | 2/2 | Complete | 2026-03-31 |
 | 7. IPC Foundation | v1.2 | 4/4 | Complete | 2026-03-17 |
 | 8. Surface Cleanup | v1.2 | 0/TBD | Not started | - |
