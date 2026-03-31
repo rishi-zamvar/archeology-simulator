@@ -110,7 +110,7 @@ Plans:
 **Plans**: 1 plan
 
 Plans:
-- [ ] 08-01-PLAN.md — Fix ShipMarker tsc errors, add eslint-disable justifications, wire error toast for silent IPC failures
+- [x] 08-01-PLAN.md — Fix ShipMarker tsc errors, add eslint-disable justifications, wire error toast for silent IPC failures
 
 ---
 
@@ -127,4 +127,4 @@ Plans:
 | 5. Image Sourcing & Curation | v1.1 | 0/4 | Not started | - |
 | 6. UI Integration | v1.1 | 2/2 | Complete | 2026-03-31 |
 | 7. IPC Foundation | v1.2 | 4/4 | Complete | 2026-03-17 |
-| 8. Surface Cleanup | v1.2 | 0/1 | Not started | - |
+| 8. Surface Cleanup | v1.2 | 1/1 | Complete | 2026-03-31 |

@@ -1,16 +1,16 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.1
-milestone_name: Integration & macOS Polish
-status: completed
-stopped_at: Completed 06-02-PLAN.md (dead Met Museum API code removal)
-last_updated: "2026-03-31T11:13:38.510Z"
-last_activity: 2026-03-31
+milestone: v1.2
+milestone_name: Coding Hygiene
+status: complete
+stopped_at: Completed 08-01-PLAN.md (surface cleanup)
+last_updated: "2026-03-31T11:48:22Z"
+last_activity: 2026-03-31 -- Phase 08 complete (v1.2 milestone done)
 progress:
   total_phases: 3
-  completed_phases: 2
-  total_plans: 8
-  completed_plans: 4
+  completed_phases: 3
+  total_plans: 9
+  completed_plans: 9
   percent: 100
 ---
 
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-17)
 
 **Core value:** Students learn ancient Mediterranean history by making decisions as a merchant captain, not by reading about them.
-**Current focus:** Phase 06 complete -- ui-integration done
+**Current focus:** v1.2 Coding Hygiene complete. Next: v1.1 Phase 5 (Image Sourcing)
 
 ## Current Position
 
-Phase: 06
-Plan: Not started
-Status: Phase 06 complete. All ui-integration plans done.
-Last activity: 2026-03-31
+Phase: 08 (surface-cleanup) -- COMPLETE
+Plan: 1 of 1 -- COMPLETE
+Status: v1.2 Coding Hygiene milestone complete
+Last activity: 2026-03-31 -- Completed 08-01-PLAN.md
 
-Progress: [████████████████████] 100% (v1.0 + v1.1 Phase 4 complete, Phase 7 complete, Phase 6 complete)
+Progress: [████████████████████] 100% (v1.0 + v1.1 Phase 4 + Phase 6 + v1.2 Phase 7 + Phase 8 complete)
 
 ## Performance Metrics
 
@@ -47,8 +47,8 @@ Progress: [████████████████████] 100% (v
 
 **v1.2 Velocity:**
 
-- Total plans completed: 4
-- Phases: 1 complete (Phase 7 done, all 4 plans)
+- Total plans completed: 5
+- Phases: 2 complete (Phase 7 done, all 4 plans; Phase 8 done, 1 plan)
 
 ## Accumulated Context
 
@@ -71,6 +71,9 @@ See PROJECT.md Key Decisions table for full history.
 - 07-03: Global process.on error handlers placed before app.whenReady() to catch initialization crashes
 - 07-04: useGameState.updateGame returns IPCResponse<GameResult> so callers can check .success
 - 07-04: Fire-and-forget action calls left with .catch() pattern (no unwrap needed for ignored results)
+- 08-01: MotionLayer uses standalone duck-typed interface instead of extending L.Layer -- avoids impossible type compatibility
+- 08-01: Error toast positioned top-right to avoid overlap with bottom-center eventToast
+- 08-01: Ship animation and getPendingEvent catches kept as non-fatal (console.warn only)
 - 06-01: useResourceImages returns enriched { url, attribution, sourceUrl } via parallel getCuratedImages IPC calls
 - 06-01: Attribution display: semi-transparent overlay for full-bleed port images, figcaption for trade good thumbnails
 - 06-01: Met API fallback (ArtifactImage, useArtifactImages) removed from TradePanel render path
@@ -84,10 +87,9 @@ None.
 ### Blockers/Concerns
 
 - CI workflow not yet triggered (needs GitHub remote + first push -- low priority)
-- Pre-existing ShipMarker.tsx TypeScript errors (Leaflet MotionLayer type incompatibility) -- unrelated to Phase 7, out of scope
 
 ## Session Continuity
 
-Last session: 2026-03-31T11:12:00Z
-Stopped at: Completed 06-02-PLAN.md (dead Met Museum API code removal)
+Last session: 2026-03-31T11:48:22Z
+Stopped at: Completed 08-01-PLAN.md (surface cleanup -- v1.2 complete)
 Resume file: None
