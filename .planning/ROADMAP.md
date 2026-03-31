@@ -51,7 +51,7 @@ See [v1.2-ROADMAP.md](milestones/v1.2-ROADMAP.md) for full details.
 - [ ] **Phase 9: Seasonal Weather System** - Pure game logic deriving season from turn and modifying voyage duration/events
 - [x] **Phase 10: Captain's Journal** - SQLite-backed journal with auto-logged trades, events, and player reflections (completed 2026-03-31)
 - [x] **Phase 11: Sailing Animation Polish** - Visible ship movement on map with route line, camera tracking, and voyage overlay (completed 2026-03-31)
-- [ ] **Phase 12: Trade UX & Title Screen** - Profit/loss indicators on trade panel and entry screen for the game
+- [x] **Phase 12: Trade UX & Title Screen** - Profit/loss indicators on trade panel and entry screen for the game (completed 2026-03-31)
 
 ## Phase Details
 
@@ -117,8 +117,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 12-01-PLAN.md — Trade P&L indicators and purchase provenance in TradePanel (TRD-01, TRD-02, TRD-03)
-- [ ] 12-02-PLAN.md — Title screen with hasSave/newGame IPC and Shell gating (UI-01)
+- [x] 12-01-PLAN.md — Trade P&L indicators and purchase provenance in TradePanel (TRD-01, TRD-02, TRD-03)
+- [x] 12-02-PLAN.md — Title screen with hasSave/newGame IPC and Shell gating (UI-01)
 
 ## Progress
 
@@ -135,4 +135,4 @@ Plans:
 | 9. Seasonal Weather | v1.3 | 1/3 | In Progress|  |
 | 10. Captain's Journal | v1.3 | 3/3 | Complete    | 2026-03-31 |
 | 11. Sailing Animation | v1.3 | 2/2 | Complete    | 2026-03-31 |
-| 12. Trade UX & Title Screen | v1.3 | 0/2 | Not started | - |
+| 12. Trade UX & Title Screen | v1.3 | 2/2 | Complete   | 2026-03-31 |

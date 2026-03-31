@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.3
 milestone_name: Gameplay Depth & Polish
 status: verifying
-stopped_at: Completed 11-02-PLAN.md
-last_updated: "2026-03-31T22:24:07.734Z"
+stopped_at: Completed 12-02-PLAN.md
+last_updated: "2026-03-31T22:41:57.146Z"
 last_activity: 2026-03-31
 progress:
   total_phases: 4
-  completed_phases: 3
-  total_plans: 8
-  completed_plans: 8
+  completed_phases: 4
+  total_plans: 10
+  completed_plans: 10
   percent: 76
 ---
 
@@ -21,12 +21,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-31)
 
 **Core value:** Students learn ancient Mediterranean history by making decisions as a merchant captain, not by reading about them.
-**Current focus:** Phase 11 — sailing-animation-polish
+**Current focus:** Phase 12 — trade-ux-title-screen
 
 ## Current Position
 
-Phase: 12
-Plan: Not started
+Phase: 12 (trade-ux-title-screen) — EXECUTING
+Plan: 2 of 2
 Status: Phase complete — ready for verification
 Last activity: 2026-03-31
 
@@ -54,6 +54,8 @@ Progress: [########################------] ~76% (26/~34 plans across all milesto
 | Phase 10 P02 | 2min | 2 tasks | 2 files |
 | Phase 11 P01 | 4min | 2 tasks | 7 files |
 | Phase 11 P02 | 5min | 3 tasks | 3 files |
+| Phase 12 P01 | 2min | 2 tasks | 4 files |
+| Phase 12 P02 | 204s | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -75,6 +77,10 @@ See PROJECT.md Key Decisions table for full history.
 - [Phase 11]: pendingSailingContext preserves voyage state across encounter resolution for RESUME_SAILING
 - [Phase 11]: Per-segment leaflet.motion animation avoids unreliable pause/resume on single long animation
 - [Phase 11]: game:updated subscription for encounter wait instead of polling gameState ref
+- [Phase 12]: boughtAtTurn optional field for backward compatibility with old saves
+- [Phase 12]: P&L uses weighted average cost across all batches of same good
+- [Phase 12]: screen gating: Shell uses useState title/game to gate rendering; useGameState loads in background
+- [Phase 12]: newGame clears all four tables (game_state, transaction_history, journal_entries, player_inventory) transactionally
 
 ### Pending Todos
 
@@ -88,6 +94,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-31T22:13:24.768Z
-Stopped at: Completed 11-02-PLAN.md
+Last session: 2026-03-31T22:41:57.137Z
+Stopped at: Completed 12-02-PLAN.md
 Resume file: None

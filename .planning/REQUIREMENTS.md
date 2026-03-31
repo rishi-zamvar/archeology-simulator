@@ -26,9 +26,9 @@
 - [x] **SAIL-05**: Time passes visibly during voyage — each time unit triggers an event (including uneventful sailing)
 
 ### Trade UX
-- [ ] **TRD-01**: Profit/loss per item shown (green/red) before confirming a sale
-- [ ] **TRD-02**: Total profit/loss preview for the quantity being sold
-- [ ] **TRD-03**: Purchase price history shown for each cargo item (where and when bought)
+- [x] **TRD-01**: Profit/loss per item shown (green/red) before confirming a sale
+- [x] **TRD-02**: Total profit/loss preview for the quantity being sold
+- [x] **TRD-03**: Purchase price history shown for each cargo item (where and when bought)
 
 ## Future Requirements
 
@@ -66,6 +66,6 @@
 | SAIL-03 | Phase 11 | Complete |
 | SAIL-04 | Phase 11 | Complete |
 | SAIL-05 | Phase 11 | Complete |
-| TRD-01 | Phase 12 | Pending |
-| TRD-02 | Phase 12 | Pending |
-| TRD-03 | Phase 12 | Pending |
+| TRD-01 | Phase 12 | Complete |
+| TRD-02 | Phase 12 | Complete |
+| TRD-03 | Phase 12 | Complete |
