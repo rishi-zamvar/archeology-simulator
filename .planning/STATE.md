@@ -2,10 +2,10 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Integration & macOS Polish
-status: executing
+status: completed
 stopped_at: Completed 06-02-PLAN.md (dead Met Museum API code removal)
-last_updated: "2026-03-31T11:12:00Z"
-last_activity: 2026-03-31 -- Completed 06-02-PLAN.md
+last_updated: "2026-03-31T11:13:38.510Z"
+last_activity: 2026-03-31
 progress:
   total_phases: 3
   completed_phases: 2
@@ -25,10 +25,10 @@ See: .planning/PROJECT.md (updated 2026-03-17)
 
 ## Current Position
 
-Phase: 06 (ui-integration) -- COMPLETE
-Plan: 2 of 2 complete
+Phase: 06
+Plan: Not started
 Status: Phase 06 complete. All ui-integration plans done.
-Last activity: 2026-03-31 -- Completed 06-02-PLAN.md
+Last activity: 2026-03-31
 
 Progress: [████████████████████] 100% (v1.0 + v1.1 Phase 4 complete, Phase 7 complete, Phase 6 complete)
 
