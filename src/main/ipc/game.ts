@@ -419,6 +419,45 @@ export function registerGameIPCHandlers(db: Database.Database): void {
       return null;
     },
   );
+
+  /**
+   * game:waitForSpring — advance turns to Elaphebolion (month index 8) and deduct
+   * port fees (50 gold per turn waited). Used when player chooses to wait out
+   * the mare clausum (winter sailing closure) period.
+   */
+  wrapHandler<GameResult, []>(
+    'game:waitForSpring',
+    async () => {
+      const current = withTutorialDefault(loadGameState(db) ?? INITIAL_STATE);
+      const monthIndex = current.currentTurn % 12;
+      // Calculate turns until Elaphebolion (index 8 = start of spring)
+      let turnsToWait = (8 - monthIndex + 12) % 12;
+      if (turnsToWait === 0) turnsToWait = 12; // already at spring start, wait full year
+
+      const portFee = turnsToWait * 50; // 50 gold per turn in port
+
+      // Deduct gold from player_inventory (same pattern as resolveEvent)
+      db.prepare(
+        `UPDATE player_inventory SET gold = MAX(0, gold - ?) WHERE id = 1`
+      ).run(portFee);
+
+      // Advance turn
+      const newTurn = current.currentTurn + turnsToWait;
+      const newState: GameState = { ...current, currentTurn: newTurn };
+
+      try {
+        saveGameStateAtomic(db, newState);
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        return { success: false, state: current, error: `Save failed: ${message}` };
+      }
+
+      log.info('Player waited for spring', { turnsWaited: turnsToWait, goldDeducted: portFee, newTurn });
+
+      broadcastGameUpdated(db);
+      return { success: true, state: newState };
+    },
+  );
 }
 
 /**
