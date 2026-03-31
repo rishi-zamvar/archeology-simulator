@@ -33,6 +33,7 @@ import {
   getTransactionHistory,
   getCuratedImagesForGood,
   getCuratedImagesForPort,
+  insertJournalEntry,
 } from '../db/queries';
 import { performAction } from '../../game/engine';
 import { getReachablePorts } from '../../game/voyage';
@@ -82,6 +83,16 @@ export function registerGameIPCHandlers(db: Database.Database): void {
         // the sailing state with ENCOUNTER and store the pending event.
         if (action.type === 'SET_SAIL') {
           pendingVoyageEvent = null; // clear any stale event from prior voyage
+
+          // Auto-log departure to captain's journal (Phase 10 — JRN-04)
+          if (current.type === 'trading' && current.selectedPort) {
+            const depPort = getPortById(db, current.selectedPort);
+            insertJournalEntry(db, result.state.currentTurn, 'departure',
+              `Departed from ${depPort?.ancientName ?? current.selectedPort}`,
+              { portId: current.selectedPort, portName: depPort?.ancientName ?? current.selectedPort, destination: 'the open sea' }
+            );
+          }
+
           const mods = getWeatherModifiers(result.state.currentTurn);
           const event = rollVoyageEvent(
             result.state.currentTurn,
@@ -113,6 +124,15 @@ export function registerGameIPCHandlers(db: Database.Database): void {
               return { success: true, state: encounterResult.state };
             }
           }
+        }
+
+        // Auto-log arrival to captain's journal (Phase 10 — JRN-04)
+        if (current.type === 'sailing' && result.state.type === 'trading' && result.state.selectedPort) {
+          const arrPort = getPortById(db, result.state.selectedPort);
+          insertJournalEntry(db, result.state.currentTurn, 'arrival',
+            `Arrived at ${arrPort?.ancientName ?? result.state.selectedPort}`,
+            { portId: result.state.selectedPort, portName: arrPort?.ancientName ?? result.state.selectedPort }
+          );
         }
 
         // Broadcast updated state to all renderer windows.
@@ -384,6 +404,13 @@ export function registerGameIPCHandlers(db: Database.Database): void {
       });
 
       applyOutcome();
+
+      // Auto-log event to captain's journal (Phase 10 — JRN-03)
+      const currentForJournal = withTutorialDefault(loadGameState(db) ?? INITIAL_STATE);
+      insertJournalEntry(db, currentForJournal.currentTurn, 'voyage_event',
+        `Encountered: ${event.title}`,
+        { eventType: event.type, choiceId, outcome: outcome.message, goldDelta: outcome.goldDelta }
+      );
 
       // Transition FSM: encountered → idle
       const current = withTutorialDefault(loadGameState(db) ?? INITIAL_STATE);
