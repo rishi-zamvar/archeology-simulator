@@ -135,4 +135,4 @@ Plans:
 | 9. Seasonal Weather | v1.3 | 1/3 | In Progress|  |
 | 10. Captain's Journal | v1.3 | 3/3 | Complete    | 2026-03-31 |
 | 11. Sailing Animation | v1.3 | 2/2 | Complete    | 2026-03-31 |
-| 12. Trade UX & Title Screen | v1.3 | 2/2 | Complete   | 2026-03-31 |
+| 12. Trade UX & Title Screen | v1.3 | 2/2 | Complete    | 2026-03-31 |
