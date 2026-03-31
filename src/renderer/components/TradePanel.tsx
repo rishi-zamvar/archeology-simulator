@@ -14,8 +14,7 @@
 import React, { useState, useCallback } from 'react';
 import type { MarketGood, PlayerInventory } from '../../shared/ipc-types';
 import TradeGoodIcon from './TradeGoodIcon';
-import ArtifactImage, { ArtifactCaption } from './ArtifactImage';
-import { useArtifactImages } from '../hooks/useArtifactImages';
+import { useResourceImages } from '../hooks/useResourceImages';
 
 interface TradePanelProps {
   portId: string;
@@ -60,9 +59,7 @@ export default function TradePanel({
   const [feedback, setFeedback] = useState<Record<string, { msg: string; ok: boolean }>>({});
   const [busy, setBusy] = useState<string | null>(null);
 
-  const artifactMap = useArtifactImages(marketGoods.map((g) => g.id));
-
-  // Trade good icons rendered inline (no API fetch needed)
+  const { goods: curatedGoods } = useResourceImages();
 
   const getQty = (goodId: string) => quantities[goodId] ?? 1;
 
@@ -163,17 +160,43 @@ export default function TradePanel({
 
           return (
             <div key={good.id} style={ROW_STYLE}>
-              {/* Museum artifact thumbnail (lazy-loaded; falls back to SVG amphora) */}
+              {/* Curated image with attribution */}
               {(() => {
-                const artifacts = artifactMap.get(good.id);
-                const artifact = artifacts?.[0];
-                if (!artifact) return null;
+                const curatedEntries = curatedGoods[good.id];
+                if (!curatedEntries || curatedEntries.length === 0) return null;
+                const entry = curatedEntries[0];
                 return (
                   <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem', marginBottom: '0.35rem' }}>
-                    <div>
-                      <ArtifactImage artifact={artifact} />
-                      <ArtifactCaption artifact={artifact} />
-                    </div>
+                    <figure style={{
+                      margin: 0,
+                      width: 120,
+                      borderRadius: 4,
+                      overflow: 'hidden',
+                      border: '1px solid #d4c4a8',
+                    }}>
+                      <img
+                        src={entry.url}
+                        alt={good.name}
+                        style={{ width: '100%', height: 120, objectFit: 'cover' }}
+                      />
+                      {entry.attribution && (
+                        <figcaption
+                          style={{
+                            fontFamily: "'Lora', Georgia, serif",
+                            fontSize: '0.7rem',
+                            color: '#7a5c45',
+                            fontStyle: 'italic',
+                            padding: '4px 6px',
+                            display: '-webkit-box',
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: 'vertical',
+                            overflow: 'hidden',
+                          }}
+                        >
+                          {entry.attribution}
+                        </figcaption>
+                      )}
+                    </figure>
                   </div>
                 );
               })()}

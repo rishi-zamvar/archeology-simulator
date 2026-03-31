@@ -15,6 +15,7 @@
 
 import React, { useState } from 'react';
 import PortIllustration from './PortIllustration';
+import { useResourceImages } from '../hooks/useResourceImages';
 import type { PortRegion } from '../../shared/game-types';
 
 interface PortSceneProps {
@@ -45,6 +46,8 @@ export default function PortScene({
 }: PortSceneProps): React.ReactElement {
   const [marketHovered, setMarketHovered] = useState(false);
   const [harborHovered, setHarborHovered] = useState(false);
+  const { ports: portImages } = useResourceImages();
+  const curatedPortImage = portImages[portId];
 
   const regions: OverlayRegion[] = [
     {
@@ -87,9 +90,42 @@ export default function PortScene({
         overflow: 'hidden',
       }}
     >
-      {/* Port illustration — SVG scene, fills the container */}
+      {/* Port illustration — curated image if available, SVG fallback */}
       <div style={{ position: 'absolute', inset: 0, zIndex: 1 }}>
-        <PortIllustration region={region} />
+        {curatedPortImage ? (
+          <>
+            <img
+              src={curatedPortImage.url}
+              alt={`${portName} illustration`}
+              style={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+                objectPosition: 'center',
+              }}
+            />
+            {curatedPortImage.attribution && (
+              <div
+                style={{
+                  position: 'absolute',
+                  bottom: 0,
+                  right: 0,
+                  backgroundColor: 'rgba(0, 0, 0, 0.45)',
+                  color: '#e0d4c0',
+                  fontSize: '0.55rem',
+                  fontFamily: "'Lora', Georgia, serif",
+                  padding: '2px 8px',
+                  fontStyle: 'italic',
+                  zIndex: 3,
+                }}
+              >
+                {curatedPortImage.attribution}
+              </div>
+            )}
+          </>
+        ) : (
+          <PortIllustration region={region} />
+        )}
       </div>
 
       {/* Subtle parchment texture overlay for legibility */}
