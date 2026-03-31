@@ -28,6 +28,7 @@ import EventCard from './EventCard';
 import TutorialModal from './TutorialModal';
 import Logbook from './Logbook';
 import MareClausumModal from './MareClausumModal';
+import TitleScreen from './TitleScreen';
 import { useTradeState } from '../hooks/useTradeState';
 import { useGeneratedAmbient } from '../hooks/useGeneratedAmbient';
 import { getWeatherModifiers, getSeasonalWeatherDescription } from '../../game/weather';
@@ -62,6 +63,27 @@ export default function Shell(): React.ReactElement {
     showError,
     clearError,
   } = useUIStore();
+
+  // Title screen gating — show title before gameplay
+  const [screen, setScreen] = useState<'title' | 'game'>('title');
+  const [hasSave, setHasSave] = useState(false);
+
+  // Check for existing save on mount (lightweight IPC, no game state loading)
+  useEffect(() => {
+    window.api.game.hasSave().then(res => {
+      if (res.success) setHasSave(res.data);
+    }).catch(() => { /* non-fatal: defaults to false, hiding Continue */ });
+  }, []);
+
+  const handleContinue = useCallback(() => {
+    setScreen('game');
+  }, []);
+
+  const handleNewGame = useCallback(() => {
+    window.api.game.newGame().then(res => {
+      if (res.success) setScreen('game');
+    }).catch((err: unknown) => showError('Failed to start new game: ' + (err instanceof Error ? err.message : 'Unknown error')));
+  }, [showError]);
 
   // Full-map overlay — shown when player clicks mini-map from port scene
   const [showFullMap, setShowFullMap] = useState(false);
@@ -236,6 +258,11 @@ export default function Shell(): React.ReactElement {
   const portDisplayName = selectedPortId
     ? selectedPortId.charAt(0).toUpperCase() + selectedPortId.slice(1).replace(/_/g, ' ')
     : '';
+
+  // Gate: show title screen before gameplay
+  if (screen === 'title') {
+    return <TitleScreen hasSave={hasSave} onContinue={handleContinue} onNewGame={handleNewGame} />;
+  }
 
   return (
     <div
