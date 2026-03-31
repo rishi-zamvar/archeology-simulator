@@ -1,495 +1,394 @@
-# Domain Pitfalls
+# Domain Pitfalls — v1.3 Gameplay Depth & Polish
 
-**Domain:** Electron + React turn-based educational game with museum API integrations, Leaflet maps, and offline data support
-**Researched:** 2026-03-12
-**Confidence:** HIGH (multiple sources, verified patterns)
+**Domain:** Adding seasonal weather, captain's journal persistence, sailing animation improvements, and trade profit/loss UX to an existing Electron + React turn-based game
+**Researched:** 2026-03-31
+**Confidence:** HIGH (verified against existing codebase + domain patterns)
 
 ---
 
 ## Critical Pitfalls
 
-These mistakes cause rewrites, major architectural refactoring, or complete loss of functionality. Prevention during phase 1-2 is essential.
+Mistakes that cause rewrites or break existing functionality.
 
-### Pitfall 1: Native Module Compilation Hell
+### Pitfall 1: Seasonal Weather Mutates Voyage Duration Without Updating FSM Contract
 
 **What goes wrong:**
-SQLite and other native modules refuse to compile for target platforms, causing packaging to fail or apps to crash on launch. Different platforms (Windows, macOS, Linux) require different binary compilations. After a successful dev build, the packaged app crashes with "NODE_MODULE_VERSION mismatch" errors or "unable to open database file" on end-user machines.
+Weather modifies `durationTurns` in `calculateVoyageDuration()` (voyage.ts), but the FSM's `SailingState` already stores `eta` as a fixed number set at `SET_SAIL` time. If weather changes duration after sail is set, the FSM's `eta` and the actual voyage length diverge. The ShipMarker animation runs for 5 seconds regardless. The Logbook shows arrival at one time, the FSM resolves at another. Player sees the ship arrive but can't trade, or can trade before the ship arrives.
 
 **Why it happens:**
-Developers assume cross-platform compilation is straightforward (it isn't). Native modules like `better-sqlite3` must be compiled specifically for the target platform. True cross-compilation is not supported — you cannot build a Windows .node binary from macOS without special CI/CD setup. Most native modules don't provide prebuilt binaries, forcing build on each target platform or using pre-gyp correctly.
+The current architecture sets `eta` once during the `SET_SAIL` action (state.ts:80-85) and never revisits it. Weather is a modifier that wants to change duration dynamically (storms add turns, favorable winds reduce them), but the FSM has no mechanism for mid-voyage state updates. Developers add weather as a multiplier in `calculateVoyageDuration()` without realizing `eta` is already frozen in state.
 
-**How to avoid:**
-1. Identify all native dependencies early (sqlite3, better-sqlite3, any image/audio processing libraries)
-2. Use pre-built binaries via `node-pre-gyp` or similar tools
-3. Set up CI/CD for multi-platform builds (GitHub Actions, etc.) or use Docker with platform-specific agents
-4. Never assume "npm install" will work on production machines — test packaging on all three platforms before shipping
-5. For SQLite specifically, use better-sqlite3 and configure electron-builder to properly handle the .node binaries as externals (not bundled)
-6. Use postinstall hooks to rebuild native modules after installation
+**Consequences:**
+- Ship animation duration (5000ms hardcoded in ShipMarker.tsx:101) doesn't reflect weather-modified travel time
+- `motion-ended` callback fires ARRIVE action at wrong time relative to game turns
+- Save/load breaks if weather state isn't serialized alongside `eta`
 
-**Warning signs:**
-- Build works locally, packaging succeeds, but shipped app crashes on user's Windows/Mac/Linux
-- "prebuild-install failed" errors during CI builds
-- "SQLITE_CANTOPEN" errors in production
-- Developers claim "works for me" on one platform but breaks on others
+**Prevention:**
+1. Weather must modify `durationTurns` BEFORE `SET_SAIL` — calculate weather-adjusted duration, pass it as `eta` in the action. Do not try to modify `eta` mid-voyage.
+2. Add a `weatherModifier` field to `SailingState` (optional, for backward compat) so the UI can display "Storm: +2 turns" without needing to recalculate.
+3. Map animation duration in ShipMarker should derive from `eta`, not be hardcoded at 5000ms. Formula: `eta * BASE_ANIMATION_MS` with a reasonable cap.
+4. Never introduce mid-voyage weather changes in v1.3 — that requires a fundamentally different FSM with interruptible sailing states. Save that for v2.
 
-**Phase to address:**
-Phase 1 (Foundation) — must validate native module strategy before building core data layer. Phase 2 should include cross-platform packaging tests.
+**Detection:**
+- Ship arrives visually but game state is still `sailing`
+- `eta` in saved game doesn't match expected weather-adjusted duration
+- Player can click ports while ship is still animating
+
+**Phase to address:** First phase (Seasonal Weather) — must be designed before touching voyage.ts or state.ts.
 
 ---
 
-### Pitfall 2: Leaflet Performance Cliff at Scale
+### Pitfall 2: Journal Entries Lost on Component Unmount / Save-Load
 
 **What goes wrong:**
-Map renders fine with 50 markers. At 500 markers, panning/zooming becomes visibly laggy. At 2000+ markers (representing trade routes, dig sites, ships across Mediterranean), the app becomes unusable — frame rate drops to 5 FPS, animation stops, CPU hits 100%. Users see a frozen app.
+The current Logbook component (Logbook.tsx) stores ALL entries in React component state (`useState<LogEntry[]>`). Entries are generated in a `useEffect` that watches `currentTurn` and `gameStateType`. This state is:
+- Lost when the component unmounts (navigating away from map view)
+- Lost on page reload / app restart
+- Lost on save/load (game_state table stores FSM state, not journal entries)
+- Not deduplicated — if `useEffect` re-runs from a React re-render with same deps, duplicate entries appear
 
 **Why it happens:**
-Leaflet creates each marker as a separate DOM element. Each marker is a real DOM node, and 2000 DOM nodes with update events on every pan/zoom event overwhelms the browser's layout engine. Marker animations compound the problem — moving 100 ships across the map in real-time can consume 100% of a CPU core.
+The Logbook was designed as a cosmetic overlay, not a persisted game system. The `lastProcessedTurn` ref (Logbook.tsx:79) prevents duplicate weather entries within a session, but refs reset on unmount. When adding the Captain's Journal as a real feature, developers naturally extend this component without moving state to persistence.
 
-**How to avoid:**
-1. Early in Phase 2 (Map), implement marker clustering for non-interactive markers (dead sites, historical locations) using Leaflet.markercluster
-2. For animated markers (ships, active digs), use Canvas rendering instead of DOM-based markers via Leaflet.Canvas or Pixi.js overlay
-3. Never try to animate > 50 DOM-based markers simultaneously — use canvas-based rendering for dynamic content
-4. Profile the map early with realistic data (1000s of markers) — don't wait for scaling issues to surface later
-5. Use marker virtualization: only render markers in viewport + buffer zone, destroy off-screen markers
-6. Avoid marker zoom animation with large datasets (it doesn't save much performance and adds complexity)
+**Consequences:**
+- Player saves game, loads it, journal is empty
+- Player navigates to port scene and back to map, journal resets
+- React StrictMode in dev causes double-mount, creating duplicate entries
 
-**Warning signs:**
-- Map sluggish during panning with > 500 visible markers
-- Animated ship movements stutter or freeze
-- CPU usage jumps to 80%+ during map interaction
-- Frame rate drops visible to users (< 30 FPS)
+**Prevention:**
+1. Move journal entries to SQLite — add a `journal_entries` table with columns: `id`, `turn`, `date_text`, `entry_text`, `entry_type`, `created_at`.
+2. Generate entries in the main process (game engine / IPC handler), not in a React component. When `SET_SAIL` is handled, insert departure entry. When `ARRIVE` is handled, insert arrival entry. When turn advances, insert weather entry.
+3. The Logbook component becomes a read-only view that fetches entries via IPC, not a generator of entries.
+4. Add an IPC channel: `journal:getEntries(sinceId?)` that returns paginated entries.
+5. Keep the `turnToDate()` function but move it to shared code so both main and renderer can use it.
 
-**Phase to address:**
-Phase 2 (Map Rendering) — must prototype with real marker counts before finalizing architecture. Implement clustering/canvas strategy early, not as an afterthought.
+**Detection:**
+- Journal empty after save/load
+- Journal empty after navigating away and back
+- Duplicate entries appearing in dev mode
+
+**Phase to address:** Journal phase — this is the fundamental architecture decision for the feature.
 
 ---
 
-### Pitfall 3: Museum API Rate Limits + Unreliable Uptime
+### Pitfall 3: leaflet.motion Animation Races With React Re-renders
 
 **What goes wrong:**
-The app makes historical data requests during turn resolution or when players explore locations. Met Museum API responds with 429 (Too Many Requests). The app either crashes, shows stale/broken data, or worse — silently succeeds but returns incomplete data. Players see missing artifacts, incomplete museum collections, or the app hangs entirely.
+The ShipMarker component (ShipMarker.tsx) creates a `leaflet.motion.polyline` in a `useEffect`, stores it in a ref, and cleans up on unmount. But React can re-render the component (parent state change, Zustand store update, context change) WITHOUT changing the effect deps (`map`, `destination`, `departurePortId`, `portCoords`). When the parent re-renders and the effect deps DO change (e.g., portCoords Map reference changes because parent reconstructs it), the effect cleanup runs `motionStop()` + `removeLayer()`, then re-creates the animation from scratch — the ship jumps back to the start.
+
+Additionally, `leaflet.motion` mutates the Leaflet `L` global. React-leaflet explicitly warns that "React does not render Leaflet layers to the DOM" and that properties are not updated unless documented as mutable. The `motion-ended` callback (ShipMarker.tsx:112-118) fires an IPC call that triggers a state change that causes a re-render that can destroy the animation before the state transition completes.
 
 **Why it happens:**
-Museum APIs (Met, British Museum, etc.) have strict rate limits, often 10-100 requests per minute. Developers don't implement exponential backoff or cache strategies. The first release hits a museum API 5 times per turn. With 50 concurrent players, that's 250 requests/minute — immediate 429 errors. Additionally, museum APIs have variable uptime and slow response times (2-10 seconds). The app was written assuming instant API responses.
+leaflet.motion is an imperative Leaflet plugin (last published 4 years ago, no TS types, mutates global `L`). React-leaflet is declarative. Mixing imperative animation lifecycle with React's render cycle creates timing conflicts. The `motion-ended` -> `ARRIVE` -> state change -> re-render -> effect cleanup -> animation destroyed chain is a classic race condition.
 
-**How to avoid:**
-1. Early Phase 3 (API Integration), implement mandatory rate-limit detection:
-   - Parse X-RateLimit-* headers from every API response
-   - Implement exponential backoff: fail once → wait 2s, fail again → wait 4s, up to reasonable max (60s)
-   - Queue requests, don't make them synchronously
-2. Cache aggressively:
-   - Cache museum object metadata locally (SQLite) — never refetch the same object
-   - Cache collection lists per museum, refresh only on user request
-   - Pre-fetch commonly-used objects during idle time
-3. Graceful degradation:
-   - If API fails, serve cached data (even if stale, better than broken)
-   - Show "offline" badge in UI when serving cached data
-   - Never crash on API failure — return sensible defaults
-4. Test API behavior under load BEFORE launch:
-   - Simulate 50+ concurrent players, measure API call rate
-   - Document actual rate limits per museum (test by hand)
-   - Calculate "safe" request rate and hardcode guardrails
+**Consequences:**
+- Ship animation restarts mid-voyage (jumps back to departure)
+- Ship arrives but `ARRIVE` action fails because animation was already cleaned up
+- Double `ARRIVE` actions fire (once from animation end, once from stale callback)
+- `cleanedUp` boolean (ShipMarker.tsx:79) prevents some issues but not all — it doesn't prevent the re-creation race
 
-**Warning signs:**
-- API calls fail with 429 in testing with modest player load
-- Missing/incomplete data in game (artifacts not loading)
-- App hangs for 10+ seconds during turn resolution
-- Players report "sometimes the data is there, sometimes not"
-- Museum API response times > 5 seconds with no retry logic
+**Prevention:**
+1. Stabilize the `portCoords` reference — use `useMemo` in the parent to prevent Map reconstruction on every render. The current code passes a `Map<string, [number, number]>` that may be recreated each render.
+2. Add a `sailingId` or `voyageId` to `SailingState` (a counter or UUID incremented on each `SET_SAIL`). Use it as the effect dep instead of `destination` + `departurePortId`. This ensures the animation only restarts for genuinely new voyages.
+3. Guard the `motion-ended` callback with a state check: verify the game is still in `sailing` state before firing `ARRIVE`. If state has already transitioned (e.g., from a save/load), skip the action.
+4. Consider replacing `leaflet.motion` with a manual `requestAnimationFrame` loop that interpolates position. This gives full control over the animation lifecycle without depending on a 4-year-old unmaintained plugin.
 
-**Phase to address:**
-Phase 3 (Museum API Integration) and Phase 4 (Caching/Offline Mode) — rate limiting strategy must be designed before writing API integration code. Caching is not optional.
+**Detection:**
+- Ship visually jumps during sailing
+- Console errors: "Invalid transition: idle -> ARRIVE"
+- Double port arrival entries in journal
 
----
-
-### Pitfall 4: Game State Complexity Explodes Midway
-
-**What goes wrong:**
-Phase 1 implements basic turn mechanics. Phase 3 adds factions, reputation, crew management. Phase 4 adds economic simulation, weather, random events. By end of Phase 5, the game state is a tangled mess: 50+ boolean flags, nested objects 5 levels deep, state mutations in 20 different places. A simple "player moved ship" action now touches 15 different state properties. One bug cascades through 5 systems. Developers can't reason about game state anymore.
-
-**Why it happens:**
-Turn-based game state management typically starts simple: `{ currentPlayer, board, turn }`. Each feature addition (factions, reputation, economy) adds state fields. Without a principled state machine, developers fall into the "nested if-statement hell" pattern — the Update() method becomes a 500-line function checking `if isTurn && isFactionA && hasReputation > 50 && isWeatherRainy then...`. Any new state interaction requires touching multiple systems.
-
-**How to avoid:**
-1. Phase 1 (Foundation): Implement state using a formal Finite State Machine (FSM) pattern, not boolean flags:
-   - Define explicit states: `WAITING_FOR_PLAYER → RESOLVING_ACTION → UPDATING_ECONOMY → CHECKING_VICTORY → WAITING_FOR_NEXT_PLAYER`
-   - Each state has entry/exit actions and valid transitions
-   - Never use boolean flags like `isResolvingAction` — use state enum instead
-2. Use immutable state patterns (Redux-like or Zustand):
-   - State is never mutated in place
-   - Each action returns a new state object
-   - Makes undo/replay/networking easier
-3. Decouple systems using events/command pattern:
-   - Game state doesn't know about faction bonuses or economy
-   - Systems subscribe to state changes: "when MOVING_SHIP event fires, apply faction speed bonus"
-   - New features are added as new subscribers, not by modifying core state
-4. Enforce state consistency:
-   - Write unit tests for every state transition
-   - Assert invariants (no negative resources, crew count > 0, etc.)
-   - Serialize/deserialize state to catch hidden state issues early
-
-**Warning signs:**
-- State has 50+ boolean flags (`isPlayerTurn`, `isAnimating`, `hasBonus`, `isFactionMode`, etc.)
-- Update/turn resolution method is > 200 lines with deep nesting
-- "Fixing one bug causes two new bugs" — sign of tight coupling
-- Save/load functionality is buggy (state isn't serializable)
-- Developers can't explain the full state tree without consulting code
-
-**Phase to address:**
-Phase 1 (Foundation) and Phase 2 (Core Mechanics) — state management architecture must be right early. Refactoring state machines mid-project is extremely expensive.
-
----
-
-### Pitfall 5: Offline/Online Sync Becomes Unrecoverable
-
-**What goes wrong:**
-Player has cached data locally. Player makes a move while offline. Player goes online. Server has progressed further (other players made moves, turn advanced). App tries to apply local changes to old server state. Conflict resolution fails or is inconsistent. Player's move is lost, or worse — their data becomes corrupted. They see phantom resources, impossible game states, or sync loops.
-
-**Why it happens:**
-Offline-first architecture is complex. It's tempting to implement a simple "download everything, cache it, sync on reconnect" approach. But this fails when:
-- Server state advances while player is offline
-- Two clients make conflicting edits
-- Network is intermittent (connects/disconnects multiple times)
-- No clear conflict resolution strategy
-
-Common mistake: "last-write-wins" sounds simple but loses data when two players edit simultaneously.
-
-**How to avoid:**
-1. Phase 4 (Offline Mode): Define explicit conflict resolution BEFORE implementing sync:
-   - Operational Transformation (OT) or CRDT for shared data?
-   - Server-wins? Client-wins? Merge logic?
-   - Document clearly — this is a business logic decision, not a technical one
-2. Never sync blindly:
-   - Always fetch server version of each record before applying local changes
-   - Calculate actual delta (what changed locally since last sync)
-   - Apply server version + local delta, handle conflicts explicitly
-3. Implement versioning/timestamps:
-   - Every cached item has `localVersion` and `serverVersion`
-   - Before applying local change: fetch server, compare versions
-   - If server version advanced, merge or conflict, don't overwrite
-4. Use delta sync, not full sync:
-   - Don't re-download entire game state on reconnect
-   - Only sync records that changed
-   - Reduces bandwidth and conflict surface area
-5. Add observability:
-   - Log every sync operation (what conflicted, how resolved)
-   - Provide admin tool to inspect sync state
-   - Have recovery procedures (force server-wins, for example)
-
-**Warning signs:**
-- Players report "my moves disappeared after going offline"
-- Sync loops (app keeps retrying same sync operation)
-- Data inconsistencies (player has -50 resources, impossible state)
-- "Sync in progress..." spinner never completes
-- Dev notes: "sync logic is fragile, touches it carefully"
-
-**Phase to address:**
-Phase 4 (Offline Mode) — must design before implementing. Refactoring sync logic is extremely painful because it touches all game systems.
+**Phase to address:** Sailing Animation phase — must stabilize before adding weather-dependent duration.
 
 ---
 
 ## Moderate Pitfalls
 
-These mistakes cause delays, technical debt, or require significant rework but don't cause complete failures.
+Mistakes that cause delays or degrade UX.
 
-### Pitfall 6: Electron IPC Communication Bottleneck
-
-**What goes wrong:**
-Main process and renderer process communicate via IPC (Inter-Process Communication). Game logic runs in renderer. Complex actions (validating trade routes, updating economy) make IPC calls to main process. With 100+ IPC messages per turn, the app becomes noticeably sluggish — delays between clicking and action being processed, animation glitches.
-
-**Why it happens:**
-Developers treat IPC like normal function calls: synchronous, expect instant response. But IPC is asynchronous under the hood. Each message goes through the browser's event loop. With many messages queued, latency piles up. Compound with any I/O in main process (file writes, database queries) and responsiveness suffers.
-
-**How to avoid:**
-1. Batch IPC calls: Instead of 10 individual messages, collect data and send one batch message
-2. Implement proper async/await for IPC:
-   ```
-   const result = await ipcRenderer.invoke('validate-trade', tradeData)
-   ```
-   Not: multiple async sends with callbacks
-3. Profile IPC latency early (Phase 2):
-   - Add performance markers: mark IPC send, mark response
-   - Measure: turn resolution with 20 IPC calls should take < 100ms
-   - If slow, batch or move logic to renderer
-4. Consider moving compute-heavy logic to renderer if it doesn't require system-level access
-5. Cache results of expensive IPC calls (API validation, etc.)
-
-**Warning signs:**
-- Noticeable delay (200ms+) between user input and UI response
-- Frame rate drops during game actions
-- IPC message queue backs up (measured by latency increase)
-- Developers discussing "slow turn resolution"
-
-**Phase to address:**
-Phase 2 (Core Mechanics) and Phase 5 (Polish) — identify IPC bottlenecks during development, don't leave for final polish.
-
----
-
-### Pitfall 7: Electron App Bloat (Bundle Size)
+### Pitfall 4: Weather System Creates Invisible Difficulty Spikes
 
 **What goes wrong:**
-Base Electron app is ~150MB (Chromium + Node). Add React, libraries, assets (images, audio, map tiles), and the packaged app becomes 400-600MB. Users complain about download time, disk space, slow startup. On Windows, installer bloat becomes an issue.
+Seasonal weather modifies route safety and travel time. Developer implements honest Mediterranean weather patterns: winter storms make Crete-to-Egypt a 5-turn voyage instead of 2, with 60% storm encounter chance. Player has no way to know this before setting sail. They lose cargo, crew, or gold to a "random" storm that was actually predictable from the season. Educational value is zero because the student learns "the game is unfair" instead of "ancient sailors avoided winter crossings."
 
 **Why it happens:**
-Developers don't optimize iteratively. They include all map tiles, all museum images, all audio files in bundle. They don't tree-shake unused dependencies. Source maps are left in production build. The app grows gradually until it's unmanageably large.
+The current game has no pre-voyage information system. `getReachablePorts()` (voyage.ts) returns ports with duration but no risk assessment. Weather modifiers are calculated but not surfaced to the player before they commit to `SET_SAIL`. The Logbook generates weather descriptions AFTER departure (Logbook.tsx:91-108), not before.
 
-**How to avoid:**
-1. Phase 1 (Foundation): Set a target bundle size, measure it continuously
-   - Accept no new dependencies without reviewing bundle impact
-   - Use `webpack-bundle-analyzer` or similar in build pipeline
-2. Optimize assets:
-   - Compress images aggressively (use WebP, not PNG/JPG)
-   - Don't bundle museum images — fetch on demand from server/cache
-   - Don't bundle all map tiles — use tile server (OpenStreetMap), not local tiles
-   - Audio files: use lossy compression (128 kbps MP3, not WAV)
-3. Code splitting:
-   - Load museum API code only after game is playable
-   - Load map only when player navigates to map view
-   - Lazy load assets
-4. Remove source maps from production builds
-5. Profile bundle in each phase:
-   - Phase 1: Target < 200MB total
-   - Phase 2: < 250MB
-   - Phase 3: < 300MB (API code, assets)
-   - Phase 5: < 400MB final
+**Consequences:**
+- Students feel cheated by "random" storms
+- No educational payoff: real ancient sailors knew seasonal patterns
+- Players avoid sailing entirely in dangerous seasons (game becomes unplayable for 1/4 of turns)
+- Difficulty curve is invisible — no way to improve through knowledge
 
-**Warning signs:**
-- App size grows 50MB+ per phase
-- Startup takes > 3 seconds
-- Users on slow internet can't download it
-- Disk-constrained systems refuse to install
+**Prevention:**
+1. Show weather forecast BEFORE departure: "Winter crossing to Alexandria: 4 turns (normally 2). Storm risk: HIGH. Ancient sailors avoided this route in Poseideon."
+2. Add a `getWeatherForecast(fromPort, toPort, currentTurn)` function that returns `{ adjustedDuration, riskLevel, historicalNote }`.
+3. Display risk in the port selection / route picking UI, not just in the Logbook.
+4. Keep weather effects moderate in v1.3: +1-2 turns max, 10-30% event chance modifier. Don't make routes impassable.
+5. Always pair the mechanical effect with a historical teaching moment: "Phoenician captains preferred coastal routes in winter" teaches more than "+3 turns."
 
-**Phase to address:**
-Phase 1 (Foundation) — establish bundle size target and monitoring. Phase 3-5: optimize specific asset categories.
+**Detection:**
+- Playtesting: students complain about unfair storms
+- Analytics: players avoid sailing for multiple consecutive turns
+- No weather information visible before `SET_SAIL`
+
+**Phase to address:** Seasonal Weather phase — forecast display must ship WITH the weather system, not after.
 
 ---
 
-### Pitfall 8: Cross-Platform UX Feels Wrong
+### Pitfall 5: Profit/Loss Display Shows Wrong Numbers Due to Price Timing
 
 **What goes wrong:**
-App looks fine on macOS. On Windows, keyboard shortcuts don't work (no Cmd+C to copy by default). On Linux, fonts render differently. On macOS, window chrome doesn't match native apps (no traffic light buttons, wrong window behavior). Players feel like the app is "a website in a window," not a real application.
+The TradePanel shows `currentPrice` for each good. The ProfitDisplay shows overall P/L as `gold - 500`. But profit per trade (the v1.3 feature: "price difference before confirming a sale") requires comparing `boughtAtPrice` (from `CargoItem`) with `currentPrice` at the selling port. Problem: `currentPrice` changes every turn via `advancePortEconomy()`. If the player buys wheat at 10g in Athens, sails for 3 turns, then checks the sell price in Carthage, the "profit display" might show the Athens price (stale) or the Carthage price (correct) depending on when the economy advanced.
 
 **Why it happens:**
-Developers use generic web patterns without learning platform conventions. Copy/paste doesn't work because Electron requires explicit menu setup. Fonts hardcoded to "Helvetica" instead of system font. Scrolling behavior different from native apps.
+The current `CargoItem` type (game-types.ts:55-60) stores `boughtAtPrice` and `boughtAtPort`. But `currentPrice` is a property of `MarketGood` at the CURRENT port, recalculated each turn. The profit calculation is: `currentPrice - boughtAtPrice`. But which `currentPrice`? The selling port's current price. If the economy hasn't advanced for the current turn yet (race between `advancePortEconomy` and UI render), the price shown is off by one turn's worth of supply/demand drift.
 
-**How to avoid:**
-1. Phase 1: Research platform UX guidelines:
-   - macOS: HIG (Human Interface Guidelines)
-   - Windows: Fluent Design
-   - Linux: No single standard, but GNOME/KDE have conventions
-2. Use platform-specific system fonts:
-   ```css
-   /* Not: font-family: 'Helvetica'; */
-   /* Instead: */
-   font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
-   ```
-3. Implement native menus with Cmd+C, Cmd+V on macOS automatically, Ctrl+C on Windows/Linux
-4. Don't select text in UI elements (use `user-select: none`)
-5. Test on all three platforms every phase — don't assume CSS behaves identically
-6. Use platform-aware theming (dark mode on all platforms, native colors where possible)
+**Consequences:**
+- Profit indicator shows "+5g profit" but actual sale yields "+3g" (economy advanced between display and transaction)
+- Player makes decisions based on stale prices
+- Trust in the trade system erodes — "the numbers lie"
 
-**Warning signs:**
-- Players say "it feels like a website"
-- Keyboard shortcuts inconsistent across platforms
-- Copy/paste broken on macOS specifically
-- Font rendering looks blurry/wrong on some platforms
+**Prevention:**
+1. Calculate profit display using the SAME price that will be used for the transaction. Do not calculate display-side and transaction-side independently.
+2. The profit indicator should call the same `calculateMarketPrice()` function with the same inputs that the buy/sell IPC handler uses. Or better: have the IPC handler return the expected profit alongside the market data.
+3. Add a `profitPerUnit` computed field to the trade panel data: `profitPerUnit = currentPrice - boughtAtPrice` calculated server-side (main process) and sent to renderer.
+4. Ensure `advancePortEconomy()` runs BEFORE the market data is sent to the renderer for display, not concurrently.
 
-**Phase to address:**
-Phase 1 (Foundation) — establish platform-aware UI patterns early. Phase 5 (Polish) — test heavily on all platforms.
+**Detection:**
+- Player sees "+10g" in profit indicator, sells, gets "+7g"
+- Profit display changes between opening trade panel and clicking sell (price drifted)
+
+**Phase to address:** Trade Profit Display phase — must be designed alongside the economy tick timing.
 
 ---
 
-### Pitfall 9: Museum API Data Becomes Silently Stale
+### Pitfall 6: Seasonal Weather Breaks Existing Save Files
 
 **What goes wrong:**
-App caches museum data: "met.org object 123456 is a Roman coin from 50 BC". Three months later, the museum updates its records: "actually, it's a forgery from 1920". The app keeps showing the old data. Educational value is compromised — students learn incorrect history.
-
-Worse: the data silently diverges from source, with no warning. There's no "data refresh" indication, so players don't know they're seeing stale data.
+The `game_state` table stores `state_json` — a serialized `GameState`. Adding weather means adding fields: `currentSeason`, `weatherCondition`, `seasonalModifiers`. Old save files don't have these fields. Loading an old save with `JSON.parse()` produces a `GameState` without weather data. The weather system reads `state.currentSeason`, gets `undefined`, and either crashes or produces nonsensical behavior (no season = no weather = trivially easy forever).
 
 **Why it happens:**
-Museum APIs are not real-time. Data changes infrequently, but it changes. Developers cache data and never refresh it. There's no versioning or change tracking. After months of operation, the cached data becomes quietly wrong.
+The current schema (schema.ts) uses `state_json TEXT` for game state — a single JSON blob. There's no migration system, no versioning on the JSON structure. Previous additions (like `departurePortId` and `route` on `SailingState`) were handled with optional fields and `?` types (types.ts:48-49). This works for small additions but becomes fragile at scale.
 
-**How to avoid:**
-1. Phase 3 (API Integration): Implement data staleness tracking:
-   - Every cached object has `cachedAt` timestamp
-   - Background job: periodically re-fetch changed objects (daily/weekly)
-   - Mark data as stale if > 30 days old
-2. Add refresh UI:
-   - Show "last updated 30 days ago" in museum popups
-   - "Refresh" button to re-fetch latest data
-3. Implement change detection:
-   - Store a hash of the object data
-   - On background refresh, compare hash — if changed, notify developer
-   - Log all changes for audit trail
-4. For critical facts (educational content), add review process:
-   - Flag data as "verified correct" or "needs review"
-   - Don't show unverified data without warning
-5. Document data freshness guarantees:
-   - "This data is accurate as of [date]"
-   - "Educational objects verified by [museum] as of [date]"
+**Consequences:**
+- Players who upgrade lose their save context (weather defaults to nothing)
+- TypeScript types say `currentSeason` exists, runtime data says it doesn't
+- Edge cases: player in mid-voyage when weather is added — what season are they in?
 
-**Warning signs:**
-- App shows information contradicting museum website
-- No indication of when data was last updated
-- Teachers complain about inaccurate historical facts
-- Museum staff discover errors in your app's data
+**Prevention:**
+1. All new weather fields on `GameState` must be optional (`?`) with sensible defaults. `currentSeason` defaults to calculating from `currentTurn` using `turnToSeason()`.
+2. Add a `version` field to the saved state JSON. When loading, check version and apply migrations: v1 -> v2 adds `currentSeason = turnToSeason(currentTurn)`.
+3. Never make weather fields required on the TypeScript types — existing tests and save files will break. Use runtime defaults.
+4. Add a `migrateGameState(raw: unknown): GameState` function that normalizes old saves to the current schema, filling in missing fields.
+5. Test with actual v1.2 save files — don't just test with fresh games.
 
-**Phase to address:**
-Phase 3 (API Integration) and Phase 6 (Polish) — design data freshness strategy early, audit before launch.
+**Detection:**
+- App crashes on load with "Cannot read property of undefined"
+- Weather system silently inactive on loaded games
+- Tests fail because mock GameState objects don't have weather fields
+
+**Phase to address:** Seasonal Weather phase — migration must be part of the implementation, not an afterthought.
 
 ---
 
-## Technical Debt Patterns
+### Pitfall 7: Weather-as-Cosmetic vs Weather-as-Mechanic Confusion
 
-Shortcuts that seem reasonable but create long-term problems.
+**What goes wrong:**
+The existing Logbook already generates "weather" text per turn (Logbook.tsx:24-36) — `generateWeather(turn)` returns flavor text like "Clear skies and calm seas." This is purely cosmetic: it doesn't affect gameplay. When adding the seasonal weather SYSTEM, developers must reconcile two weather concepts: the cosmetic Logbook weather and the mechanical weather that modifies voyage duration/risk. If they're not unified, the Logbook says "Brilliant sun" while the weather system applies a storm penalty to the route.
 
-| Shortcut | Immediate Benefit | Long-term Cost | When Acceptable |
-|----------|-------------------|----------------|-----------------|
-| Hardcode museum object IDs instead of dynamic lookup | Quick testing, no API calls needed | Breaks when museums update IDs, impossible to swap museums later, manually update 1000s of IDs if migrating APIs | Only during Phase 1 prototype, must refactor before Phase 3 |
-| Cache everything locally, never expire | Offline works great, instant loads | Data becomes months old, impossible to update without reinstalling, users see stale history | Acceptable only if data is truly immutable (historical facts that never change) |
-| Store full game state in localStorage | Simple persistence, works offline | localStorage has 5-10MB limit per domain, corrupts easily, not reliable for large datasets | OK for Phase 1 MVP, must migrate to SQLite by Phase 2 |
-| Synchronous IPC calls (blocking) | Simple to understand | UI freezes during I/O, terrible UX, doesn't scale | Never acceptable — use async/await from start |
-| Disable Electron security features for convenience | Faster dev, fewer errors | XSS becomes RCE (remote code execution), major security vulnerability | Never acceptable — security features exist for a reason |
-| Fetch full museum collection on load | Simplest code | App hangs for 30 seconds on startup, uses 500MB RAM, fails on slow networks | Never acceptable — implement progressive loading instead |
+**Why it happens:**
+The cosmetic weather was a quick addition for atmosphere. It uses `turn % conditions.length` (Logbook.tsx:36) — deterministic based on turn number, not season-aware, not route-aware. The seasonal weather system needs to be season-aware and route-aware. Two independent weather systems producing contradictory information is confusing.
 
----
+**Consequences:**
+- Logbook says "calm seas" while voyage takes +3 turns from storms
+- Students learn contradictory information
+- Code has two weather generation paths that must be kept in sync
 
-## Integration Gotchas
+**Prevention:**
+1. Replace `generateWeather(turn)` with a call to the new weather system: `getWeatherForTurn(turn, season, region)`.
+2. The weather system is the single source of truth. The Logbook consumes it, the voyage calculation consumes it, the map display consumes it.
+3. Remove the hardcoded `conditions` array from Logbook.tsx entirely. Weather text comes from the weather system.
+4. Same for `generateRumor()` — rumors about prices should eventually reflect actual market data, not a hardcoded rotating array.
 
-Common mistakes when connecting to external services.
+**Detection:**
+- Logbook weather contradicts voyage duration modifier
+- Two different "weather" functions in the codebase
+- Player confused: "It said clear skies, why did I get a storm?"
 
-| Integration | Common Mistake | Correct Approach |
-|-------------|----------------|------------------|
-| Met Museum API | No rate limiting, requests fire synchronously | Implement queue with exponential backoff, respect X-RateLimit-* headers, cache aggressively |
-| British Museum API (if used) | No error handling for timeouts (APIs slow, ~2-10 seconds) | Implement 30-second timeout, fallback to cached data, show "loading..." indicator |
-| Pleiades/Perseus scraping | Scrape HTML without change detection, breaks when HTML changes | Use stable APIs if available, implement data versioning, log scrape errors, notify on data structure changes |
-| Leaflet tile server (OpenStreetMap) | Hardcode tile URL, unaware of rate limits | Use official tile server with attribution, implement fallback tile servers, cache tiles locally |
-| Electron file system access | No error handling for permission denied | Check permissions early, graceful fallback (in-memory instead of disk), ask for permissions explicitly |
-
----
-
-## Performance Traps
-
-Patterns that work at small scale but fail as usage grows.
-
-| Trap | Symptoms | Prevention | When It Breaks |
-|------|----------|------------|----------------|
-| Rendering all map markers at once (no culling) | Map responsive with 50 markers, sluggish with 200+, frozen with 1000+ | Implement viewport culling: only render markers in visible area + buffer, destroy off-screen | 200+ markers visible |
-| State updates cause full component tree re-render | Fast with shallow state (10 properties), slow with deep state (1000+ properties in object tree) | Use Zustand or Redux for fine-grained subscriptions, memoize components, profiles hot paths | 500+ state properties, complex nesting |
-| No pagination/virtualization for lists | Small lists (< 100 items) fast, large lists slow | Implement windowing: only render visible list items, use react-window or similar | 500+ items in a list |
-| Database queries without indexing | First 1000 queries fast, 100K queries slow, timeouts | Index frequently queried columns early, profile SQLite queries, use EXPLAIN PLAN | 100K+ rows in database |
-| Asset loading blocking render | App loads fast with local assets, hangs when fetching from server | Load assets asynchronously, use lazy loading, show placeholder/skeleton UI | Slow network or 100MB+ assets |
-| Game turn resolution synchronously | 5 turns resolve instantly, 50 turns take 5 seconds, 200+ turns hang | Break turn resolution into async steps, use requestAnimationFrame for UI updates, show progress | 100+ turns in a session |
+**Phase to address:** Seasonal Weather phase — must replace the existing cosmetic weather, not layer on top of it.
 
 ---
 
-## Security Mistakes
+### Pitfall 8: Animation Duration Disconnect From Turn Duration
 
-Domain-specific security issues beyond general web security.
+**What goes wrong:**
+Current ShipMarker animates for exactly 5000ms (ShipMarker.tsx:101) regardless of voyage duration. A 1-turn coastal hop and a 5-turn open-sea crossing both take 5 seconds of animation. When weather modifies duration, the disconnect worsens: a storm-extended 8-turn voyage still animates in 5 seconds, giving no visual feedback that this voyage is longer/harder.
 
-| Mistake | Risk | Prevention |
-|---------|------|------------|
-| Enabling `nodeIntegration: true` in Electron | XSS vulnerability becomes RCE (attacker gains full OS access) | Always use `nodeIntegration: false` (default in modern Electron), use preload scripts for IPC |
-| Storing API credentials in localStorage or .env in repo | Credentials leaked publicly, attacker gains museum API access | Store credentials in Keychain/Credentials Manager, never commit .env, use secure storage for sensitive data |
-| Trusting museum API data without validation | Malformed data crashes app, or attacker feeds fake museum data to educate students with false information | Validate all API responses against schema, sanitize displayed text, warn if data source is untrusted |
-| Allowing file system access from renderer without restrictions | User can read/write arbitrary files on disk | Use preload script, whitelist allowed directories, prompt user for file access permission |
-| Not escaping user input in turn logs/chat | XSS if app displays user-created content | Use React's built-in escaping, or DOMPurify, never set dangerouslySetInnerHTML without sanitization |
+When the animation ends, `motion-ended` fires `ARRIVE` (ShipMarker.tsx:112-118). But if weather added turns, should the ship arrive after 5 seconds and then the player "waits" the extra turns? Or should the animation be longer? Neither is implemented — the animation just runs 5 seconds and arrives regardless of actual turn cost.
 
----
+**Why it happens:**
+The current `duration: 5000` is hardcoded because in v1.0, animation was a visual indicator, not a gameplay-accurate representation. With weather modifying duration, animation timing becomes gameplay-relevant.
 
-## UX Pitfalls
+**Consequences:**
+- No visual difference between short and long voyages
+- Players can't gauge voyage length from the animation
+- Weather penalties are invisible during sailing
+- If animation triggers ARRIVE, weather-extended voyages end too early
 
-Common user experience mistakes in this domain.
+**Prevention:**
+1. Scale animation duration by `eta`: `duration = Math.min(eta * 1500, 10000)` — 1-turn = 1.5s, 5-turn = 7.5s, capped at 10s.
+2. Decouple animation completion from game state transition. Animation is visual only. The ARRIVE action should fire based on turn count, not animation end.
+3. Show a turn counter during sailing: "Day 2 of 5" — this gives feedback even if the animation is shorter than real voyage time.
+4. If keeping animation-triggers-arrival: ensure `eta` in the FSM already includes weather modifier so animation duration and turn cost are consistent.
 
-| Pitfall | User Impact | Better Approach |
-|---------|-------------|-----------------|
-| Loading indicator missing | User doesn't know if app is frozen or loading, clicks again and again | Show explicit "Loading..." with progress if > 1 second, disable buttons during load, show cancel option if > 5 seconds |
-| No offline indication | User makes moves offline, expects them to sync, silently loses data | Show offline badge in header, save all offline moves locally, confirm sync status with user |
-| Cryptic error messages | "Error 429" means nothing to player | Show user-friendly message: "Museum data not available. Showing cached data from [date]. Try again in 1 minute." |
-| Ship animation never completes | Player thinks movement failed, moves again, creates duplicate ships | Show clear animation completion, confirm action with UI feedback (checkmark, sound), make animations fast (< 2 seconds) |
-| No undo/replay | Player misclicks, move is permanent, game is ruined | Implement undo for last N turns (if possible given game rules), allow viewing turn history/replay |
-| Map drowns out gameplay | Beautiful map is distracting, players can't find game info | Use map as secondary view, show game stats prominently, allow toggling between map and game board |
-| No tutorial/onboarding | Players don't understand trade route mechanics, ancient Greek economics confuses them | Build tutorial for first 3 turns, explain mechanics in-game, provide tooltips, track metrics on learning |
+**Detection:**
+- All voyages feel the same length regardless of distance
+- Weather modifiers have no visual feedback during sailing
+- ARRIVE fires before the correct number of turns have elapsed
 
----
-
-## "Looks Done But Isn't" Checklist
-
-Things that appear complete but are missing critical pieces.
-
-- [ ] **Museum API Integration:** Often missing error handling for slow/unavailable APIs — verify timeout logic, retry logic, fallback to cached data
-- [ ] **Offline Mode:** Often missing conflict resolution — verify sync doesn't lose data when reconnecting with local changes
-- [ ] **Map Rendering:** Often missing performance testing at scale — verify map stays smooth with 1000+ markers and animations
-- [ ] **Game State:** Often missing edge case handling (negative resources, crew death, faction elimination) — verify all invariants with tests
-- [ ] **Database:** Often missing schema migrations — verify can update schema without losing player progress, test on real data
-- [ ] **Audio Playback:** Often missing context isolation — verify audio works after Electron security updates, works in all contexts (main process, preload)
-- [ ] **Cross-Platform Packaging:** Often missing Windows/Linux testing — verify app launches on real Windows/Linux machines, not just developer machine
-- [ ] **Historical Data:** Often missing accuracy verification — verify museum facts match authoritative sources, flag uncertain data
-- [ ] **IPC Communication:** Often missing batch optimization — verify turn resolution with full game logic doesn't exceed 200ms latency
-- [ ] **Caching Strategy:** Often missing cache invalidation — verify stale data doesn't persist indefinitely, cache updates on network restore
+**Phase to address:** Sailing Animation phase — before adding weather-scaled durations.
 
 ---
 
-## Recovery Strategies
+## Minor Pitfalls
 
-When pitfalls occur despite prevention, how to recover.
+Annoyances that are fixable but worth preventing.
 
-| Pitfall | Recovery Cost | Recovery Steps |
-|---------|---------------|----------------|
-| Native module compilation breaks on Windows build | HIGH | Stop shipping, identify missing .node binary, rebuild on Windows, update CI pipeline, ship hotfix, estimated 2-3 days |
-| Map performance unacceptable (1000+ markers) | HIGH | Must refactor to canvas rendering or clustering, refactor map component, test thoroughly, could take 1-2 weeks |
-| Game state corruption (impossible state reached) | HIGH | Identify all corrupted saves, implement data migration, build state validator, patch and distribute, audit for other corruptions |
-| Museum API data becomes outdated (players learn wrong facts) | MEDIUM | Pull outdated data, notify users of incorrect facts, implement refresh strategy, identify scope of affected data |
-| Offline sync loses player data | HIGH | Restore from backups if possible, notify affected players, implement transaction log for recovery, redesign sync logic |
-| Electron IPC becomes bottleneck (turns take 10+ seconds) | MEDIUM | Profile and batch IPC calls, move computation to renderer, optimize main process, update turn resolution, 1-2 weeks |
-| Bundle size too large (600MB+) | MEDIUM | Remove non-essential assets, lazy load features, implement asset server (fetch on demand), strip source maps, could take 3-5 days |
-| Players report silent data loss | CRITICAL | Investigate sync logs, restore from database backups, build audit trail for all changes, audit for other affected systems, highest priority |
+### Pitfall 9: Profit Display Clutters Already-Dense Trade Panel
+
+**What goes wrong:**
+The TradePanel (TradePanel.tsx) is already dense: curated image (120px), good name + icon + price, carrying count, quantity stepper, buy/sell buttons, inline feedback. Adding a per-good profit indicator ("You bought at 8g, sell here for 12g: +4g/unit profit") makes the panel overwhelming. On smaller screens or with many goods, the panel becomes a wall of numbers.
+
+**Prevention:**
+1. Show profit inline on the price display, not as a separate element: "12g (+4g)" in green or "12g (-2g)" in red.
+2. Only show profit for goods the player is CARRYING. Don't show profit indicators for goods the player hasn't bought.
+3. Use color coding, not additional text — green price = profit, red price = loss, neutral = same as bought.
+4. Consider a tooltip on hover rather than always-visible profit numbers.
+
+**Phase to address:** Trade Profit Display phase.
 
 ---
 
-## Pitfall-to-Phase Mapping
+### Pitfall 10: turnToDate() Season Calculation Disagrees With Weather Season
 
-How roadmap phases should address these pitfalls.
+**What goes wrong:**
+The existing `turnToDate()` function (Logbook.tsx:58-67) uses Athenian month names (Hekatombaion through Skirophorion) and maps turns to months via `turn % 12`. The seasonal weather system needs to know what season it is. If the weather system calculates season independently (e.g., `turn % 4` for four seasons), it may disagree with `turnToDate()`. The Logbook shows "15 Poseideon" (winter month) while the weather system thinks it's summer.
 
-| Pitfall | Prevention Phase | Verification |
-|---------|------------------|--------------|
-| Native Module Compilation | Phase 1 (Foundation) | Successfully build and package app on Windows, macOS, Linux in CI/CD, test packaged app launches |
-| Leaflet Performance Cliff | Phase 2 (Map Rendering) | Load 1000+ markers, verify smooth panning/zooming (60 FPS), measure marker animation performance |
-| Museum API Rate Limits | Phase 3 (API Integration) | Run load test with 50+ concurrent requests, verify 429 errors are handled gracefully, measure latency |
-| Game State Complexity | Phase 1-2 (Foundation/Core Mechanics) | Implement state machine, verify undo/replay works, test all state transitions, measure state object size |
-| Offline Sync Corruption | Phase 4 (Offline Mode) | Test offline → online transition, simulate conflicts, verify data consistency, audit sync logs |
-| Electron IPC Bottleneck | Phase 2 (Core Mechanics) | Measure IPC latency during turn, batch IPC calls, profile with 100+ messages/turn |
-| App Bundle Bloat | Phase 1 (Foundation) | Set size target, measure in each phase, implement asset lazy loading by Phase 3 |
-| Cross-Platform UX | Phase 1 (Foundation) | Test on Windows, macOS, Linux, verify native UI patterns, test keyboard shortcuts |
-| Museum Data Staleness | Phase 3 (API Integration) | Implement data staleness tracking, background refresh, audit data against museum sources |
-| IPC Communication | Phase 2 (Core Mechanics) | Profile IPC latency, implement batch calling, verify responsive UI during game actions |
+**Prevention:**
+1. Create a single `calendar.ts` module that both `turnToDate()` and the weather system use.
+2. Define seasons based on Athenian months: Hekatombaion-Boedromion = summer/early fall, Pyanepsion-Poseideon = late fall/winter, Gamelion-Elaphebolion = winter/spring, Mounichion-Skirophorion = spring/summer.
+3. Export `getCurrentSeason(turn)` from the same module. Weather system and Logbook both consume it.
+4. Historical accuracy: Mediterranean sailing season was roughly March-October. Winter (November-February) was the mare clausum (closed sea). Map this to the Athenian months.
+
+**Phase to address:** Seasonal Weather phase — calendar unification must happen first.
+
+---
+
+### Pitfall 11: Journal Grows Unbounded, Slows Down Rendering
+
+**What goes wrong:**
+If journal entries are persisted to SQLite (as recommended in Pitfall 2), a long game accumulates hundreds of entries. Loading all entries on every Logbook open causes a visible delay. The scrollable div (Logbook.tsx:206-209, maxHeight: 320px) with hundreds of DOM nodes becomes sluggish.
+
+**Prevention:**
+1. Paginate journal entries: load last 50 by default, "Load more" button for history.
+2. IPC query: `journal:getEntries({ limit: 50, beforeId?: number })`.
+3. Use virtual scrolling only if entry count exceeds 200 — unlikely in normal play but possible in long sessions.
+
+**Phase to address:** Journal phase — pagination from the start.
+
+---
+
+## Integration Pitfalls
+
+Mistakes when connecting new features to the existing system.
+
+### Integration 1: Weather + Economy Double-Counting
+
+**What goes wrong:**
+Weather affects trade route viability. Economy already has supply/demand pricing. If weather also modifies supply/demand (e.g., "storms reduce wheat supply"), it creates a double feedback loop: storms raise prices AND make routes dangerous, making the game excessively punishing in bad weather and trivially easy in good weather.
+
+**Prevention:**
+1. In v1.3, weather affects ONLY voyage duration and event probability. Do NOT modify supply/demand.
+2. Document this boundary explicitly: "Weather modifies routes, not markets. Market modification is a v2 feature (commodity chains)."
+3. If supply/demand modification is added later, it should be a separate system with its own tuning, not piggybacked on weather.
+
+---
+
+### Integration 2: Journal + Animation Timing
+
+**What goes wrong:**
+Journal generates entries on state transitions (Logbook.tsx:112-141). Animation fires state transitions (ShipMarker.tsx:112-118). If animation fires `ARRIVE` before the journal processes the `sailing` -> `idle` transition, journal misses the arrival entry. Or if animation fires twice (race condition from Pitfall 3), journal records duplicate arrivals.
+
+**Prevention:**
+1. Journal entry generation must be in the main process (IPC handler for game actions), not in a React effect watching state transitions. This ensures exactly-once entry creation regardless of animation timing.
+2. Each game action handler (`ARRIVE`, `SET_SAIL`, `COMPLETE_TRADE`) inserts its journal entry synchronously as part of the action processing, before returning the result to the renderer.
+
+---
+
+### Integration 3: Weather + ShipMarker portCoords Stability
+
+**What goes wrong:**
+Weather display on the map (weather overlay, route risk indicators) causes MapArea to re-render, which reconstructs `portCoords` Map, which triggers ShipMarker's useEffect, which restarts the animation (Pitfall 3). Weather updates every turn, meaning the animation restarts every turn during sailing.
+
+**Prevention:**
+1. Memoize `portCoords` with `useMemo` in the parent component — ports don't change, so the Map reference should be stable.
+2. Weather overlay should be a separate Leaflet layer, not a prop that causes MapArea re-render.
+3. Use React keys or refs to isolate ShipMarker from weather-related re-renders.
+
+---
+
+## Phase-Specific Warnings
+
+| Phase Topic | Likely Pitfall | Mitigation |
+|-------------|---------------|------------|
+| Seasonal Weather | Weather fields break save files | Optional types + migration function (Pitfall 6) |
+| Seasonal Weather | Cosmetic vs mechanical weather confusion | Replace existing weather gen, single source of truth (Pitfall 7) |
+| Seasonal Weather | Calendar mismatch between date display and season | Unified calendar.ts module (Pitfall 10) |
+| Seasonal Weather | Invisible difficulty spikes | Forecast display ships WITH the system (Pitfall 4) |
+| Captain's Journal | Entries lost on unmount/reload | SQLite persistence, main-process generation (Pitfall 2) |
+| Captain's Journal | Unbounded growth | Paginate from the start (Pitfall 11) |
+| Sailing Animation | leaflet.motion races with React | Stabilize deps, consider replacing plugin (Pitfall 3) |
+| Sailing Animation | Duration disconnect from turns | Scale duration by eta, decouple from ARRIVE (Pitfall 8) |
+| Trade Profit/Loss | Price timing mismatch | Server-side profit calculation, same price for display and transaction (Pitfall 5) |
+| Trade Profit/Loss | UI clutter | Inline color-coded indicator, show only for carried goods (Pitfall 9) |
+| Weather + Economy | Double feedback loop | Weather modifies routes only, not markets (Integration 1) |
+| Journal + Animation | Duplicate/missing entries | Main-process entry generation (Integration 2) |
+
+---
+
+## "Looks Done But Isn't" Checklist for v1.3
+
+- [ ] **Seasonal Weather:** Shows forecast before departure, not just weather after departure
+- [ ] **Seasonal Weather:** Old saves load correctly with weather fields defaulted
+- [ ] **Seasonal Weather:** Logbook weather matches mechanical weather (single source)
+- [ ] **Seasonal Weather:** Calendar months map correctly to seasons for historical accuracy
+- [ ] **Captain's Journal:** Entries persist across save/load
+- [ ] **Captain's Journal:** Entries persist when navigating away from map and back
+- [ ] **Captain's Journal:** No duplicate entries in dev mode (React StrictMode)
+- [ ] **Sailing Animation:** Animation doesn't restart when parent re-renders
+- [ ] **Sailing Animation:** Duration reflects voyage length (not hardcoded 5s)
+- [ ] **Sailing Animation:** ARRIVE fires at correct game-turn, not just animation-end
+- [ ] **Trade Profit:** Displayed profit matches actual sale result
+- [ ] **Trade Profit:** Economy tick happens before price display, not concurrently
+- [ ] **Trade Profit:** Profit only shown for goods player is carrying
 
 ---
 
 ## Sources
 
-- [Things people get wrong about Electron](https://felixrieseberg.com/things-people-get-wrong-about-electron/)
-- [Desktop Applications in Electron: Pro Tips and Tricks - InfoQ](https://www.infoq.com/presentations/electron-pitfalls/)
-- [A Comprehensive Guide to Electron App Development in 2025 - Medium](https://medium.com/@swabhab.panigrahi/a-comprehensive-guide-to-electron-app-development-in-2025-9f15caed16f1)
-- [Avoiding Pitfalls Developing with Electron - NCC Group](https://www.nccgroup.com/research-blog/avoiding-pitfalls-developing-with-electron/)
-- [Poor performance with many markers - Leaflet GitHub Issue](https://github.com/Leaflet/Leaflet/issues/6314)
-- [Optimizing Leaflet Performance with a Large Number of Markers - Medium](https://medium.com/@silvajohnny777/optimizing-leaflet-performance-with-a-large-number-of-markers-0dea18c2ec99)
-- [API Rate Limiting at Scale: Patterns, Failures, and Control Strategies](https://www.getambassador.io/blog/rate-limiting-apis-scale-patterns-strategies)
-- [The Turn-Based Game Architecture That Finally Made My Code Stop Fighting Me](https://outscal.com/blog/turn-based-game-architecture)
-- [Ten Mistakes Commonly Made by Persons Designing Educational Simulations and Games - STS](https://www.simulationtrainingsystems.com/ten-mistakes-commonly-made-persons-designing-educational-simulations-games/)
-- [Multi Platform Build - electron-builder](https://www.electron.build/multi-platform-build.html)
-- [Using native modules in Electron - BigBinary Blog](https://www.bigbinary.com/blog/native-modules-electron)
-- [Integrating Sqlite3 in electron project built with Electron-forge - Medium](https://ishwar-rimal.medium.com/integrating-sqlite3-in-electron-project-build-with-electron-forge-6d4d634b8648)
-- [Build an offline-first app - Android Developers](https://developer.android.com/topic/architecture/data-layer/offline-first)
-- [Offline-First Architecture: Designing for Reality, Not Just the Cloud - Medium](https://medium.com/@jusuftopic/offline-first-architecture-designing-for-reality-not-just-the-cloud-e5fd18e50a79)
-- [Electron video player sound autoplay 2025 - The Coders Blog](https://thecodersblog.com/electron-video-player-sound-autoplay-2025)
-- [How to Fix Inaccurate Web Scraping Data: 2026 Best Practices - Bright Data](https://brightdata.com/blog/web-data/fix-inaccurate-web-scraping-data)
-- [Why Scraped Data Quietly Becomes Unreliable - Medium](https://medium.com/@goatishfw/why-scraped-data-quietly-becomes-unreliable-before-anyone-notices-536218e5276f)
-- [Performance - Electron Official](https://www.electronjs.org/docs/latest/tutorial/performance)
-- [State Management in React (2026): Best Practices, Tools & Real-World Patterns](https://www.c-sharpcorner.com/article/state-management-in-react-2026-best-practices-tools-real-world-patterns/)
-- [4 must-know tips for building cross platform Electron apps - Avocode Blog](https://blog.avocode.com/4-must-know-tips-for-building-cross-platform-electron-apps-f3ae9c2bffff)
+- Codebase analysis: `src/game/state.ts`, `src/game/types.ts`, `src/game/voyage.ts`, `src/game/economy.ts`
+- Codebase analysis: `src/renderer/components/ShipMarker.tsx`, `src/renderer/components/Logbook.tsx`, `src/renderer/components/TradePanel.tsx`, `src/renderer/components/ProfitDisplay.tsx`
+- Codebase analysis: `src/main/db/schema.ts`, `src/shared/game-types.ts`
+- [React Leaflet Introduction — architecture note on rendering](https://react-leaflet.js.org/docs/start-introduction/)
+- [leaflet.motion GitHub repository](https://github.com/Igor-Vladyka/leaflet.motion)
+- [GameDev.net — Weather Modeling discussion](https://gamedev.net/forums/topic/342648-weather-modeling/3242504/)
+- [Campaign Mastery — Weather, Not Climate (game weather system design)](https://www.campaignmastery.com/blog/weather-not-climate/)
+- [Preserving and Resetting State in React](https://react.dev/learn/preserving-and-resetting-state)
+- [Game Studies — Simulating Weather in Virtual Environments](https://gamestudies.org/0801/articles/barton)
+- [Static vs dynamic weather systems in video games (academic paper)](https://www.diva-portal.org/smash/get/diva2:1524012/FULLTEXT02)
 
 ---
 
-*Pitfalls research for: Archaeology Simulator (Electron + React turn-based educational game)*
-*Researched: 2026-03-12*
+*Pitfalls research for: Archeology Simulator v1.3 — Gameplay Depth & Polish*
+*Researched: 2026-03-31*

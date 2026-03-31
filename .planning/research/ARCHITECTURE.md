@@ -1,660 +1,522 @@
-# Architecture Research: Electron + React Turn-Based Simulation
+# Architecture: v1.3 Gameplay Depth & Polish
 
-**Domain:** Turn-based simulation game (Electron + React)
-**Researched:** 2026-03-12
-**Confidence:** HIGH (verified with official Electron documentation and multiple sources)
+**Project:** Archeology Simulator
+**Researched:** 2026-03-31
+**Confidence:** HIGH -- based on direct codebase analysis, no external library unknowns
 
-## Standard Architecture
+## Executive Summary
 
-### System Overview
+The four v1.3 features -- seasonal weather, captain's journal persistence, sailing animation enhancement, and trade profit display -- integrate cleanly with the existing architecture. The codebase already has partial implementations for two of them (Logbook component, ProfitDisplay component) that need deepening rather than building from scratch. Seasonal weather is the only feature requiring new game logic. The key architectural insight: **most changes are additive, not structural**. No FSM states need adding, no new IPC patterns are required, and the existing IPCResponse<T>/wrapHandler contract handles all new channels.
 
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│                         ELECTRON MAIN PROCESS                        │
-│  • Application lifecycle management                                  │
-│  • Window management (BrowserWindow)                                 │
-│  • Game state engine & simulation                                    │
-│  • SQLite database access (file I/O)                                 │
-│  • IPC message routing (ipcMain.handle/on)                           │
-│  • Native APIs (dialogs, menus, etc.)                                │
-├─────────────────────────────────────────────────────────────────────┤
-│                    IPC BRIDGE (Preload Script)                       │
-│  • Controlled API exposure via contextBridge                         │
-│  • Three patterns: invoke (request-response),                        │
-│    send (one-way), event listeners                                   │
-├─────────────────────────────────────────────────────────────────────┤
-│                      ELECTRON RENDERER PROCESS                        │
-│  ┌──────────────────────────────────────────────────────────────┐   │
-│  │                     React Application                         │   │
-│  │  ┌───────────────┐  ┌──────────────────┐  ┌────────────────┐ │   │
-│  │  │  Game UI      │  │  Map Container   │  │  Event System  │ │   │
-│  │  │  Components   │  │  (React Leaflet) │  │  (State Mgmt)  │ │   │
-│  │  └────────┬──────┘  └────────┬─────────┘  └────────┬───────┘ │   │
-│  │           │                  │                      │           │   │
-│  │  ┌────────▼──────────────────▼──────────────────────▼────────┐ │   │
-│  │  │              Zustand + TanStack Query                     │ │   │
-│  │  │              (Client state + Server state)                │ │   │
-│  │  └──────────────────────┬─────────────────────────────────┘ │   │
-│  │                         │ (invoke/send IPC)                  │   │
-│  │  ┌──────────────────────▼─────────────────────────────────┐ │   │
-│  │  │              IPC Event Handlers (ipcRenderer.on/invoke) │ │   │
-│  │  └─────────────────────────────────────────────────────────┘ │   │
-│  └──────────────────────────────────────────────────────────────┘   │
-└─────────────────────────────────────────────────────────────────────┘
-```
+## Existing Architecture (Relevant Parts)
 
-### Component Responsibilities
-
-| Component | Responsibility | Implementation |
-|-----------|----------------|-----------------|
-| **Main Process Game Engine** | Manages game state, turn flow, simulation logic, economy, events | TypeScript class (e.g., `GameEngine`), uses command pattern for actions |
-| **IPC Message Broker** | Routes commands/queries between renderer and main, enforces security | Main process `ipcMain.handle()` per domain (game, save, map data) |
-| **React Component Tree** | Renders UI: panels, cards, event dialogs, inventory | React functional components using hooks, organized by feature |
-| **Zustand Store** | Manages UI state: selected port, current view, scroll position | `create()` with multiple stores (UI, viewport, notifications) |
-| **React Leaflet Map** | Renders interactive game map with ports, ships, routes | `MapContainer`, `TileLayer`, custom `Marker` components for ports/ships |
-| **SQLite Database Layer** | Persistent game state, save slots, session data | SQL queries via main process, migrations on startup |
-| **Preload Script** | Exposes controlled IPC API to renderer with `contextBridge` | TypeScript interface (e.g., `window.gameAPI`) |
-
-## Recommended Project Structure
+### Current Layer Stack
 
 ```
-src/
-├── main/                          # Electron main process
-│   ├── index.ts                   # App entry point, window creation
-│   ├── preload.ts                 # Preload script, contextBridge setup
-│   ├── engine/                    # Game simulation engine
-│   │   ├── GameEngine.ts          # Core game state & turn management
-│   │   ├── Simulation.ts          # Economy, faction, event simulation
-│   │   ├── Commands.ts            # Command pattern implementations
-│   │   └── EventQueue.ts          # Turn-based event processing
-│   ├── database/                  # SQLite persistence layer
-│   │   ├── Database.ts            # Connection & migrations
-│   │   ├── GameRepository.ts      # Save/load game state
-│   │   └── schema.sql             # Database schema
-│   └── ipc/                       # IPC handlers (request-response)
-│       ├── gameHandlers.ts        # Handle: turn action, get state
-│       ├── saveHandlers.ts        # Handle: save, load, autosave
-│       └── mapHandlers.ts         # Handle: port data, routes
-│
-├── renderer/                      # React renderer process
-│   ├── index.tsx                  # React app entry point
-│   ├── store/                     # Zustand stores
-│   │   ├── useGameStore.ts        # Game state (current turn, events)
-│   │   ├── useUIStore.ts          # UI state (selected port, view mode)
-│   │   └── useMapStore.ts         # Map state (viewport, markers)
-│   ├── components/
-│   │   ├── MapPanel.tsx           # React Leaflet map container
-│   │   ├── SidePanel.tsx          # Info/control panels
-│   │   ├── EventCard.tsx          # Event display modal
-│   │   ├── PortScene.tsx          # Trading interface
-│   │   └── common/                # Reusable UI components
-│   ├── hooks/
-│   │   ├── useGameEngine.ts       # Hook to call game IPC methods
-│   │   ├── usePersistence.ts      # Hook for save/load lifecycle
-│   │   └── useMapInteraction.ts   # Hook for port/marker clicks
-│   ├── api/                       # API layer for external services
-│   │   ├── museumAPI.ts           # Met Museum, British Museum images
-│   │   ├── weatherAPI.ts          # Seasonal weather data
-│   │   └── geoAPI.ts              # Pleiades geocoding
-│   ├── types/                     # TypeScript interfaces
-│   │   ├── Game.ts                # GameState, Turn, Action types
-│   │   ├── Port.ts                # Port, Good, Trade types
-│   │   └── Faction.ts             # Faction, Crew types
-│   └── utils/
-│       ├── constants.ts           # Game constants, port data
-│       └── formatting.ts          # Date, number, unit formatting
-│
-└── shared/                        # Shared types & utilities
-    ├── types.ts                   # Shared GameState, Command types
-    └── constants.ts               # Shared game constants
+Renderer (React 19 + Zustand)
+  Shell.tsx           -- root layout, composes all floating panels
+  MapArea.tsx         -- Leaflet map with PortMarker children
+  ShipMarker.tsx      -- leaflet.motion polyline animation during sailing
+  Logbook.tsx         -- top-center dropdown, in-memory entries only
+  TradePanel.tsx      -- buy/sell with market prices
+  ProfitDisplay.tsx   -- overall profit/loss + transaction history
+  CargoHold.tsx       -- inventory display
+    |
+    | window.api (contextBridge)
+    |
+Main Process (Electron 35 + better-sqlite3)
+  ipc/game.ts         -- game:action, trade, market, event handlers
+  ipc/save.ts         -- game:load, game:save handlers
+  lib/ipc-wrapper.ts  -- wrapHandler enforces IPCResponse<T>
+  db/schema.ts        -- 8 tables, WAL mode
+  db/queries.ts       -- atomic save, port/good/inventory CRUD
+    |
+Game Logic (pure TypeScript, no Electron dependency)
+  state.ts            -- FSM: idle | trading | sailing | encountered
+  engine.ts           -- performAction wrapper + re-exports
+  voyage.ts           -- haversine distance, voyage duration calc
+  economy.ts          -- supply/demand price calculation
+  events.ts           -- 24 voyage events, roll/resolve logic
 ```
 
-### Structure Rationale
-
-- **main/ separation:** All database, simulation, and state mutations happen in main process. Renderer is stateless display layer. Enforces security boundary.
-- **Zustand stores as separate files:** Each store handles one domain (game, UI, map). Easy to test and prevents prop drilling.
-- **ipc/ folder:** All IPC handlers organized by domain. Easy to add new handlers without cluttering index.
-- **Components by responsibility:** MapPanel, SidePanel, EventCard are feature containers. common/ for reusable primitives.
-- **hooks/ for integration:** `useGameEngine()` encapsulates IPC call logic, retry logic, error handling. `usePersistence()` manages autosave lifecycle.
-- **api/ folder:** External service calls isolated. Easier to mock in tests, easier to add retries/caching.
-
-## Architectural Patterns
-
-### Pattern 1: Turn-Based Command Pattern
-
-**What:** Each player action (move ship, trade, recruit crew) is a Command object sent from renderer to main process.
-
-**When to use:** This is essential for turn-based games. Enables undo/redo, replay, and server-side validation.
-
-**Trade-offs:**
-- Pro: Decouples UI from game state, enables rich action history
-- Con: Slight latency (IPC round-trip), requires serialization
-
-**Example:**
-```typescript
-// renderer/hooks/useGameEngine.ts
-export function useGameEngine() {
-  const executeAction = async (action: GameAction) => {
-    try {
-      const result = await window.gameAPI.executeAction(action);
-      useGameStore.setState({ gameState: result.newState });
-      return result;
-    } catch (error) {
-      // Handle validation error or main process crash
-    }
-  };
-  return { executeAction };
-}
-
-// main/engine/Commands.ts
-interface GameAction {
-  type: 'MOVE_SHIP' | 'TRADE_GOODS' | 'RECRUIT_CREW';
-  shipId: string;
-  payload: unknown;
-}
-
-class MoveShipCommand {
-  execute(game: GameState, shipId: string, portId: string): GameState {
-    // Validation, mutation, return new state
-  }
-}
-
-// main/ipc/gameHandlers.ts
-ipcMain.handle('gameAPI:executeAction', async (_, action: GameAction) => {
-  const result = commandExecutor.execute(action, currentGame);
-  return { newState: result };
-});
-```
-
-### Pattern 2: Main Process as Game Authority
-
-**What:** All game logic runs in main process. Renderer sends actions, receives computed state back via IPC.
-
-**When to use:** Always for turn-based games. Prevents cheating, enables easy save/load.
-
-**Trade-offs:**
-- Pro: Single source of truth, secure, deterministic
-- Con: UI must await IPC responses, cannot do offline prediction
-
-**Example:**
-```typescript
-// Renderer sends command → Main validates & executes → Returns new state
-// NOT: Renderer optimistically updates, then syncs
-
-async function onPortClicked(portId: string) {
-  const result = await window.gameAPI.tradeCargo(portId, tradeDetails);
-  setGameState(result.gameState);  // Update after confirmation
-}
-```
-
-### Pattern 3: React Leaflet with Command Sink
-
-**What:** Map markers are React components that emit game commands via click handlers, not direct state mutations.
-
-**When to use:** Whenever interactive map elements trigger game actions.
-
-**Trade-offs:**
-- Pro: Clear data flow, map stays synchronized with game engine
-- Con: Slight latency for visual feedback (consider animation overlays)
-
-**Example:**
-```typescript
-// renderer/components/MapPanel.tsx
-function PortMarker({ port, isSelected }: PortMarkerProps) {
-  const { executeAction } = useGameEngine();
-
-  const handleClick = () => {
-    // Command goes to main, returns new state
-    executeAction({
-      type: 'ARRIVE_AT_PORT',
-      shipId: currentShip.id,
-      portId: port.id
-    });
-  };
-
-  return (
-    <Marker position={[port.lat, port.lon]} eventHandlers={{ click: handleClick }}>
-      <Popup>{port.name}</Popup>
-    </Marker>
-  );
-}
-```
-
-### Pattern 4: Preload Script for Security
-
-**What:** Main process exposes only necessary APIs via `contextBridge`. Renderer cannot access Node.js directly.
-
-**When to use:** Always in Electron apps. Prevents exploits.
-
-**Trade-offs:**
-- Pro: Prevents XSS from injecting Node.js access
-- Con: Requires explicit API design
-
-**Example:**
-```typescript
-// main/preload.ts
-import { contextBridge, ipcRenderer } from 'electron';
-
-contextBridge.exposeInMainWorld('gameAPI', {
-  executeAction: (action: GameAction) => ipcRenderer.invoke('gameAPI:executeAction', action),
-  getSaveSlots: () => ipcRenderer.invoke('gameAPI:getSaveSlots'),
-  // Only these methods are available to renderer
-});
-
-// renderer/components/SomeComponent.tsx
-// window.gameAPI.executeAction() ✓ works
-// require('fs').readFileSync() ✗ throws error
-```
-
-### Pattern 5: Zustand for Local UI State Only
-
-**What:** Zustand stores hold only UI state (selected port, panel visibility, map viewport). Game state lives in main process.
-
-**When to use:** Keep renderer state minimal, synchronized with main via IPC responses.
-
-**Trade-offs:**
-- Pro: Single source of truth for game (main), simple re-renders
-- Con: Must fetch state from main on app startup
-
-**Example:**
-```typescript
-// renderer/store/useUIStore.ts
-interface UIState {
-  selectedPortId: string | null;
-  isPanelOpen: boolean;
-  mapViewport: { lat: number; lon: number; zoom: number };
-}
-
-export const useUIStore = create<UIState>((set) => ({
-  selectedPortId: null,
-  setSelectedPortId: (id) => set({ selectedPortId: id }),
-  // ...
-}));
-
-// main game state is NOT here — it's in main process
-// Renderer asks main: "what's my ship's inventory?"
-// Main answers via IPC, renderer updates Zustand UI store with response
-```
-
-## Data Flow
-
-### Turn Execution Flow
-
-```
-Player clicks "End Turn" in UI
-    ↓
-React component calls window.gameAPI.executeTurn()
-    ↓
-Renderer sends IPC message to main process (ipcRenderer.invoke)
-    ↓
-Main process GameEngine.executeTurn():
-  - Validates current state
-  - Executes queued player actions
-  - Runs AI faction turns
-  - Advances economy simulation
-  - Resolves events
-  - Increments turn counter
-    ↓
-Main process saves new state to SQLite (async)
-    ↓
-Main process returns new GameState to renderer via IPC response
-    ↓
-Renderer updates Zustand store with new state
-    ↓
-React re-renders map (ship positions), panels (resources), UI
-```
-
-### Port Action Flow (Example)
-
-```
-User clicks port marker on map
-    ↓
-PortMarker.handleClick() → executeAction({ type: 'ARRIVE_AT_PORT', portId })
-    ↓
-useGameEngine hook calls window.gameAPI.executeAction()
-    ↓
-Main process receives IPC message on 'gameAPI:executeAction' channel
-    ↓
-Main validates: ship in range? permitted trade? goods available?
-    ↓
-Main executes MoveShipCommand, returns new GameState with:
-  - Ship location updated
-  - Port scene available
-  - Event cards if discovered new goods
-    ↓
-Renderer receives response, updates useGameStore
-    ↓
-EventCard component appears (populated from returned state)
-    ↓
-User selects trade action → cycle repeats
-```
-
-### Persistence Flow
-
-```
-Turn 5 completes → Main process auto-saves to SQLite
-    ↓
-Every 30 seconds or after critical action:
-  DB.saveGameState(currentGame, slotId)
-    ↓
-User clicks "Load Game" → Renderer calls window.gameAPI.loadGame(slotId)
-    ↓
-Main queries SQLite: SELECT * FROM saves WHERE slot_id = $1
-    ↓
-Main reconstructs GameEngine with loaded state
-    ↓
-Main returns game state to renderer
-    ↓
-Renderer populates map, UI with loaded state
-```
-
-### External API Integration Flow
-
-```
-Game boots → Main process calls Pleiades API for port geodata
-    ↓
-Renderer renders map with custom tiles from Stadia Maps
-    ↓
-User clicks port → Renderer queries Met Museum API for artifact images
-    ↓
-Image fetch happens in renderer process (ReactQuery/TanStack Query)
-    ↓
-TanStack Query caches results, background refresh on focus
-    ↓
-Weather API called once per game year to determine seasonal modifiers
-```
-
-## State Management Strategy
-
-### Game State (Main Process)
-
-```typescript
-interface GameState {
-  turnNumber: number;
-  year: number;
-  season: 'spring' | 'summer' | 'autumn' | 'winter';
-  factions: Faction[];
-  ships: Ship[];
-  ports: Port[];
-  events: GameEvent[];
-  economy: EconomyState;
-}
-```
-
-Stored in memory in main process, checkpointed to SQLite:
-- Before & after each turn (for undo)
-- After significant events
-- Auto-save every 30 seconds
-
-### UI State (Zustand)
-
-```typescript
-interface UIState {
-  selectedPortId: string | null;
-  selectedShipId: string | null;
-  isPanelOpen: boolean;
-  panelMode: 'trade' | 'crew' | 'info';
-  mapViewport: MapViewport;
-  notifications: Notification[];
-}
-```
-
-Derived from game state (never source of truth), updated when:
-- IPC response received from main
-- Local UI interaction (map pan, panel toggle)
-
-### External Data (TanStack Query)
-
-```typescript
-const { data: artifacts } = useQuery({
-  queryKey: ['museum', 'artifacts', portId],
-  queryFn: () => museumAPI.getArtifacts(portId),
-  staleTime: 1000 * 60 * 60, // Cache for 1 hour
-});
-```
-
-Fetches from external APIs, caches locally, background refresh.
-
-## Build Order & Dependencies
-
-### Phase 1: Foundation (Before Gameplay)
-1. Electron main/renderer boilerplate
-2. SQLite connection & migrations
-3. IPC bridge with preload script
-4. Zustand stores (empty)
-5. Basic React app shell
-
-**Allows:** Testing IPC, database, React rendering
-
-### Phase 2: Game Engine (Turn Logic)
-1. GameEngine class with command pattern
-2. GameState interface & types
-3. Port, Ship, Faction data structures
-4. IPC handlers for action execution
-5. Basic economy simulation
-
-**Allows:** Turn flow, action validation, state persistence
-
-### Phase 3: UI Components (Rendering)
-1. MapPanel with React Leaflet
-2. SidePanel with event cards
-3. Inventory/trade interface
-4. Ship control panel
-5. useGameEngine hook for IPC
-
-**Allows:** Visual gameplay, but map is interactive
-
-### Phase 4: API Integration (External Data)
-1. Met Museum API integration
-2. British Museum API integration
-3. Pleiades geocoding for ports
-4. Weather API for seasonal data
-5. TanStack Query setup
-
-**Allows:** Rich artifact visuals, historically accurate ports
-
-### Phase 5: Polish (Audio, Visual Feedback)
-1. Audio system (ambient, effects)
-2. Animation system (ship movement, transitions)
-3. Sound effect triggers from game events
-4. Visual feedback on action results
-
-**Allows:** Immersive experience
-
-### Why This Order
-
-- **Main → Engine → UI → API → Polish:** Game logic must exist before UI can display it. APIs add flavor, not core mechanics.
-- **IPC + Database first:** Needed for everything else. Data flow patterns established early.
-- **Zustand stores created early:** Even if empty, structure is clear. Easy to fill in as engine progresses.
-
-## Scaling Considerations
-
-| Scale | Architecture Adjustments |
-|-------|--------------------------|
-| 0-1k users (Single Player) | Current architecture sufficient. Auto-save to SQLite fine. |
-| If multiplayer later | Add server process (Node.js + PostgreSQL). Main process becomes game client. Renderer unchanged. |
-| If very large maps | Use Leaflet clustering/canvas mode instead of markers. Consider virtual scrolling for port list. |
-| If complex AI | Move AI simulation to worker thread or separate process to prevent main blocking. |
-
-For current single-player scope, no scaling changes needed. Architecture is intentionally simple.
-
-## Anti-Patterns to Avoid
-
-### Anti-Pattern 1: Mutable Game State in Renderer
-
-**What people do:** Store game state in Zustand, mutate directly in components
-```typescript
-// ❌ WRONG
-const { gameState } = useGameStore();
-gameState.ships[0].position = newPosition;  // Direct mutation
-```
-
-**Why it's wrong:** Causes desyncs with main process, breaks undo/replay, makes debugging hard.
-
-**Do this instead:**
-```typescript
-// ✓ RIGHT
-await window.gameAPI.moveShip(shipId, newPosition);
-// Main validates, mutates, returns new state
-// Renderer updates via IPC response
-```
-
-### Anti-Pattern 2: Synchronous IPC (invoke without await)
-
-**What people do:** Use `ipcRenderer.invoke()` but ignore the Promise
-```typescript
-// ❌ WRONG
-window.gameAPI.executeTurn();  // Promise ignored
-setGameState(gameState);  // Updates with stale data
-```
-
-**Why it's wrong:** Race conditions, optimistic updates fail, state mismatches.
-
-**Do this instead:**
-```typescript
-// ✓ RIGHT
-const result = await window.gameAPI.executeTurn();
-setGameState(result.gameState);  // Update after response
-```
-
-### Anti-Pattern 3: React Leaflet Re-creating Map on Every Render
-
-**What people do:** Move MapContainer creation inside component body
-```typescript
-// ❌ WRONG
-function MapPanel() {
-  return (
-    <MapContainer key={random()}>  {/* Recreates every render */}
-      <TileLayer url="..." />
-    </MapContainer>
-  );
-}
-```
-
-**Why it's wrong:** Leaflet loses internal state, markers flicker, performance tanks.
-
-**Do this instead:**
-```typescript
-// ✓ RIGHT
-const MapPanel = memo(function MapPanel() {
-  return (
-    <MapContainer center={[35, 20]} zoom={3}>  {/* Stable */}
-      <TileLayer url="..." />
-      {ports.map(p => <PortMarker key={p.id} port={p} />)}
-    </MapContainer>
-  );
-});
-```
-
-### Anti-Pattern 4: Exposing Full Node.js API in Preload Script
-
-**What people do:** Use `nodeIntegration: true` or expose `require` globally
-```typescript
-// ❌ WRONG
-contextBridge.exposeInMainWorld('node', { require });
-// window.require now works in renderer, XSS can access filesystem
-```
-
-**Why it's wrong:** Any injected script in renderer gets filesystem access.
-
-**Do this instead:**
-```typescript
-// ✓ RIGHT
-contextBridge.exposeInMainWorld('gameAPI', {
-  saveGame: (data) => ipcRenderer.invoke('saveGame', data),
-  // Only necessary methods exposed
-});
-```
-
-### Anti-Pattern 5: Hot-Loading External APIs Without Caching
-
-**What people do:** Call museum API on every port selection
-```typescript
-// ❌ WRONG
-function PortScene({ portId }) {
-  const [artifacts, setArtifacts] = useState([]);
-  useEffect(() => {
-    museumAPI.getArtifacts(portId).then(setArtifacts);
-  }, [portId]);  // Fetches every time port changes
-}
-```
-
-**Why it's wrong:** API rate limits, slow, duplicate requests, poor UX.
-
-**Do this instead:**
-```typescript
-// ✓ RIGHT
-const { data: artifacts } = useQuery({
-  queryKey: ['artifacts', portId],
-  queryFn: () => museumAPI.getArtifacts(portId),
-  staleTime: 1000 * 60 * 60,  // Cache 1 hour
-});
-```
-
-## Integration Points
-
-### External Services
-
-| Service | Integration Pattern | Notes |
-|---------|---------------------|-------|
-| Met Museum API | React component + TanStack Query, request in renderer | Caches image URLs. Fallback to stock images if API down. |
-| British Museum API | Same as Met Museum | Combine results, deduplicate by artifact. |
-| Pleiades (Geocoding) | Main process at startup, cache in SQLite | Load port geodata once on game start, store locally. |
-| Stadia Maps (Tiles) | React Leaflet TileLayer with API key | Optional premium tiles. Free tier sufficient for MVP. |
-| Weather API | Main process once per game year, store in GameState | Determines seasonal trade route modifiers. |
-| Wikimedia Commons | Renderer via TanStack Query | Image fallbacks if museum APIs timeout. |
-
-### Internal Boundaries
-
-| Boundary | Communication | Notes |
-|----------|---------------|-------|
-| Main ↔ Renderer | ipcRenderer.invoke (request-response) | Preload script enforces API contract. No direct access. |
-| GameEngine ↔ Database | Direct function calls (both in main) | No IPC overhead. Synchronous queries acceptable for turn-based game. |
-| Renderer UI ↔ Zustand | Direct store mutation via actions | Standard React pattern. Mutable but localized to renderer. |
-| Renderer ↔ External APIs | TanStack Query hooks | Automatic caching, retries, deduplication. |
-| GameEngine ↔ Command Queue | Direct method calls | All commands execute synchronously during turn. |
-
-## Performance Considerations
-
-### Rendering Optimization
-
-- **React Leaflet:** Use `React.memo()` on marker components to prevent re-render on map pan.
-- **Large port lists:** Virtual scroll the port list panel (react-window).
-- **Event cards:** Only render active event card to DOM, rest are unmounted.
-
-### IPC Optimization
-
-- Batch commands where possible (trade multiple goods in one turn).
-- Don't call IPC on every keystroke (debounce map pan calls).
-- Keep serialized state under 1MB per message (Electron limit is much higher, but large payloads slow IPC).
-
-### Database Optimization
-
-- Index on `(game_id, turn_number)` for turn lookup.
-- Checkpoint (save) only after significant state changes, not every frame.
-- Read game state once on startup, keep in memory during play.
-
-### Map Rendering
-
-- React Leaflet warns against rendering 1000+ markers. At 40+ major ports, consider clustering.
-- If ships move smoothly (animation), use CSS animations, not IPC updates per frame.
-- Load tile layers asynchronously, don't block main thread.
-
-## Sources
-
-- [Electron IPC Documentation](https://www.electronjs.org/docs/latest/tutorial/ipc) - Official IPC patterns
-- [Electron Process Model](https://www.electronjs.org/docs/latest/tutorial/process-model) - Main & renderer responsibilities
-- [Electron Performance Guide](https://www.electronjs.org/docs/latest/tutorial/performance) - IPC & rendering optimization
-- [React Leaflet Official Site](https://react-leaflet.js.org/) - Component API & best practices
-- [LogRocket: Advanced Electron Architecture](https://blog.logrocket.com/advanced-electron-js-architecture/) - Multi-process patterns
-- [Game Programming Patterns: Command](https://gameprogrammingpatterns.com/command.html) - Command pattern for games
-- [Game Programming Patterns: Game Loop](https://gameprogrammingpatterns.com/game-loop.html) - Turn-based loop alternatives
-- [The State of React State Management 2026](https://www.pkgpulse.com/blog/state-of-react-state-management-2026) - Zustand + TanStack Query recommendation
-- [Securing SQLite3 in Electron](https://mandeepsingh.hashnode.dev/securing-sqlite3-data-in-electronjs-persistent-and-protected-database-storage) - Database setup
-- [Turn-Based Game Architecture Guide](https://outscal.com/blog/turn-based-game-architecture) - Design patterns for turn systems
-- [Electron + React Game Launcher Example](https://medium.com/@pragmaticcoders/building-a-cross-platform-game-launcher-with-electron-70c7556f2ae8) - Practical example
+### Key Patterns to Follow
+
+1. **IPCResponse<T> contract** -- every handler returns `{ success: true, data }` or `{ success: false, error }`, never throws
+2. **wrapHandler** -- all IPC registration goes through this wrapper (validation, try/catch, logging)
+3. **GameState FSM** -- discriminated union with exhaustive switch; no new states needed for v1.3
+4. **Zustand stores** -- uiStore for UI state; game state managed via useGameState hook + IPC
+5. **Broadcast pattern** -- `win.webContents.send('subscribe:game:updated', state)` after mutations
+6. **Seeded reference data** -- INSERT OR IGNORE on every launch (ports, goods, port_inventory)
+7. **Atomic transactions** -- `db.transaction(() => { ... })()` for multi-statement writes
+
+## Feature-by-Feature Integration
 
 ---
 
-*Architecture research for: Turn-based ancient Mediterranean trade simulator*
-*Researched: 2026-03-12*
+### Feature 1: Seasonal Weather System
+
+**What it does:** Turn number maps to a season; season affects voyage duration and event probabilities. Mediterranean sailing had a well-documented "sailing season" (March-October) and dangerous "mare clausum" (November-February).
+
+#### New: `src/game/weather.ts`
+
+Pure game logic module. No Electron dependency.
+
+```typescript
+export type Season = 'spring' | 'summer' | 'autumn' | 'winter';
+
+export interface WeatherModifiers {
+  season: Season;
+  durationMultiplier: number;   // 1.0 = normal, 1.5 = 50% slower
+  stormChanceMultiplier: number; // multiplied into event roll weights
+  description: string;           // "Calm summer seas" for logbook
+}
+
+export function getSeason(turn: number): Season { ... }
+export function getWeatherModifiers(turn: number): WeatherModifiers { ... }
+```
+
+**Season mapping:** 12 turns = 1 year. Turns 0-2 = spring, 3-5 = summer, 6-8 = autumn, 9-11 = winter. This maps to the existing Logbook's `turnToDate()` which already uses 12 Athenian months.
+
+**Historical accuracy:** Summer (Thargelion-Hekatombaion) is safest. Winter (Poseideon-Gamelion) is mare clausum -- historically ships were beached November through March.
+
+#### Modified: `src/game/voyage.ts`
+
+`calculateVoyageDuration()` currently returns `Math.max(1, Math.ceil(days))`. Change to accept an optional `WeatherModifiers` parameter:
+
+```typescript
+export function calculateVoyageDuration(
+  from: Port, 
+  to: Port, 
+  weather?: WeatherModifiers
+): number {
+  const km = haversineDistanceKm(from, to);
+  const nauticalMiles = km / 1.852;
+  const baseDays = nauticalMiles / (4 * 24);
+  const multiplier = weather?.durationMultiplier ?? 1.0;
+  return Math.max(1, Math.ceil(baseDays * multiplier));
+}
+```
+
+#### Modified: `src/game/events.ts`
+
+`rollVoyageEvent()` currently ignores its `_turn` parameter. Wire it to weather:
+
+```typescript
+export function rollVoyageEvent(
+  turn: number,
+  _fromPortId?: string,
+  _toPortId?: string
+): VoyageEvent | null {
+  const weather = getWeatherModifiers(turn);
+  // Adjust storm weight by season
+  const adjustedWeights = {
+    storm: 25 * weather.stormChanceMultiplier,
+    pirate: 20,
+    calm: 55,
+  };
+  // ... rest of roll logic using adjustedWeights
+}
+```
+
+#### Modified: `src/main/ipc/game.ts`
+
+In the `game:action` handler for SET_SAIL, pass weather to voyage duration calculations. The weather modifiers also need to be available when computing reachable ports.
+
+#### Renderer: Client-Side Weather Computation (Recommended)
+
+`getSeason()` and `getWeatherModifiers()` are pure functions of turn number with no DB dependency. Import them directly in the renderer from `src/game/weather.ts` (shared module, same pattern as importing from `src/game/types.ts`). This eliminates an IPC round-trip for weather display.
+
+A small floating widget integrated into the Logbook title bar showing current season icon + description. No new IPC channel needed.
+
+#### DB Changes: None
+
+Weather is a pure function of turn number. No persistence needed beyond what `game_state.state_json` already stores (which includes `currentTurn`).
+
+#### IPC Changes: None
+
+Weather computed where needed -- server-side in voyage/event handlers, client-side for display.
+
+---
+
+### Feature 2: Captain's Journal (Persistent)
+
+**What it does:** The existing Logbook component accumulates entries in React state (lost on refresh). This feature persists journal entries to SQLite and loads them on game:load.
+
+#### Existing State
+
+`Logbook.tsx` already has:
+- `LogEntry` type with `turn`, `date`, `text`, `type` fields
+- `generateWeather(turn)` and `generateRumor(turn)` functions
+- Entries for arrivals, departures, encounters
+- Display with type icons and date stamps
+
+What it lacks:
+- Persistence (entries are in-memory `useState`)
+- Trade entries (buy/sell events)
+- Event resolution entries (outcome of pirate/storm encounters)
+- Weather system entries (seasonal conditions)
+
+#### New DB Table: `journal_entries`
+
+```sql
+CREATE TABLE IF NOT EXISTS journal_entries (
+  id        INTEGER PRIMARY KEY AUTOINCREMENT,
+  turn      INTEGER NOT NULL,
+  date_text TEXT    NOT NULL,
+  text      TEXT    NOT NULL,
+  type      TEXT    NOT NULL CHECK(type IN ('weather','rumor','arrival','departure','event','trade')),
+  created_at TEXT   NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_journal_turn ON journal_entries (turn);
+```
+
+Add to `schema.ts` inside the existing `db.transaction()` block.
+
+#### New DB Query Functions (in `queries.ts`)
+
+```typescript
+export function insertJournalEntry(db: Database.Database, entry: {
+  turn: number; dateText: string; text: string; type: string;
+}): void { ... }
+
+export function getJournalEntries(
+  db: Database.Database, limit?: number
+): JournalEntry[] { ... }
+
+export function clearJournal(db: Database.Database): void { ... }
+```
+
+#### New IPC Channels
+
+Two new channels following the existing wrapHandler pattern:
+
+```typescript
+wrapHandler('game:getJournal', async (limit?: number) => getJournalEntries(db, limit));
+wrapHandler('game:addJournalEntry', async (entry) => {
+  insertJournalEntry(db, entry);
+  broadcastJournalUpdate(db);
+});
+```
+
+#### Server-Side Auto-Journaling
+
+The critical design decision: **journal entries for game events are generated server-side**, not in the renderer. This ensures entries are persisted even if the renderer crashes or refreshes.
+
+Insert journal entries in existing IPC handlers:
+- `game:buyGood` / `game:sellGood` -- insert trade entry after successful transaction
+- `game:resolveEvent` -- insert event outcome entry after resolution
+- `game:action` (SET_SAIL) -- insert departure entry
+- `game:action` (ARRIVE / START_TRADE) -- insert arrival entry
+
+Weather and rumor entries are generated per-turn when a new turn begins (detected by turn number advancing).
+
+#### Modified: `src/renderer/components/Logbook.tsx`
+
+Major refactor:
+- Remove `useState<LogEntry[]>` -- replace with entries loaded from IPC
+- On mount: `window.api.game.getJournal()` to load persisted entries
+- Subscribe to `subscribe:journal:updated` for live updates
+- Remove `generateWeather()` and `generateRumor()` (moved server-side)
+- Keep display logic and styling intact
+
+#### Modified: `src/shared/ipc-types.ts` (IPCBridge)
+
+```typescript
+getJournal: (limit?: number) => Promise<IPCResponse<JournalEntry[]>>;
+addJournalEntry: (entry: { turn: number; dateText: string; text: string; type: string }) => Promise<IPCResponse<void>>;
+```
+
+#### Modified: `src/main/preload.ts`
+
+Add corresponding `ipcRenderer.invoke` wrappers for the two new channels.
+
+---
+
+### Feature 3: Sailing Animation Enhancement
+
+**What it does:** The existing ShipMarker already animates the ship along a polyline using leaflet.motion. The enhancement makes the animation more visible and informative: visible route line, dynamic duration, and a sailing info overlay.
+
+#### Existing State
+
+`ShipMarker.tsx` already:
+- Creates a leaflet.motion polyline between departure and destination
+- Uses a custom SVG ship icon (DivIcon)
+- Fires ARRIVE + START_TRADE on `motion-ended`
+- Has 5-second fixed animation duration
+- Sets polyline color to `transparent` (invisible route line)
+
+#### Enhancements (within existing component)
+
+1. **Visible route line:** Change polyline color from `transparent` to a dashed sepia line
+2. **Dynamic duration:** Scale animation duration by voyage distance (currently hardcoded 5s). Use `route.durationTurns` from SailingState: `Math.min(10_000, durationTurns * 2_000)`
+3. **Weather-aware styling:** If winter, add a visual indicator (e.g., slight CSS animation on ship icon, or route line in different color)
+
+#### Modified: `src/renderer/components/ShipMarker.tsx`
+
+```typescript
+// Change polyline options from transparent to visible dashed line
+{
+  color: '#7a5c45',
+  weight: 2,
+  dashArray: '8, 6',
+  opacity: 0.5,
+}
+
+// Dynamic duration based on route
+{
+  auto: true,
+  duration: Math.min(10_000, (sailingState.route?.durationTurns ?? 3) * 2_000),
+}
+```
+
+#### New: `src/renderer/components/SailingOverlay.tsx`
+
+A floating panel shown during sailing state (positioned where PortScene normally sits when trading). Displays destination name, weather conditions, estimated arrival, and distance.
+
+```typescript
+interface SailingOverlayProps {
+  destination: string;
+  departurePort: string;
+  route?: VoyageRoute;
+  currentTurn: number;
+}
+```
+
+#### Modified: `src/renderer/components/Shell.tsx`
+
+Add `SailingOverlay` rendering when `gameState.type === 'sailing'`:
+
+```tsx
+{isSailing && sailingState && (
+  <SailingOverlay
+    destination={sailingState.destination}
+    departurePort={sailingState.departurePortId ?? ''}
+    route={sailingState.route}
+    currentTurn={sailingState.currentTurn}
+  />
+)}
+```
+
+#### No IPC/DB Changes
+
+All animation is client-side (Leaflet + React). Weather modifiers computed from pure function imported directly.
+
+---
+
+### Feature 4: Trade Profit/Loss Indicator
+
+**What it does:** Before confirming a sell, show the profit/loss compared to the purchase price. The existing ProfitDisplay shows overall P&L; this adds per-item trade preview.
+
+#### Existing State
+
+`TradePanel.tsx` already shows each MarketGood with buy/sell buttons. `CargoItem` already tracks `boughtAtPrice`. The data needed for profit calculation is already in the renderer.
+
+`ProfitDisplay.tsx` shows overall profit (gold - 500) and last 10 transactions. Already functional -- no changes needed.
+
+#### Enhancement: Per-Item Profit Preview in TradePanel
+
+No new IPC channels needed. All data is already available:
+
+- `MarketGood.currentPrice` -- what the port pays per unit
+- `CargoItem.boughtAtPrice` -- what the player paid per unit
+- `qty` -- selected quantity from the stepper
+
+#### Modified: `src/renderer/components/TradePanel.tsx`
+
+Add a profit indicator between the carrying count and the buy/sell buttons when the player is carrying that good:
+
+```tsx
+{carried > 0 && (() => {
+  const cargoItem = inventory.cargoItems.find(c => c.goodId === good.id);
+  if (!cargoItem) return null;
+  const profitPerUnit = good.currentPrice - cargoItem.boughtAtPrice;
+  const totalProfit = profitPerUnit * qty;
+  const isProfit = totalProfit >= 0;
+  return (
+    <div style={{
+      fontSize: '0.7rem',
+      fontFamily: "'Lora', Georgia, serif",
+      color: isProfit ? '#2b5c4a' : '#8b2e2e',
+      fontStyle: 'italic',
+      marginBottom: '0.2rem',
+    }}>
+      Sell {qty}: {isProfit ? '+' : ''}{totalProfit}g
+      ({profitPerUnit >= 0 ? '+' : ''}{profitPerUnit}g/unit)
+    </div>
+  );
+})()}
+```
+
+#### No IPC/DB/FSM Changes
+
+Purely renderer-side calculation using data already available from `getMarketPrices` and `getPlayerInventory`.
+
+---
+
+## New vs Modified Summary
+
+### New Files
+
+| File | Layer | Purpose |
+|------|-------|---------|
+| `src/game/weather.ts` | Game logic | Season/weather pure functions |
+| `src/renderer/components/SailingOverlay.tsx` | Renderer | Sailing info panel during voyage |
+
+### Modified Files
+
+| File | Change Scope | What Changes |
+|------|-------------|--------------|
+| `src/game/voyage.ts` | Small | `calculateVoyageDuration` accepts optional weather modifier |
+| `src/game/events.ts` | Small | `rollVoyageEvent` uses weather-adjusted storm weights |
+| `src/game/engine.ts` | Tiny | Re-export weather utilities |
+| `src/main/db/schema.ts` | Small | Add `journal_entries` table |
+| `src/main/db/queries.ts` | Medium | Add journal CRUD functions |
+| `src/main/ipc/game.ts` | Medium | Add journal IPC handlers, insert entries on trade/event/navigation |
+| `src/shared/ipc-types.ts` | Small | Add journal channels to IPCBridge, export JournalEntry type |
+| `src/main/preload.ts` | Small | Add journal IPC wrappers |
+| `src/renderer/components/Logbook.tsx` | Large | Load from DB, subscribe to updates, remove local state generation |
+| `src/renderer/components/ShipMarker.tsx` | Medium | Visible route line, dynamic duration |
+| `src/renderer/components/TradePanel.tsx` | Small | Add profit preview per good |
+| `src/renderer/components/Shell.tsx` | Medium | Add SailingOverlay, pass weather info |
+
+### Unchanged Files
+
+| File | Why |
+|------|-----|
+| `src/game/state.ts` | No new FSM states -- weather/journal don't change game phases |
+| `src/game/types.ts` | GameState union unchanged |
+| `src/renderer/stores/uiStore.ts` | No new UI state needed |
+| `src/renderer/components/ProfitDisplay.tsx` | Already functional for overall P&L |
+| `src/renderer/components/CargoHold.tsx` | Unchanged |
+| `src/renderer/components/EventCard.tsx` | Unchanged (event outcomes auto-journaled server-side) |
+| `src/main/ipc/save.ts` | Unchanged -- journal is separate from game state save |
+
+## Data Flow Diagrams
+
+### Weather Flow
+
+```
+Turn number (in GameState.currentTurn)
+    |
+    v
+getSeason(turn) --> Season enum
+    |
+    v
+getWeatherModifiers(turn) --> { durationMultiplier, stormChanceMultiplier, description }
+    |
+    +--> voyage.ts: calculateVoyageDuration(from, to, weather) [server-side]
+    +--> events.ts: rollVoyageEvent(turn) uses weather internally [server-side]
+    +--> Logbook title bar: displays season icon + name [client-side, same pure function]
+    +--> SailingOverlay.tsx: shows weather conditions [client-side, same pure function]
+```
+
+### Journal Flow
+
+```
+Game Events (server-side)                Renderer (client-side)
+    |                                         |
+    | trade completed                         |
+    | event resolved                          |
+    | port arrived/departed                   |
+    | new turn (weather + rumor)              |
+    v                                         |
+insertJournalEntry(db, entry)                 |
+    |                                         |
+    v                                         |
+broadcastJournalUpdate()  -- subscribe:journal:updated -->  Logbook.tsx re-fetches
+                                              |
+                          <-- game:getJournal (on mount) --  useEffect initial load
+```
+
+### Trade Profit Flow (Client-Only)
+
+```
+TradePanel receives: marketGoods[] + inventory (both already fetched via existing IPC)
+    |
+    v
+For each good where player carries > 0:
+  profitPerUnit = good.currentPrice - cargoItem.boughtAtPrice
+  totalProfit = profitPerUnit * selectedQty
+    |
+    v
+Render inline: "Sell 3: +36g (+12g/unit)" or "Sell 2: -16g (-8g/unit)"
+```
+
+## Build Order (Dependency-Aware)
+
+The recommended build order minimizes blocked work and respects dependencies:
+
+### Step 1: Weather System (foundation -- unblocks Steps 2 and 3)
+
+1. Create `src/game/weather.ts` -- pure functions, testable in isolation
+2. Modify `src/game/voyage.ts` -- integrate weather into duration calc
+3. Modify `src/game/events.ts` -- integrate weather into event roll
+4. Modify `src/game/engine.ts` -- re-export weather utilities
+
+**Why first:** Both journal entries and sailing overlay reference weather. Building weather first unblocks both.
+
+### Step 2: Journal Persistence (largest scope)
+
+5. Add `journal_entries` table to `src/main/db/schema.ts`
+6. Add journal CRUD to `src/main/db/queries.ts`
+7. Add journal IPC channels to `src/main/ipc/game.ts` + types + preload
+8. Add auto-journaling in existing trade/event/navigation handlers
+9. Refactor `Logbook.tsx` to load from DB and subscribe to updates
+
+**Why second:** Largest refactor. Depends on weather for seasonal entries.
+
+### Step 3: Sailing Animation + Overlay (visual polish)
+
+10. Modify `ShipMarker.tsx` -- visible route line, dynamic duration
+11. Create `SailingOverlay.tsx` -- voyage info panel with weather display
+12. Wire SailingOverlay into Shell.tsx
+
+**Why third:** Benefits from weather module for display. Independent of journal.
+
+### Step 4: Trade Profit Indicator (smallest, zero dependencies)
+
+13. Modify `TradePanel.tsx` -- add per-item profit preview
+
+**Why last:** Smallest change, no dependencies on other features. Pure renderer-side arithmetic.
+
+## Architecture Anti-Patterns to Avoid
+
+### 1. Do Not Add GameState FSM Variants for Weather
+
+Weather is a modifier on existing states, not a new state. The FSM must remain `idle | trading | sailing | encountered`. Adding `type: 'sailing_storm'` would break exhaustive switches across the codebase and violate the principle that weather is a continuous condition, not a discrete phase.
+
+### 2. Do Not Store Weather in a DB Table
+
+Weather is a deterministic function of turn number. Creating a `weather` table would duplicate derived data. Compute it from `currentTurn` wherever needed.
+
+### 3. Do Not Generate Journal Entries Client-Side
+
+Journal entries for trades, events, and navigation must be generated server-side (in IPC handlers) where the authoritative game state lives. If the renderer generates entries and sends them via IPC, you risk: (a) entries lost on renderer crash, (b) duplicate entries on reconnect, (c) untrusted data in the journal.
+
+### 4. Do Not Create a Separate Zustand Store for Journal
+
+The journal is server-authoritative data (like ports or transactions). Use the same fetch-on-mount + subscribe-to-broadcast pattern used by `useTradeState` and `useGameState`. A journalStore would create a parallel source of truth.
+
+### 5. Preserve ShipMarker's Cleanup Pattern
+
+ShipMarker has a careful cleanup pattern with `cleanedUp` flag and `motionLayerRef`. Any enhancements must preserve this pattern to avoid memory leaks and ghost `motion-ended` event handlers. The `cleanedUp` guard prevents the ARRIVE action from firing after component unmount.
+
+### 6. Do Not Modify the `game_state` Table Schema
+
+Weather and journal data should not be added to `game_state.state_json`. The game state blob stores only FSM state (type, turn, destination, etc.). Journal entries get their own table. Weather is computed, not stored.
+
+## Scalability Notes
+
+These features are all well within the current architecture's capacity:
+
+- **Journal entries:** SQLite handles millions of rows. A 100-turn game produces ~300 entries max. No pagination needed for v1.3.
+- **Weather computation:** Pure arithmetic, sub-millisecond. No caching needed.
+- **Animation:** leaflet.motion already handles one animation at a time. No change in performance profile.
+- **Trade profit:** Simple arithmetic on data already in memory. Zero overhead.
+
+## Sources
+
+- Direct codebase analysis of all files listed above (HIGH confidence)
+- Existing patterns from v1.0-v1.2 architecture (HIGH confidence)
+- Mediterranean sailing season history: training data on ancient maritime practices (MEDIUM confidence -- historically well-documented period, but specific multiplier values are design decisions, not historical facts)

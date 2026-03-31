@@ -1,210 +1,155 @@
-# Technology Stack
+# Technology Stack — v1.3 Gameplay Depth & Polish
 
-**Project:** Archeology Simulator (Electron + React turn-based historical trade game)
-**Researched:** March 12, 2026
-**Confidence:** HIGH for core stack (Context7 + official docs verified), MEDIUM for patterns
+**Project:** Archeology Simulator v1.3
+**Researched:** 2026-03-31
+**Confidence:** HIGH (all features use existing stack; verified against codebase)
+**Mode:** Incremental — what changes from v1.2 baseline
 
-## Recommended Stack
+## Verdict: No New Dependencies Required
 
-### Core Framework
+All four v1.3 features build on top of the existing stack. Adding libraries would introduce unnecessary coupling and maintenance burden for capabilities that are straightforward to implement with what's already installed.
 
-| Technology | Version | Purpose | Why Recommended |
-|------------|---------|---------|-----------------|
-| Electron | 41.0.0 | Desktop app runtime (Chromium + Node.js) | Industry standard for cross-platform desktop apps. Bundles browser engine eliminating compatibility issues. Simplifies distribution. Latest version (March 2026) with Node 24.14.0. |
-| React | 19.2.4 | UI rendering and component framework | Standard for building interactive UIs. Excellent documentation. Large ecosystem. Latest version includes security hardening for Server Actions. |
-| Vite | 8.3.0 | Build tool and dev server | 10-50x faster than webpack. Native ES module support. Hot Module Replacement for instant feedback. Standard choice for React in 2026. |
-| Electron Forge | 7.11.x | Electron packaging and distribution | Official build tool for Electron. Handles code signing, installers, and artifact publishing. V7.11+ uses npm trusted publishing. |
-| TypeScript | 5.x | Type safety and IDE support | Essential for maintainability in game logic. Catch errors at compile time. Excellent with Vite. |
+| v1.3 Feature | Existing Tech That Covers It | New Library Needed? |
+|---|---|---|
+| Seasonal weather system | Pure TypeScript game logic + existing turn/month mapping | NO |
+| Captain's journal persistence | better-sqlite3 + existing IPC contract (IPCResponse\<T\>) | NO |
+| Sailing animation polish | leaflet.motion 0.3.2 + ShipMarker.tsx (already working) | NO |
+| Trade profit/loss before sale | Pure React UI + existing CargoItem.boughtAtPrice field | NO |
 
-### Data Persistence
+## Existing Capabilities Already Covering v1.3
 
-| Technology | Version | Purpose | Why Recommended |
-|------------|---------|---------|-----------------|
-| better-sqlite3 | 12.7.0 | Local game state storage | Fastest SQLite library for Node.js. Synchronous API (game-friendly). Built for Electron. Latest version (March 2026) updated for Electron 41 support. |
-| Zustand | 5.0.11 | Client-side state management | Lightweight (3KB vs Redux 15KB). Hooks-based. Minimal boilerplate. Perfect for game state synchronization. No provider needed. |
+### Seasonal Weather System
 
-### UI and Styling
+**What exists:** `Logbook.tsx` already maps turns to Athenian calendar months via `turnToDate()`. Turn number modulo 12 gives month index. The Athenian months already map to real seasons (Hekatombaion = July, Poseideon = December, etc.).
 
-| Technology | Version | Purpose | Why Recommended |
-|------------|---------|---------|-----------------|
-| Leaflet | 1.9.4 | Interactive map rendering | Lightweight, battle-tested library. Supports custom tile layers (styled OpenStreetMap). Marker clustering and GeoJSON support. Stable production version. |
-| react-leaflet | v5.x | React components for Leaflet | Declarative map management in React. Handles map lifecycle. Supports Leaflet plugins. Current version as of 2026. |
-| Tailwind CSS | 3.x+ | Utility-first CSS framework | Rapid UI development. Works seamlessly with Electron. PostCSS integration with Vite. Custom theme support for parchment aesthetic. |
-| CSS Modules + CSS3 animations | Native | Scoped styles and animations | Use Tailwind for layout, CSS modules for components, CSS3 for ship movement and transitions. Avoids runtime CSS-in-JS overhead. |
+**What's needed:** Game logic layer that converts month to season, season to weather modifiers (voyage duration multiplier, storm probability, route danger). This is pure TypeScript — a `SeasonEngine` module that takes a turn number and returns `{ season, weatherModifier, stormChance, description }`.
 
-### Audio and Sound
+**Stack implication:** None. No weather API, no physics engine, no animation library. This is a turn-based modifier system — multiply voyage duration by a seasonal factor, adjust event probabilities.
 
-| Technology | Version | Purpose | Why Recommended |
-|------------|---------|---------|-----------------|
-| Web Audio API | Native | Core audio engine | Built into browsers (Electron). No external dependency. Full control over ambient audio and sound effects. Excellent for games. |
-| Howler.js | 2.x | Audio abstraction layer | Reliable fallback support. Cross-browser compatible. Simplifies audio file loading. Active project. |
-| react-howler | latest | React wrapper for Howler.js | Component-based audio control. Cleaner than raw Web Audio API for simple use cases. |
+### Captain's Journal Persistence
 
-### Museum APIs and Data Integration
+**What exists:**
+- `Logbook.tsx` — fully functional UI with 6 entry types (weather, rumor, arrival, departure, event, trade), scrollable panel, parchment styling
+- `LogEntry` interface already defined with turn, date, text, type fields
+- Entries accumulate in React component state (lost on reload)
+- `better-sqlite3` schema in `schema.ts` with established migration pattern
+- `IPCResponse<T>` contract for all IPC calls
 
-| Technology | Version | Purpose | Why Recommended |
-|------------|---------|---------|-----------------|
-| node-fetch or built-in fetch | 3.x/Native | HTTP requests for APIs | Fetch is now standard in Node 18+. Use native fetch in Electron main process for cleaner code. |
-| axios | 1.x | Alternative HTTP client | If you need interceptors or advanced features. Otherwise, fetch is sufficient. |
+**What's needed:** A `journal_entries` SQLite table, IPC handlers for save/load, and wiring Logbook.tsx to persist entries through the existing IPC layer instead of React state alone.
 
-### Testing
+**Stack implication:** None. One new table in `schema.ts`, two IPC handlers (`journal:save`, `journal:load`), and Logbook.tsx loads persisted entries on mount.
 
-| Technology | Version | Purpose | Why Recommended |
-|------------|---------|---------|-----------------|
-| Vitest | 1.x | Unit testing framework | Vite-native test runner. Jest-compatible API. 3-5x faster than Jest. Perfect for Vite projects. |
-| React Testing Library | 15.x+ | React component testing | Tests user behavior, not implementation. Best practices alignment. Encourages accessible components. |
+### Sailing Animation
 
-### Development Tools
+**What exists:**
+- `ShipMarker.tsx` — complete implementation using `leaflet.motion` 0.3.2
+- SVG ship icon (sepia-toned boat with sail)
+- Polyline animation from departure to destination (5-second duration)
+- Motion-ended callback triggers ARRIVE action
+- Cleanup on unmount
 
-| Tool | Purpose | Notes |
-|------|---------|-------|
-| ESLint + Prettier | Code quality and formatting | Ensure consistent style. Easy integration with Vite. |
-| Electron DevTools | Debugging Electron apps | Built into Electron. Use for main/renderer process debugging. |
+**What's needed:** This is already working. Enhancements might include:
+- Variable animation duration based on distance/season (currently hardcoded 5000ms)
+- Wake/trail effect behind ship (CSS pseudo-element on the ship div, no library needed)
+- Route preview polyline (Leaflet native `L.polyline`, no plugin needed)
 
-## Installation
+**Stack implication:** None. `leaflet.motion` 0.3.2 is already installed and integrated. Any visual polish is CSS/SVG work on the existing ship icon div.
 
-```bash
-# Core framework
-npm install electron react react-dom zustand
+### Trade Profit/Loss Before Sale
 
-# Build tools
-npm install -D vite typescript @vitejs/plugin-react
+**What exists:**
+- `ProfitDisplay.tsx` — shows running total profit (current gold - 500 starting) and last 10 transactions
+- `CargoItem` type already tracks `boughtAtPrice` and `boughtAtPort`
+- `MarketGood` type has `currentPrice` at any port
+- `TradePanel.tsx` handles buy/sell UI
 
-# UI and styling
-npm install leaflet react-leaflet tailwindcss postcss autoprefixer
+**What's needed:** In the sell confirmation flow, display `(currentPrice - boughtAtPrice) * quantity` as a green/red indicator. The data is already available — `CargoItem.boughtAtPrice` vs `MarketGood.currentPrice`. This is a UI calculation, not a data pipeline.
 
-# Audio
-npm install howler react-howler
+**Stack implication:** None. Pure React component work.
 
-# Database
-npm install better-sqlite3
+## What NOT to Add
 
-# HTTP
-npm install node-fetch
+| Tempting Addition | Why to Avoid |
+|---|---|
+| D3.js for weather visualization | Overkill. Weather is a text description + numeric modifier in a turn-based game. A styled div with season icon is sufficient. |
+| Framer Motion for UI animations | Already using CSS transitions and leaflet.motion. Adding a second animation system creates inconsistency and 45KB bundle cost. |
+| date-fns / luxon for date handling | The game uses fictional ancient calendar months. Real date libraries add nothing — `turnToDate()` is 10 lines of array indexing. |
+| Lodash for utility functions | TypeScript native `Array.prototype` methods cover everything needed. No deep cloning or complex object manipulation required. |
+| React Query / SWR for data fetching | All data is local SQLite. There's no remote API to cache. Zustand + IPC is the established pattern. |
+| A charting library for profit tracking | Profit is a single number with a plus/minus sign. A `<span>` with conditional color is the right tool. |
 
-# Development
-npm install -D vitest @vitest/ui @testing-library/react @testing-library/jest-dom
-npm install -D electron-forge @electron-forge/plugin-vite
-npm install -D eslint prettier @typescript-eslint/eslint-plugin
+## Version Pinning (Current, Keep As-Is)
 
-# Type definitions
-npm install -D @types/react @types/react-dom @types/node @types/better-sqlite3
+These are the actual installed versions from `package.json`. They are working and should not be upgraded for v1.3 — no new capabilities are needed from newer versions.
+
+| Package | Installed Version | Upgrade? | Rationale |
+|---|---|---|---|
+| electron | ^35.7.5 | NO | Stable, working. v1.3 adds no Electron-level features. |
+| react | ^19.0.0 | NO | UI additions are component-level, not framework-level. |
+| vite | ^7.3.1 | NO | Build tooling unchanged. |
+| better-sqlite3 | ^12.6.2 | NO | One new table is trivial. No new SQLite features needed. |
+| leaflet | ^1.9.4 | NO | Native polyline + leaflet.motion covers all map needs. |
+| leaflet.motion | ^0.3.2 | NO | Already integrated in ShipMarker.tsx. Working correctly. |
+| react-leaflet | ^5.0.0 | NO | Map component layer unchanged. |
+| zustand | ^5.0.11 | NO | State management patterns unchanged. |
+| tailwindcss | ^4.2.1 | NO | Styling approach unchanged. |
+| typescript | ^5.7.3 | NO | Type system needs unchanged. |
+
+## Integration Points for v1.3 Features
+
+Where new code connects to existing code — no new libraries, but these are the seams:
+
+### Seasonal Weather -> Game Engine
+```
+src/game/          <- NEW: season-engine.ts (pure functions)
+  |
+  v
+src/shared/game-types.ts  <- EXTEND: add Season type, WeatherModifier type
+  |
+  v
+src/game/events.ts        <- MODIFY: storm probability uses seasonal modifier
+src/renderer/Logbook.tsx   <- MODIFY: weather text uses seasonal descriptions
 ```
 
-## Alternatives Considered
-
-| Recommended | Alternative | When to Use Alternative |
-|-------------|-------------|-------------------------|
-| Vite | Webpack | Webpack if you need extremely custom build configuration. Not recommended for new projects (Vite is faster and simpler). |
-| Zustand | Redux Toolkit | Redux Toolkit if you have large team with strict patterns needed, or if you need DevTools middleware. For game state, Zustand's simplicity is better. |
-| better-sqlite3 | RxDB | RxDB if you need real-time sync with server, reactive queries, or encryption. RxDB SQLite adapter is premium-only, making it cost-prohibitive for indie game. |
-| Leaflet | Mapbox GL | Mapbox GL if you need 3D maps or advanced styling. Overkill for parchment-style historical map. Leaflet is lighter and sufficient. |
-| Howler.js | Tone.js | Tone.js if you need advanced musical synthesis or sophisticated scheduling. Howler.js is better for ambient audio and sound effects. |
-| Tailwind | styled-components | styled-components if you need dynamic theming at runtime. Tailwind is faster and better for static parchment aesthetic. |
-
-## What NOT to Use
-
-| Avoid | Why | Use Instead |
-|-------|-----|-------------|
-| Create React App (CRA) | Electron Forge replaces CRA's role. CRA is for web apps, not desktop. Slower dev experience. | Electron Forge with Vite plugin |
-| Webpack in Electron projects | Slower builds than Vite. Complex configuration. | Vite with @electron-forge/plugin-vite |
-| Remote module in Electron | Deprecated in Electron 12. Security risk. NodeIntegration is unsafe. | Use IPC (ipcMain/ipcRenderer) for main-renderer communication |
-| Node integration in renderer | Security vulnerability. Exposes Node.js APIs to web content. | Use Preload scripts with contextBridge for safe communication |
-| Classic Redux | Too much boilerplate (actions, reducers, selectors). Overkill for game state. | Zustand for simplicity, Redux Toolkit only if team requires it |
-| SQLite3 (npm package) | Slower than better-sqlite3. More complex setup. | better-sqlite3 (synchronous, faster, built for Electron) |
-| CSS-in-JS at runtime | Electron isn't web; performance matters. Runtime CSS generation adds overhead. | Tailwind + CSS Modules (static, compiled) |
-
-## Stack Patterns by Variant
-
-**If building with TypeScript (recommended for game logic):**
-- Use TypeScript 5.x throughout
-- Enable strict mode in tsconfig.json
-- Use @types/* packages for all dependencies
-- Benefit: Type safety for game state, merchant logic, trade calculations
-
-**If building with JavaScript (faster initial dev):**
-- Skip TypeScript for rapid prototyping
-- Add TypeScript later when architecture solidifies
-- Use JSDoc comments for documentation
-- Risk: Harder to refactor complex game logic later
-
-**If you need offline-first with cloud sync:**
-- Consider RxDB with SQLite (if budget allows)
-- Otherwise, implement manual sync layer on better-sqlite3
-- Use Zustand state, sync to SQLite on state changes
-- Recommended for now: Better-sqlite3 + manual sync (simpler, cost-effective)
-
-## Architecture Communication Patterns
-
-### IPC Pattern (Required for Electron)
-Database operations (SQLite) **only** happen in main process, never renderer. Use IPC:
-
-```typescript
-// Main process: setup listener
-ipcMain.handle('db:saveGameState', (event, state) => {
-  database.saveState(state);
-  return { success: true };
-});
-
-// Renderer process: call it
-const result = await ipcRenderer.invoke('db:saveGameState', gameState);
+### Journal Persistence -> SQLite
+```
+src/main/db/schema.ts     <- EXTEND: add journal_entries table
+  |
+  v
+src/main/db/queries.ts    <- EXTEND: add saveJournalEntry, loadJournalEntries
+  |
+  v
+src/main/ipc/             <- NEW: journal.ts IPC handlers
+  |
+  v
+src/shared/ipc-types.ts   <- EXTEND: add journal channel types
+  |
+  v
+src/renderer/Logbook.tsx   <- MODIFY: load on mount, save on new entry
 ```
 
-This is non-negotiable for Electron security.
-
-### State Flow
+### Sailing Animation -> leaflet.motion
 ```
-React Components
-  ↓ (setState)
-Zustand Store (in-memory)
-  ↓ (on change, debounced)
-IPC to Main Process
-  ↓
-better-sqlite3 persistence
+src/game/season-engine.ts  <- provides duration multiplier
+  |
+  v
+src/renderer/ShipMarker.tsx <- MODIFY: duration = baseDuration * seasonModifier
 ```
 
-## Version Compatibility
-
-| Package | Compatible With | Notes |
-|---------|-----------------|-------|
-| React 19.2.4 | Electron 41.0.0 | React 19 works with all supported Chromium versions |
-| Electron 41.0.0 | Node 24.14.0 | Bundled together; use both from same release |
-| better-sqlite3 12.7.0 | Electron 41.0.0 | Explicitly tested in March 2026 release |
-| TypeScript 5.x | React 19.2.4 | TypeScript 5 is stable for React 19 |
-| Vite 8.3.0 | React 19.2.4 | Vite 8 has full React 19 support |
-| Zustand 5.0.11 | React 19.2.4 | Zustand is framework-agnostic, works with any React version |
-| Leaflet 1.9.4 | React 19.2.4 | Via react-leaflet v5; no direct dependency |
-
-## Why This Stack
-
-**Security:** Electron's main/renderer process separation enforced by default. No NodeIntegration enabled. IPC pattern required for database access.
-
-**Performance:** Vite + native ES modules = instant HMR in dev. better-sqlite3 is synchronous (game-friendly). Zustand avoids Redux overhead. Web Audio API is native, no external audio library overhead needed.
-
-**Maintainability:** TypeScript for game logic safety. Clear separation of concerns (Leaflet for maps, Zustand for state, better-sqlite3 for persistence). Minimal external dependencies.
-
-**Distribution:** Electron Forge handles code signing and installers. GitHub releases integration built-in. Works across Windows, macOS, Linux.
-
-**Educational Context:** This stack is standard in 2026 for desktop React apps. Students learning from this project learn current best practices.
+### Trade Profit Preview -> TradePanel
+```
+src/renderer/TradePanel.tsx <- MODIFY: show (salePrice - boughtAtPrice) * qty
+  |                            before confirm button
+  v
+(no backend changes — data already available in CargoItem + MarketGood)
+```
 
 ## Sources
 
-- Electron v41.0.0 release: https://github.com/electron/electron/releases (verified March 11, 2026)
-- React 19.2.4 release: https://github.com/facebook/react/releases (verified Feb 2026)
-- Vite documentation: https://vitejs.dev/
-- better-sqlite3 v12.7.0 release: https://github.com/WiseLibs/better-sqlite3/releases (verified March 11, 2026)
-- Zustand v5.0.11 release: https://github.com/pmndrs/zustand/releases (verified Feb 2026)
-- Electron Forge v7.11: https://github.com/electron/forge (verified March 2026)
-- React Leaflet v5: https://react-leaflet.js.org/
-- Leaflet v1.9.4: https://leafletjs.com/ and https://github.com/Leaflet/Leaflet/releases
-- State Management in 2026: [Zustand vs Redux](https://medium.com/@abdurrehman1/state-management-in-2026-redux-vs-zustand-vs-context-api-ad5760bfab0b)
-- Electron best practices: https://www.electronjs.org/docs/latest/tutorial/performance
-- Electron Forge Vite plugin: https://www.electronforge.io/config/plugins/vite
-- Howler.js: https://howlerjs.com/
-- Web Audio API: https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API
+- Codebase inspection (ground truth): `package.json`, `ShipMarker.tsx`, `Logbook.tsx`, `ProfitDisplay.tsx`, `schema.ts`, `game-types.ts`
+- leaflet.motion: already installed and working in ShipMarker.tsx (v0.3.2)
+- All version numbers from `package.json` (verified 2026-03-31)
 
 ---
 
-**Stack research for:** Electron + React historical trade simulation game
-**Researched:** March 12, 2026
-**Next validation:** Verify with test project setup, especially Electron 41 + better-sqlite3 + Vite integration
+**Bottom line:** v1.3 is a game logic and UI milestone, not an infrastructure milestone. The stack is already right-sized. Ship features, not dependencies.

@@ -1,402 +1,202 @@
 # Project Research Summary
 
-**Project:** Archeology Simulator (Ancient Mediterranean Trade)
-**Domain:** Educational turn-based strategy game (Electron + React)
-**Researched:** 2026-03-12
+**Project:** Archeology Simulator v1.3 — Gameplay Depth & Polish
+**Domain:** Incremental feature addition to an existing Electron + React turn-based educational trade simulator
+**Researched:** 2026-03-31
 **Confidence:** HIGH
 
 ## Executive Summary
 
-This is an educational turn-based trading simulation designed for grades 6-12 history students, similar in learning design to Oregon Trail but focused on ancient Mediterranean trade systems. The recommended approach is a modern Electron + React desktop application with a carefully curated (not procedurally generated) map of 40-60 Mediterranean ports, turn-based gameplay (not real-time), and a distinctive Captain's Journal reflection tool that bridges gameplay to writing assignments — positioning it as pedagogically intentional rather than just entertainment.
+v1.3 is a features-and-polish milestone, not an infrastructure milestone. All four planned features — seasonal weather, captain's journal persistence, sailing animation polish, and trade profit/loss display — are buildable entirely on the existing stack (Electron 35, React 19, Zustand, better-sqlite3, leaflet.motion, TypeScript). No new dependencies are warranted. Two of the four features (sailing animation, trade profit/loss display) are partly or fully implemented and require targeted extension rather than greenfield work. The stack is already right-sized; the mandate is to ship features, not dependencies.
 
-The stack is well-established: Electron 41.0 + React 19 + Vite for rapid iteration, better-sqlite3 for local persistence, Zustand for UI state, and Leaflet for map rendering. This combination is proven for desktop games in 2026 and avoids common pitfalls of over-architecture. The critical architectural decision is enforcing main-process authority: all game logic and state mutations happen in Electron's main process, with the React renderer as a thin display layer communicating via IPC. This prevents cheating, simplifies save/load, and enables robust offline play.
+The recommended build order is determined by dependency: (1) weather system as a pure-function foundation that unblocks both the journal and the sailing overlay, (2) journal persistence as the largest architectural change (new SQLite table, IPC channels, Logbook refactor from component state to DB-backed), (3) sailing animation polish that consumes the weather module for duration and display, and (4) trade profit/loss display as the smallest standalone change with zero backend dependencies. The trade profit feature can technically be built in parallel with phase 1.
 
-The main risk category is platform-specific infrastructure: native module compilation hell, Leaflet performance at scale with animations, and external museum API reliability. These are preventable with upfront infrastructure validation (Phase 1) and careful caching/degradation strategies for API failures. The research is HIGH confidence across stack, architecture, and pitfalls because it's grounded in official documentation and proven patterns; features research is HIGH confidence because it's validated against Oregon Trail, Patrician, and educational game literature.
+The critical risks are around integration seams, not individual features. The three most dangerous failure modes are: (a) weather modifiers written to voyage duration without baking them into FSM state at SET_SAIL time, causing animation and turn-count to diverge; (b) journal entries generated in React component state rather than the main process, making them vulnerable to component unmount and reload; and (c) the `leaflet.motion` animation restarting mid-voyage when parent components re-render due to unstable prop references. Each has a concrete, implementable prevention strategy and should be addressed explicitly in phase planning.
 
 ## Key Findings
 
 ### Recommended Stack
 
-Electron 41.0.0 + React 19.2.4 + Vite 8.3.0 is the standard modern choice for desktop games in 2026. The stack is optimized for **security** (enforced main/renderer separation), **performance** (Vite's instant HMR, better-sqlite3's synchronous API), and **educational context** (TypeScript for game logic safety, clear separation of concerns).
+No changes from the existing stack. All v1.3 work is additive at the TypeScript, React, and SQLite layer. The existing stack handles every requirement: `better-sqlite3` for journal persistence (one new table), `leaflet.motion` 0.3.2 for animation polish (already wired in `ShipMarker.tsx`), pure TypeScript for the weather engine, and inline JSX for the trade profit indicator. Introducing D3.js, Framer Motion, date-fns, or any other library would add maintenance cost and bundle weight without proportional benefit.
 
-**Core technologies:**
-- **Electron 41.0.0**: Desktop runtime (Chromium + Node 24.14) — industry standard, cross-platform, simplifies distribution via Electron Forge
-- **React 19.2.4**: UI rendering — excellent ecosystem, large community, standard for interactive apps in 2026
-- **Vite 8.3.0**: Build tool — 10-50x faster than webpack, native ES modules, hot module replacement for instant feedback
-- **better-sqlite3 12.7.0**: Local game state storage — synchronous API (game-friendly), fastest SQLite for Node.js, Electron-native, March 2026 verified
-- **Zustand 5.0.11**: Client-side state (UI only) — lightweight, minimal boilerplate, perfect for game UI without over-engineering Redux
-- **Leaflet 1.9.4 + react-leaflet v5**: Interactive map rendering — battle-tested, lightweight, supports custom tiles and marker clustering
-- **Tailwind CSS 3.x**: UI styling — rapid development, works seamlessly with Electron, custom theme support for parchment aesthetic
-- **Howler.js 2.x**: Audio abstraction — reliable cross-browser support, simplifies Web Audio API usage
+**Core technologies (all unchanged, keep pinned at current versions):**
+- **Electron 35 + better-sqlite3 12.6.2:** IPC contract and SQLite persistence — covers journal persistence with one new table and two new IPC channels
+- **React 19 + Zustand 5.0.11:** Component layer and UI state — covers all UI additions; no new Zustand stores needed
+- **TypeScript 5.7.3:** Shared game logic — weather engine is pure TS functions with zero framework coupling, importable by both main and renderer
+- **leaflet 1.9.4 + leaflet.motion 0.3.2 + react-leaflet 5:** Map and animation — already functional in `ShipMarker.tsx`; needs targeted polish only
+- **Tailwind 4.2.1:** Styling — all visual additions fit the existing utility-class approach
 
-**What NOT to use**: Avoid Create React App (Electron Forge replaces it), Webpack (slower than Vite), Remote Module in Electron (deprecated security risk), NodeIntegration in renderer (XSS vulnerability), classic Redux (overkill for this game), CSS-in-JS at runtime (performance hit on desktop). See STACK.md for detailed alternatives considered.
+**What NOT to add:** D3.js (overkill for a text label + modifier), Framer Motion (second animation system creates inconsistency), date-fns/luxon (fictional ancient calendar needs no real date library), React Query/SWR (all data is local SQLite), Lodash (TypeScript native methods cover all needs).
 
 ### Expected Features
 
-Research validates Oregon Trail-style learning design: consequence-driven mechanics, clear objectives, and pedagogical scaffolding separate this from pure economic simulations like Patrician.
+**Must have (table stakes):**
+- **Trade profit/loss indicator** — players need pre-confirmation P/L visibility; all data already exists (`CargoItem.boughtAtPrice` vs `MarketGood.currentPrice`)
+- **Journal persistence** — losing the Logbook on reload breaks the educational narrative; the `Logbook.tsx` component provides 80% of the UI already
+- **Season display** — if weather affects voyage mechanics, the current season must be visible to the player before committing to SET_SAIL
 
-**Must have (table stakes) — v1 launch:**
-- Interactive parchment map with 40-60 Mediterranean ports (navigable, labeled, visually distinct)
-- Trade core loop: buy low/sell high at different ports with supply/demand fluctuation
-- Inventory system with cargo limits and capacity visualization
-- Economic feedback: running profit/loss, transaction history
-- Turn-based navigation (player explicitly chooses next port, not real-time)
-- Tutorial onboarding: guided first voyage teaching controls and trade concepts
-- Save/load system: supports classroom sessions and progress tracking
-- Port names and commodity labels: real goods (wheat, wine, purple dye, papyrus) not abstract symbols
-- Captain's Journal: text prompts after trades ("What surprised you?") forcing metacognition — **differentiator**
-- Historical port data: realistic supply/demand based on actual Mediterranean trade patterns
+**Should have (differentiators):**
+- **Seasonal voyage modifiers** — historically grounded (mare clausum, Vegetius sources); unique educational angle on why ancient ships avoided winter crossings
+- **Prompted journal reflections** — bridges simulation to essay and discussion; metacognitive value is documented in educational game research
+- **Route line on map** — geographic literacy teaching tool; students see actual Mediterranean distances and paths before departure
 
-**Should have (competitive advantage) — v1.x post-validation:**
-- Seasonal sailing mechanics: winter is dangerous, affects profitability and safety
-- Political factions: Greek, Phoenician, Egyptian, Etruscan; relationships affect prices and safety
-- Cultural encounter narratives: 2-3 sentence flavor text explaining local culture and trade goods
-- Ship progression: visual reward loop earning better ships through wealth
-- Museum artifact images: real photos of trade goods from open-access museum collections
-- Historical accuracy grounded in sources: document design decisions, cite sources in tooltips
-- Teacher dashboard: analytics tracking student routes, profits, learning outcomes (requires privacy handling)
-
-**Defer (v2+) — avoid in v1:**
-- Real-time sailing (incompatible with classroom pacing; Oregon Trail proved turn-based works)
-- Hyper-realistic economics modeling (too complex, masks learning; simplified supply/demand is better)
-- Multiplayer/PvP trading (toxicity risk, breaks historical learning focus)
-- Procedural generation of ports (students lose historical anchoring; curated map is intentional)
-- Persistent character leveling (confuses game mechanic with learning outcome; Oregon Trail avoided this)
-- Detailed crew management with individual sailor stats (overwhelming for students; abstracted crew health is sufficient)
-- NPC merchant competitors with AI (hard to balance; static NPC traders with formula-based prices are predictable and teachable)
-
-**Feature dependencies**: Core loop (map + trade mechanics) must come first. Tutorial builds on core loop. Journal works but is most valuable when tied to game events. Seasonal/factions/narratives enhance but don't block. Teacher dashboard requires game state logging but is non-blocking.
+**Defer to v2+:**
+- Real-time wind simulation (complexity without proportional pedagogical gain)
+- Rich text or image journal entries (scope explosion; plain text with type icons is sufficient)
+- Mid-voyage weather event interruption (requires FSM rework with interruptible sailing states)
+- Supply/demand modification from weather (creates double feedback loop with existing economy system)
+- Per-route profit optimization hints (undermines discovery learning)
 
 ### Architecture Approach
 
-Standard Electron + React pattern: **main process owns all game state and business logic** (GameEngine class using command pattern for actions), **renderer is stateless display layer** (React components emit commands via IPC, receive computed state back). This is non-negotiable for turn-based games: prevents cheating, enables deterministic undo/replay, simplifies save/load, and works offline trivially.
+All four features integrate cleanly with the existing layered architecture (Renderer → contextBridge → Main/IPC → Game Logic). Changes are additive: two new files (`src/game/weather.ts`, `src/renderer/components/SailingOverlay.tsx`), one new DB table (`journal_entries`), two new IPC channels (`game:getJournal`, `game:addJournalEntry`), and targeted modifications to 10 existing files. No new FSM states are needed — weather is a modifier on existing states, not a discrete phase. No new Zustand stores — journal uses the existing fetch-on-mount + subscribe-to-broadcast pattern.
 
-**Major components:**
-1. **GameEngine (main process)**: Core game simulation, turn flow, command execution, economy simulation, state persistence via SQLite
-2. **IPC Bridge (preload script + ipcMain handlers)**: Secure, controlled API exposure; all state mutations via ipcRenderer.invoke() → ipcMain.handle()
-3. **React Component Tree (renderer)**: Renders UI; MapPanel (Leaflet), SidePanel (events/info), InventoryUI, EventCard dialogs
-4. **Zustand Stores (renderer)**: UI state only (selected port, panel visibility, map viewport) — game state lives in main process
-5. **SQLite Database Layer (main)**: Persistent game saves, save slots, session data; accessed synchronously from main process (no IPC needed)
-6. **React Leaflet Map**: Declarative map management; markers emit commands via click handlers
+**New files:**
+1. **`src/game/weather.ts`** — pure `getSeason(turn)` / `getWeatherModifiers(turn)` functions; shared by main process and renderer with no Electron dependency; single source of truth for all weather text and mechanics
+2. **`src/renderer/components/SailingOverlay.tsx`** — floating voyage info panel showing destination, weather conditions, and estimated arrival during sailing state
 
-**Build order matters**: Foundation (Electron + IPC + SQLite) → GameEngine (turn logic, economy) → UI Components (rendering) → API Integration (museums) → Polish (audio, animations). Game logic must exist before UI can display it.
+**Major modifications:**
+3. **`journal_entries` SQLite table** — id, turn, date_text, text, type, created_at; entries generated server-side in IPC handlers at every game action boundary (ARRIVE, SET_SAIL, COMPLETE_TRADE, turn advance)
+4. **`Logbook.tsx`** — large refactor: remove `useState<LogEntry[]>`, load from IPC on mount, subscribe to `subscribe:journal:updated`, remove cosmetic `generateWeather()` (replaced by weather system)
+5. **`ShipMarker.tsx`** — visible dashed route polyline (currently transparent), dynamic duration scaled to `eta` (currently hardcoded 5000ms), `voyageId` dep for animation stability
+6. **`TradePanel.tsx`** — inline profit indicator per carried good; color-coded; uses existing `CargoItem.boughtAtPrice`
 
-See ARCHITECTURE.md for detailed patterns: command pattern for actions, main-process authority, React Leaflet safe marker updates, preload script for security, Zustand for UI state only, turn execution flow, persistence flow.
+**Unchanged:** `state.ts` FSM, `game-types.ts` GameState union, `uiStore.ts`, `ProfitDisplay.tsx`, `CargoHold.tsx`, `EventCard.tsx`, `ipc/save.ts`
 
 ### Critical Pitfalls
 
-Five pitfalls from research could cause rewrites or deployment failures if missed. Prevention is cheaper than recovery.
+1. **Weather modifies voyage duration after FSM `eta` is already frozen** — calculate weather-adjusted `durationTurns` BEFORE `SET_SAIL` fires and bake it into `SailingState.eta`; never modify `eta` mid-voyage; scale animation duration from `eta` rather than hardcoding 5000ms; do not introduce mid-voyage weather changes in v1.3
 
-1. **Native Module Compilation Hell** (CRITICAL, Phase 1)
-   - SQLite and other native modules must be compiled per platform (Windows/macOS/Linux). Dev builds succeed, packaged apps fail with "NODE_MODULE_VERSION mismatch" or "unable to open database."
-   - **Prevention**: Identify native deps early (sqlite3, better-sqlite3), use pre-built binaries via node-pre-gyp, set up CI/CD for multi-platform builds (GitHub Actions), test packaging on all three platforms before shipping. **This must be validated in Phase 1 before building core data layer.**
+2. **Journal entries generated in React component state** — all entry generation must move to the main process inside IPC action handlers; Logbook becomes a read-only subscriber, not an entry generator; this eliminates entries lost on unmount, reload, and React StrictMode double-mount duplicates
 
-2. **Leaflet Performance Cliff at Scale** (CRITICAL, Phase 2)
-   - Map renders fine with 50 markers. At 500+ markers or animated ships, panning becomes laggy. At 2000+ markers, app freezes (5 FPS). Each marker is a DOM node; Leaflet can't animate 100+ DOM nodes simultaneously.
-   - **Prevention**: Early prototype with realistic marker count (1000s), implement marker clustering for static markers, use Canvas rendering for animated ships, only render markers in viewport + buffer zone. Avoid marker zoom animation. Test performance early in Phase 2, don't defer to polish phase.
+3. **`leaflet.motion` animation restarts mid-voyage on parent re-renders** — stabilize `portCoords` with `useMemo` in parent (ports don't change, Map reference should be stable); add `voyageId` to `SailingState` as the sole animation effect dependency instead of `destination` + `departurePortId`; guard `motion-ended` callback with a sailing-state check before firing ARRIVE
 
-3. **Museum API Rate Limits + Downtime** (CRITICAL, Phase 3)
-   - Met Museum API has strict rate limits (10-100 req/min), variable uptime. App makes 5+ API calls per turn; at 50 concurrent players, hits 429 (Too Many Requests) immediately. No recovery strategy → game breaks.
-   - **Prevention**: Implement exponential backoff with jitter, respect X-RateLimit-* headers, cache museum metadata locally (never refetch same object), pre-fetch during idle time, degrade gracefully (serve cached data if API fails), show "offline" badge for stale data. Test under load before launch: simulate 50+ concurrent players, measure actual rate limits by hand, hardcode safe request rate.
+4. **Cosmetic weather text in `Logbook.tsx` contradicts mechanical weather system** — remove the existing `generateWeather(turn)` function and hardcoded `conditions` array entirely; `weather.ts` is the single source of truth for all weather descriptions and mechanics; do not layer on top
 
-4. **Game State Complexity Explodes Midway** (CRITICAL, Phase 1-2)
-   - Simple state (turn, board) balloons with features (factions, reputation, crew, economy, weather). By Phase 5, state has 50+ boolean flags, nested 5 levels deep, mutations in 20 places. One bug cascades through 5 systems.
-   - **Prevention**: Use Finite State Machine pattern (explicit states: WAITING_FOR_PLAYER → RESOLVING_ACTION → UPDATING_ECONOMY, etc.), never use boolean flags, use immutable state (each action returns new state), decouple systems with events/subscribers. Write unit tests for every state transition. This must be right in Phase 1; refactoring mid-project is extremely expensive.
-
-5. **Offline/Online Sync Becomes Unrecoverable** (CRITICAL, Phase 4 if offline mode planned)
-   - Player caches data, makes moves offline, goes online but server has progressed. Simple sync fails: conflicts, data loss, impossible states, sync loops.
-   - **Prevention**: Design explicit conflict resolution strategy BEFORE implementing (OT/CRDT, server-wins, merge logic). Fetch server version before applying local changes. Implement versioning/timestamps. Use delta sync (only changed records). Add observability: log all sync operations, provide admin tools to inspect sync state. Note: For MVP, consider deferring offline mode to Phase 4+; single-player works offline trivially without sync complexity.
-
-**Moderate pitfalls** (Phase 2-3): Electron IPC communication bottleneck (batch messages, profile early), app bundle bloat (set size targets early, lazy load assets), cross-platform UX inconsistencies (test on Windows/macOS/Linux every phase), museum data staleness (implement data staleness tracking, background refresh).
-
-See PITFALLS.md for detailed recovery strategies, security mistakes (never enable NodeIntegration, store credentials in Keychain), UX pitfalls (loading indicators, offline badges), and "looks done but isn't" checklist.
+5. **Weather fields added to `GameState` break existing save files** — all new fields must be optional (`?`) with defaults computed from `currentTurn`; add a `migrateGameState(raw: unknown): GameState` normalization function; test with actual v1.2 save files before shipping
 
 ## Implications for Roadmap
 
-Based on research, suggested phase structure (5-6 phases):
+Based on the combined research, the dependency graph points to a clear four-phase structure. The ordering minimizes blocked work and surfaces the most dangerous architectural changes earliest.
 
-### Phase 1: Foundation (Weeks 1-2)
-**Rationale:** Infrastructure must be proven before building game logic. Native modules and IPC patterns are prerequisites; testing these early saves weeks of rework if compilation/communication fails.
+### Phase 1: Seasonal Weather System
 
-**Delivers:**
-- Electron main/renderer boilerplate with Vite
-- SQLite connection + schema with migrations
-- IPC bridge with preload script and contextBridge (secure API design)
-- Zustand stores (empty, structure only)
-- Basic React app shell (parchment theme, system fonts)
-- CI/CD for multi-platform builds
+**Rationale:** The weather engine is a pure-function foundation that both the journal (seasonal weather entries) and the sailing overlay (weather display during voyage) depend on. Building it first unblocks phases 2 and 3. It is also architecturally the most consequential phase because it touches `voyage.ts` and `events.ts` (the core game engine) and requires save-file migration. Do it first while the codebase is cleanest and there are no dependent features to break.
 
-**Addresses pitfalls:**
-- Validates native module compilation on Windows/macOS/Linux (prevents Pitfall 1)
-- Establishes security boundary (preload script) early (prevents IPC injection attacks)
-- Sets bundle size target, measures baseline (prevents Pitfall 7)
-- Tests cross-platform UX patterns (prevents Pitfall 8)
+**Delivers:** `src/game/weather.ts` with `getSeason` and `getWeatherModifiers`; modified `voyage.ts` with weather-adjusted duration calculation; modified `events.ts` with seasonal storm weight adjustment; season indicator in Logbook title bar; mare clausum warning in port selection UI before SET_SAIL; `migrateGameState()` function for backward compatibility with v1.2 saves; `calendar.ts` unified module so Logbook date display and weather system share the same season mapping
 
-**Uses from STACK.md:**
-- Electron 41, React 19, Vite 8, better-sqlite3 12, TypeScript 5
-- Electron Forge for packaging
-- Tailwind + CSS Modules for styling
+**Addresses:** Seasonal weather system (FEATURES.md Feature 1), season display (table stakes)
 
-**Research flags:** Standard patterns for 2026. No deeper research needed. Verify Electron 41 + better-sqlite3 integration in test project.
+**Avoids:** Pitfall 1 (FSM eta divergence if weather is applied late), Pitfall 6 (save file breakage), Pitfall 7 (cosmetic vs mechanical weather producing contradictory output), Pitfall 10 (calendar/season mismatch between Logbook months and weather module), Integration 1 (weather must not modify supply/demand)
+
+**Research flag:** NONE — patterns are well-documented, codebase is fully analysed, historical accuracy data is HIGH confidence from academic sources (Tammuz 2005, Beresford 2013)
 
 ---
 
-### Phase 2: Game Engine + Turn-Based Core (Weeks 3-5)
-**Rationale:** Game logic must exist before UI can display it. This phase implements the turn flow, command pattern, and economy simulation that drives all gameplay.
+### Phase 2: Captain's Journal Persistence
 
-**Delivers:**
-- GameEngine class with turn-based command execution
-- GameState types and interfaces (Turn, Action, Port, Faction, Ship)
-- IPC handlers for action execution (main process authority)
-- SQLite persistence layer for saves
-- Basic economy simulation (supply/demand formula)
-- Navigation logic (turn-based movement, not real-time)
+**Rationale:** The largest architectural change in v1.3. Depends on the weather module for seasonal weather entries. The existing `Logbook.tsx` provides the display template so UI scope is bounded, but the SQLite + IPC + broadcast wiring is the most involved work in this milestone. Doing this before sailing animation and trade profit ensures the journal is ready to capture entries from all subsequent feature work without rework.
 
-**Addresses pitfalls:**
-- Implements Finite State Machine for game state (prevents Pitfall 4)
-- Profiles IPC latency with realistic turn complexity (prevents Pitfall 6)
-- Tests state undo/replay and serialization (ensures robust save/load)
+**Delivers:** `journal_entries` table added to `schema.ts` with turn index; journal CRUD functions in `queries.ts`; `game:getJournal` and `game:addJournalEntry` IPC channels following existing `wrapHandler` pattern; `subscribe:journal:updated` broadcast after mutations; auto-journaling hooks inserted into existing trade, event, and navigation IPC handlers; Logbook refactored from `useState` to DB-backed with IPC fetch on mount; pagination from the start (limit 50, `beforeId` cursor); prompted reflection modals after key game moments (post-profitable-trade, post-storm, post-new-region)
 
-**Uses from STACK.md:**
-- TypeScript with strict mode for type safety
-- better-sqlite3 for persistence
+**Addresses:** Captain's journal persistence (FEATURES.md Feature 2), prompted reflections (differentiator)
 
-**Implements from ARCHITECTURE.md:**
-- Command pattern for actions
-- Main process as game authority
-- Turn execution flow
-- State management strategy
+**Avoids:** Pitfall 2 (entries lost on unmount or reload), Pitfall 11 (unbounded journal growth causing render slowdown), Integration 2 (journal + animation timing producing duplicate or missing arrival entries)
 
-**Features from FEATURES.md:**
-- Port navigation logic
-- Trade core loop mechanics
-- Inventory system
-- Basic economic feedback
-
-**Research flags:** None. Turn-based game architecture is well-documented. Standard patterns.
+**Research flag:** NONE — SQLite table + IPC + broadcast is the established pattern in this codebase; no novel patterns needed; the exact trigger points for prompted reflections (profit threshold, first port visit, etc.) are a product decision that should be specified during phase planning
 
 ---
 
-### Phase 3: UI + Map Rendering (Weeks 6-8)
-**Rationale:** Once game logic works, render it. Map is complex (Leaflet + markers); performance testing here prevents scaling issues later.
+### Phase 3: Sailing Animation Polish
 
-**Delivers:**
-- MapPanel with React Leaflet (Leaflet 1.9.4, react-leaflet v5)
-- Port markers with click handlers
-- SidePanel for event cards, info display
-- Inventory UI with cargo visualization
-- Economic feedback panels (profit/loss, transaction history)
-- Tutorial/onboarding UI
-- Save/load UI
+**Rationale:** Depends on the weather module for weather-aware duration and route styling. Independent of journal. Scope is bounded to `ShipMarker.tsx` and the new `SailingOverlay.tsx`. This is the most visually impactful phase for the student experience but architecturally the simplest once weather is in place.
 
-**Addresses pitfalls:**
-- Prototypes with realistic marker count (100+ ports, animated ships) to identify performance cliff early (prevents Pitfall 2)
-- Profiles React re-renders with deep state
-- Tests Leaflet marker clustering strategy if 1000+ markers needed
-- Implements memo() on marker components to prevent re-renders on map pan
+**Delivers:** Visible dashed sepia route polyline (color `#7a5c45`, `dashArray: '8, 6'`, was `transparent`); animation duration scaled to `eta * 2000ms` capped at 10000ms (was hardcoded 5000ms); `voyageId` field added to `SailingState` (counter incremented on each SET_SAIL) used as sole animation effect dependency; `useMemo` on `portCoords` in parent to stabilize Map reference; `SailingOverlay.tsx` showing destination, weather conditions, distance, and estimated arrival; Shell.tsx wired to render overlay when `gameState.type === 'sailing'`
 
-**Uses from STACK.md:**
-- React 19 with hooks
-- Leaflet 1.9.4 + react-leaflet v5
-- Tailwind CSS for layout
-- CSS Modules for component-scoped styles
+**Addresses:** Sailing animation polish (FEATURES.md Feature 3), route line on map (differentiator)
 
-**Implements from ARCHITECTURE.md:**
-- React Leaflet with command sink (markers emit commands via handlers)
-- useGameEngine hook for IPC integration
-- Zustand for UI state (selected port, panel visibility, map viewport)
-- Component responsibility separation
+**Avoids:** Pitfall 3 (leaflet.motion races with React re-renders), Pitfall 8 (animation duration disconnect from turn cost), Integration 3 (weather updates triggering MapArea re-render that restarts ShipMarker animation)
 
-**Features from FEATURES.md:**
-- Interactive map with ports
-- Visual feedback on decisions
-- Ship/inventory management UI
-- Tutorial interface
-
-**Research flags:** Performance optimization for Leaflet at scale. If 200+ markers cause lag, pivot to canvas-based rendering or clustering strategy. Profile early with real data (1000+ markers), don't defer to Phase 5.
+**Research flag:** MODERATE — `leaflet.motion` is an unmaintained plugin (~4 years since last release, no TypeScript types, mutates global `L`). The `voyageId` dep-stabilization approach is the recommended prevention, but if during planning it proves insufficient to eliminate animation restarts under realistic re-render patterns, a fallback to a manual `requestAnimationFrame` + Leaflet `setLatLng` loop should be specced. Evaluate the actual ShipMarker cleanup pattern against the `voyageId` approach before committing to implementation.
 
 ---
 
-### Phase 4: Museum API Integration + External Data (Weeks 9-11)
-**Rationale:** External data (museum artifacts, historical port info) adds flavor and educational value. Implement caching and rate-limit handling here to prevent API downtime from breaking the game.
+### Phase 4: Trade Profit/Loss Display
 
-**Delivers:**
-- Met Museum API integration (artifact metadata, images)
-- British Museum API fallback
-- Pleiades geocoding for port data (coordinates, historical context)
-- TanStack Query for caching, retries, deduplication
-- Rate limit detection and exponential backoff
-- Graceful degradation when APIs fail
-- Data staleness tracking (refresh every 30 days)
+**Rationale:** Zero backend dependencies — all data already in the renderer (`CargoItem.boughtAtPrice`, `MarketGood.currentPrice`). Could technically be built in parallel with Phase 1 since it has no dependencies. Placing it last ensures the journal (Phase 2) is already recording trade entries so the UI cohesion between profit preview and trade history is visible during development. It is also the safest, lowest-risk work to close the milestone.
 
-**Addresses pitfalls:**
-- Implements rate-limit handling and graceful degradation (prevents Pitfall 3)
-- Caches museum data locally to avoid repeated API calls
-- Monitors data freshness, background refresh (prevents Pitfall 9)
+**Delivers:** Inline per-good profit indicator in `TradePanel.tsx` shown when the player is carrying that good; format: `+Xg profit` (green) / `-Xg loss` (red) / `break even` (neutral); FIFO cost basis for multi-batch purchases (oldest batch consumed first, matching `CargoItem` array order); profit calculation uses the same market price that the sell IPC handler will use — not calculated independently — to prevent display/transaction divergence
 
-**Uses from STACK.md:**
-- node-fetch or built-in fetch for HTTP
-- TanStack Query for caching
-- Howler.js for audio integration (can happen here or Phase 5)
+**Addresses:** Trade profit/loss display (FEATURES.md Feature 4)
 
-**Implements from ARCHITECTURE.md:**
-- External API integration flow
-- TanStack Query as caching layer
-- Main process as single fetch point for Pleiades data
+**Avoids:** Pitfall 5 (profit display shows wrong numbers due to economy tick timing), Pitfall 9 (UI clutter in already-dense trade panel — show only for carried goods, inline on price display)
 
-**Features from FEATURES.md:**
-- Museum artifact images
-- Historical port data accuracy
-- Cultural encounter narratives (can be hardcoded or API-sourced)
-
-**Research flags:** Museum API rate limits and uptime behavior needs validation. Test by hand: how many requests per minute before 429? What's average response time? Build guardrails based on findings. Potential for deeper research: if museum data becomes critical, investigate CRDT sync strategies for multi-user scenarios (Phase 5+).
-
----
-
-### Phase 5: Seasonal/Political Systems + Advanced Features (Weeks 12-14)
-**Rationale:** Core game is playable after Phase 4. This phase adds strategic depth: seasonal sailing, political factions, consequence-driven events. These enhance learning without blocking gameplay.
-
-**Delivers:**
-- Seasonal sailing mechanics (wind patterns, storm risk, season affects profitability)
-- Political faction system (Greek, Phoenician, Egyptian, Etruscan; relationships affect prices and safety)
-- Consequence-driven events (tied to player choices, not RNG)
-- Ship progression (visual rewards from accumulated wealth)
-- Captain's Journal deep implementation (link entries to game events, exportable for assignments)
-- Audio system (ambient background music, sound effects on trades/events)
-
-**Addresses pitfalls:**
-- Implements consequence system carefully to teach causation, not random chaos
-- Balances seasonal difficulty so it teaches, not punishes new players
-
-**Uses from STACK.md:**
-- Howler.js for audio effects
-- Web Audio API for ambient soundscape
-
-**Features from FEATURES.md:**
-- Seasonal sailing
-- Political factions
-- Cultural narratives (can be hardcoded in port data)
-- Ship progression
-- Captain's Journal
-- Consequence-driven narrative
-
-**Research flags:** Seasonal/faction balancing for pedagogical goals needs validation with educators. Consider playtesting with target age group (grades 6-12) to ensure difficulty curve supports learning, not frustration. May need to revisit consequence tuning after feedback.
-
----
-
-### Phase 6: Teacher Dashboard + Polish (Weeks 15-17)
-**Rationale:** Once core game is solid and has educator feedback, add admin/analytics features and final polish for launch.
-
-**Delivers:**
-- Teacher dashboard: track student routes, profits, learning outcomes
-- Privacy handling (parental consent, data anonymization if cloud-based)
-- Analytics export (CSV/JSON per student)
-- Cross-platform testing and fixes
-- Visual polish: animations, transitions, audio improvements
-- Accessibility audit (screen readers, keyboard navigation)
-- Documentation: tutorial, lesson plans, design justification for educators
-
-**Addresses pitfalls:**
-- Final cross-platform testing catches platform-specific UX issues (prevents Pitfall 8)
-- Bundle size optimization before launch (prevent Pitfall 7)
-- Final security audit (prevent security mistakes from PITFALLS.md)
-
-**Features from FEATURES.md:**
-- Teacher dashboard (analytics)
-- Historical accuracy documentation
-
-**Research flags:** Teacher adoption barriers need research. Does dashboard require server backend or local file export? Privacy/COPPA compliance for K-12 users. May need legal review for classroom licensing.
+**Research flag:** NONE — pure UI arithmetic, fully established patterns, zero novel architecture; the FIFO multi-batch edge case needs explicit handling during planning (current `CargoItem` type may need a `quantity` field or the sell handler needs to consume FIFO)
 
 ---
 
 ### Phase Ordering Rationale
 
-1. **Foundation first**: Infrastructure (Electron, IPC, SQLite) is prerequisite for everything. Native module compilation hell must be caught before building on it. Cross-platform testing upfront saves rework.
-
-2. **GameEngine before UI**: Game logic must be complete and testable independently. UI is display layer. Building UI before engine creates tight coupling.
-
-3. **Map before APIs**: Visual gameplay is more important than external data. Museum images are nice-to-have; core trade loop works without them. Implement Leaflet performance strategy early because it affects architecture decisions.
-
-4. **APIs before advanced features**: External data (museums, pleiades) should be working before adding factions/seasonal systems, which depend on data accuracy. Rate-limit handling is infrastructure that affects subsequent layers.
-
-5. **Advanced features before teacher tools**: Students can learn from core game without faction politics or seasonal sailing. Teacher dashboard is analysis layer on top of working game.
-
-6. **Polish at end**: Cross-platform testing, accessibility, documentation happen after core is solid. No point polishing features that might be redesigned.
-
-**Why not waterfall?** Each phase includes verification: Phase 1 validates infrastructure, Phase 2 validates game logic, Phase 3 validates UI/performance. If a phase reveals problems, early discovery is cheap; late discovery is expensive.
+- **Weather first** because it is a shared pure-function module; building it last would force journal and sailing overlay to either duplicate logic or defer their weather-dependent content
+- **Journal second** because it is the largest change and touches the most files; completing it early means phases 3 and 4 can auto-journal their events without rework
+- **Sailing third** because it depends on weather for duration and display and benefits from having the journal wired to record arrival and departure entries
+- **Trade profit last** because it is the most isolated; no phase blocks it and no phase depends on it; placing it last ensures visual cohesion with the journal that records trade history
 
 ### Research Flags
 
-**Phases needing deeper research during planning:**
+Phases likely needing deeper research during planning:
+- **Phase 3 (Sailing Animation):** The `leaflet.motion` plugin is unmaintained (~2021, no TypeScript types, mutates global `L`). The `voyageId` dep-stabilization approach is recommended, but if it proves insufficient to prevent animation restarts under realistic re-render patterns, a fallback to `requestAnimationFrame` + `setLatLng` should be specced. This decision should be evaluated explicitly in phase planning before implementation begins.
 
-- **Phase 4 (Museum APIs):** External API behavior under load, actual rate limits, uptime guarantees. Run load test with 50+ concurrent requests. Reach out to museum API maintainers to ask: What's safe request rate? Do they deprecate APIs? How do we handle schema changes?
-
-- **Phase 5 (Seasonal/Factions):** Educational impact of consequence systems. Work with educators: Do these mechanics teach the learning goals or confuse students? What difficulty curve supports learning at grades 6-12? Playtest early drafts with target age group.
-
-- **Phase 6 (Teacher Dashboard):** Privacy/compliance requirements. K-12 education has COPPA (Children's Online Privacy Protection), FERPA (Family Educational Rights), state data privacy laws. Legal review needed before collecting/storing student data. Affects design significantly.
-
-**Phases with standard patterns (skip research-phase):**
-
-- **Phase 1 (Foundation):** Electron + Vite + React is standard 2026 pattern. Preload security is documented. IPC patterns are established. No deeper research needed.
-
-- **Phase 2 (GameEngine):** Turn-based command pattern is well-documented (Game Programming Patterns). Finite State Machine for game state is established. No deeper research needed.
-
-- **Phase 3 (UI):** React Leaflet is documented. Marker clustering is known solution for performance. No deeper research needed except performance validation.
+Phases with standard patterns (skip research-phase):
+- **Phase 1 (Seasonal Weather):** Pure TypeScript module following existing `src/game/` patterns; historical accuracy data is HIGH confidence from academic sources; save migration is a known pattern
+- **Phase 2 (Journal Persistence):** SQLite + IPC + broadcast is the established pattern in this codebase; `journal_entries` table follows existing schema conventions from `schema.ts`
+- **Phase 4 (Trade Profit Display):** Inline React calculation; zero novel patterns; all data already in renderer
 
 ## Confidence Assessment
 
 | Area | Confidence | Notes |
 |------|------------|-------|
-| **Stack** | HIGH | Verified with official Electron 41, React 19, Vite 8, better-sqlite3 12 releases and documentation. March 2026 versions current. Stack is industry standard for desktop apps in 2026. |
-| **Features** | HIGH | Validated against Oregon Trail (gold standard), Patrician (trade sim benchmark), Port Royale 4 (modern comparison), and 2025-2026 educational game research literature. Table stakes well-established. Differentiators grounded in gaps in competitor analysis. |
-| **Architecture** | HIGH | Electron IPC patterns verified with official documentation. Command pattern and Finite State Machine are established game design patterns. Main-process authority is standard for security. React + Leaflet integration validated. |
-| **Pitfalls** | HIGH | All 5 critical pitfalls sourced from Electron maintainers, game development veterans, and 2025-2026 case studies. Prevention strategies are proven (used successfully in shipped Electron apps). |
+| Stack | HIGH | Verified against actual `package.json` in codebase; all installed versions confirmed 2026-03-31; no new dependencies identified |
+| Features | HIGH | Codebase verified for current state of each feature; historical sailing season data from multiple academic sources (Tammuz 2005, Beresford 2013); educational reflection patterns from peer-reviewed research |
+| Architecture | HIGH | Based on direct codebase analysis of all relevant files (`ShipMarker.tsx`, `Logbook.tsx`, `state.ts`, `schema.ts`, `voyage.ts`, `events.ts`, `ipc/game.ts`); no external library unknowns introduced |
+| Pitfalls | HIGH | Derived from actual code patterns in existing components; not speculative — each pitfall references specific line numbers and mechanisms in the codebase |
 
 **Overall confidence:** HIGH
 
-The research is based on official documentation (Electron, React, Vite, better-sqlite3), verified library versions (March 2026), peer-reviewed sources (educational game effectiveness), and proven patterns (Game Programming Patterns, Electron best practices). No major assumptions; most findings can be validated immediately in Phase 1 prototype.
-
 ### Gaps to Address
 
-- **Actual museum API behavior**: Theoretical rate limits from docs may differ from real behavior. Needs load testing in Phase 4.
-- **Educator feedback on mechanics**: Educational alignment is assumed based on research; validation with real teachers in Phase 5 is essential. Tuning might be needed.
-- **Cross-platform build complexity**: CI/CD setup for Windows/macOS/Linux is documented but real-world build times and edge cases are unknown. Phase 1 will reveal actual issues.
-- **Leaflet performance at 1000+ markers**: Research suggests clustering is solution; actual implementation and performance needs validation in Phase 3 prototype.
-- **Teacher dashboard privacy requirements**: K-12 data privacy laws vary by state/country. Needs legal review; scope might expand based on compliance requirements.
-- **Classroom adoption barriers**: Game might be technically sound but require lesson plans, teacher training, LMS integration to actually be adopted. Research focused on game design, not adoption; Phase 6+ will address.
+- **`voyageId` / dep-stabilization exact implementation:** Research recommends a counter incremented on each SET_SAIL action, but the precise placement (in `state.ts` action handler vs. in the IPC handler vs. as a separate field on `SailingState`) needs confirmation against the actual SET_SAIL action flow during Phase 3 planning
+
+- **FIFO multi-batch cargo edge case:** Research recommends FIFO for the trade profit display, matching `CargoItem` array order. The edge case of selling a quantity that spans multiple purchase batches at different prices needs explicit handling in Phase 4 planning — the current `CargoItem` type may need a `quantity` field or the sell IPC handler needs to consume items in FIFO order and return the weighted average cost basis for display
+
+- **Prompted reflection trigger points:** Research confirms high educational value but the exact in-game moments that trigger reflection prompts (profit/loss threshold, first visit to a new region, storm survived) are product decisions that need specification during Phase 2 planning, not just technical implementation
 
 ## Sources
 
-### Primary Research Files
+### Primary (HIGH confidence)
 
-- **STACK.md** — Technology stack research: Electron 41, React 19, Vite 8, better-sqlite3, Zustand, Leaflet. Verified with official releases (March 2026) and documentation links.
-- **FEATURES.md** — Feature landscape: 19 P1 features (MVP), 8 P2 features (post-launch), 8 P3 features (v2+). Validated against Oregon Trail, Patrician, Port Royale 4, educational game literature (2025-2026).
-- **ARCHITECTURE.md** — System architecture: Electron main/renderer, IPC patterns, React Leaflet integration, GameEngine command pattern, Zustand for UI state. Verified with Electron docs, Game Programming Patterns, and LogRocket case studies.
-- **PITFALLS.md** — Domain pitfalls: 5 critical, 4 moderate, integration gotchas, performance traps, security mistakes, UX pitfalls. Sourced from Electron maintainers, 2025-2026 game dev case studies, and educational game research.
+- Codebase direct analysis: `package.json`, `ShipMarker.tsx`, `Logbook.tsx`, `ProfitDisplay.tsx`, `TradePanel.tsx`, `schema.ts`, `game-types.ts`, `state.ts`, `voyage.ts`, `events.ts`, `ipc/game.ts` — verified 2026-03-31
+- [Mare Clausum? Sailing Seasons in the Mediterranean in Early Antiquity (Tammuz, 2005)](https://www.researchgate.net/publication/233200035_Mare_clausum_Sailing_Seasons_in_the_Mediterranean_in_Early_Antiquity) — Vegetius dates, sailing season periods
+- [The Ancient Sailing Season (Beresford, 2013)](https://www.academia.edu/10928681/The_Ancient_Sailing_Season_2013_) — comprehensive seasonal navigation treatment
+- [Reflective Game Design (MDPI, 2023)](https://www.mdpi.com/2227-7102/13/12/1204) — reflection mechanisms during gameplay support learning
+- [Oregon Trail Gameplay (StrategyWiki)](https://strategywiki.org/wiki/The_Oregon_Trail/Gameplay) — journal mechanic in educational games
+- [React Leaflet Introduction](https://react-leaflet.js.org/docs/start-introduction/) — rendering architecture and imperative plugin warnings
+- [leaflet.motion GitHub](https://github.com/Igor-Vladyka/leaflet.motion) — plugin status (unmaintained since ~2021) and API
 
-### Official Documentation
+### Secondary (MEDIUM confidence)
 
-- Electron v41 release & IPC documentation: https://github.com/electron/electron/releases, https://www.electronjs.org/docs/latest/tutorial/ipc
-- React 19.2.4 release: https://github.com/facebook/react/releases
-- Vite documentation: https://vitejs.dev/
-- better-sqlite3 v12.7.0 release: https://github.com/WiseLibs/better-sqlite3/releases
-- Leaflet v1.9.4 & React Leaflet v5: https://leafletjs.com/, https://react-leaflet.js.org/
+- [Seaborne Trade in the Roman Empire](https://www.ancient-history-sites.com/roman/context/economy/seaborne-trade/) — grain routes, seasonal logistics
+- [Mare Clausum: How Romans Managed Extreme Storms](https://romanempiretimes.com/mare-clausum-how-romans-managed-extreme-storms-floods-and-monsoons/) — enforcement of sailing bans
+- [Trading Dashboard UI/UX Design (Medium)](https://medium.com/@deepshikha.singh_8561/case-study-trading-investment-dashboard-ui-ux-design-c4a040f6ddf4) — color-coded P/L indicators
+- [Designing User Interface in Trading Software (Devexperts)](https://devexperts.com/blog/ui/) — confirmation patterns, P/L display
+- [Campaign Mastery — Weather, Not Climate](https://www.campaignmastery.com/blog/weather-not-climate/) — game weather system design principles
 
-### Educational Game Research
+### Tertiary (LOW confidence)
 
-- [Simulation Games in History Education](https://teachinghistory.org/) — Why accuracy ≠ learning; consequences matter
-- [Oregon Trail Design](https://methodshop.com/oregon-trail-manual-secrets/) — 40-page manual revealing sophisticated consequence systems
-- [Educational Game Design Best Practices (2026)](https://nipsapp.com/how-to-develop-and-design-an-educational-game/) — Adaptive learning, clear objectives
-- [Museum Game-Based Learning (2025)](https://www.frontiersin.org/journals/education/articles/10.3389/feduc.2025.1576207/full) — Artifact immersion, narrative design
-
-### Platform-Specific Research
-
-- Electron best practices: https://www.electronjs.org/docs/latest/tutorial/performance
-- Leaflet performance optimization: [Medium: Optimizing Leaflet with Many Markers](https://medium.com/@silvajohnny777/optimizing-leaflet-performance-with-a-large-number-of-markers-0dea18c2ec99)
-- Cross-platform Electron apps: [Avocode Blog](https://blog.avocode.com/4-must-know-tips-for-building-cross-platform-electron-apps)
+- [Static vs dynamic weather systems in video games](https://www.diva-portal.org/smash/get/diva2:1524012/FULLTEXT02) — academic; specific multiplier values are design decisions, not historical facts
+- [GameDev.net — Weather Modeling discussion](https://gamedev.net/forums/topic/342648-weather-modeling/3242504/) — community consensus on modifier ranges
 
 ---
-
-*Research completed: 2026-03-12*
-*Researched by: 4 parallel researcher agents (Stack, Features, Architecture, Pitfalls)*
+*Research completed: 2026-03-31*
+*Synthesized from: STACK.md, FEATURES.md, ARCHITECTURE.md, PITFALLS.md*
 *Ready for roadmap: yes*
