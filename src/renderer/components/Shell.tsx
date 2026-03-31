@@ -53,13 +53,16 @@ export default function Shell(): React.ReactElement {
     setSelectedPort,
     openLeftPanel,
     openRightPanel,
+    errorToast,
+    showError,
+    clearError,
   } = useUIStore();
 
   // Full-map overlay — shown when player clicks mini-map from port scene
   const [showFullMap, setShowFullMap] = useState(false);
 
   const { state: gameState } = useGameState();
-  const { marketGoods, inventory, transactions } = useTradeState(selectedPortId);
+  const { marketGoods, inventory, transactions, error: tradeError } = useTradeState(selectedPortId);
 
   // Ambient audio — start on first user interaction (browser autoplay policy)
   const generatedAmbient = useGeneratedAmbient();
@@ -70,6 +73,11 @@ export default function Shell(): React.ReactElement {
       void generatedAmbient.start();
     }
   }, [generatedAmbient]);
+
+  // Surface trade data errors to user via error toast
+  useEffect(() => {
+    if (tradeError) showError(tradeError);
+  }, [tradeError, showError]);
 
   // Voyage event state
   const [pendingEvent, setPendingEvent] = useState<VoyageEvent | null>(null);
@@ -91,7 +99,7 @@ export default function Shell(): React.ReactElement {
       });
       setPortCoords(coords);
       setPortRegions(regions);
-    }).catch(() => {/* non-fatal: ship marker just won't animate */});
+    }).catch((err: unknown) => { /* non-fatal: ship marker just won't animate */ console.warn('Ship animation failed:', err); });
   }, []);
 
   // Sync trading port into uiStore so panels know which port to display
@@ -108,7 +116,7 @@ export default function Shell(): React.ReactElement {
     if (gameState?.type === 'encountered') {
       window.api.game.getPendingEvent().then((res) => {
         if (res.success && res.data) setPendingEvent(res.data);
-      }).catch(() => {/* non-fatal */});
+      }).catch((err: unknown) => { console.warn('Failed to check pending event:', err); });
     }
   }, [gameState?.type]);
 
@@ -126,11 +134,11 @@ export default function Shell(): React.ReactElement {
 
   function handleNavigate(destinationPortId: string) {
     setShowFullMap(false);
-    void window.api.game.action({
+    window.api.game.action({
       type: 'SET_SAIL',
       destination: destinationPortId,
       eta: 0,
-    });
+    }).catch((err: unknown) => showError('Failed to set sail: ' + (err instanceof Error ? err.message : 'Unknown error')));
   }
 
   const handleBuy = useCallback(async (goodId: string, qty: number) => {
@@ -399,6 +407,48 @@ export default function Shell(): React.ReactElement {
           }}
         >
           {eventToast}
+        </div>
+      )}
+
+      {/* ── Error toast (top-right) ───────────────────────────────────── */}
+      {errorToast && (
+        <div
+          role="alert"
+          style={{
+            position: 'fixed',
+            top: 16,
+            right: 16,
+            zIndex: 12000,
+            background: 'rgba(139, 46, 46, 0.92)',
+            color: '#fdf5e6',
+            padding: '0.6rem 2rem 0.6rem 1rem',
+            borderRadius: 6,
+            fontFamily: "'Lora', Georgia, serif",
+            fontSize: '0.85rem',
+            maxWidth: 400,
+            boxShadow: '0 4px 16px rgba(0,0,0,0.4)',
+          }}
+        >
+          {errorToast}
+          <button
+            type="button"
+            onClick={clearError}
+            aria-label="Dismiss error"
+            style={{
+              position: 'absolute',
+              top: 4,
+              right: 6,
+              background: 'none',
+              border: 'none',
+              color: '#fdf5e6',
+              fontSize: '1rem',
+              cursor: 'pointer',
+              padding: '2px 4px',
+              lineHeight: 1,
+            }}
+          >
+            x
+          </button>
         </div>
       )}
 
