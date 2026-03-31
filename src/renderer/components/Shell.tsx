@@ -23,13 +23,16 @@ import TradePanel from './TradePanel';
 import CargoHold from './CargoHold';
 import ProfitDisplay from './ProfitDisplay';
 import ShipMarker from './ShipMarker';
+import SailingOverlay from './SailingOverlay';
 import EventCard from './EventCard';
 import TutorialModal from './TutorialModal';
 import Logbook from './Logbook';
 import MareClausumModal from './MareClausumModal';
 import { useTradeState } from '../hooks/useTradeState';
 import { useGeneratedAmbient } from '../hooks/useGeneratedAmbient';
-import { getWeatherModifiers } from '../../game/weather';
+import { getWeatherModifiers, getSeasonalWeatherDescription } from '../../game/weather';
+import type { Season } from '../../game/weather';
+import type { SailingTurnResult } from '../../game/sailing';
 import type { SailingState, TradingState } from '../../game/types';
 import type { VoyageEvent, PortRegion } from '../../shared/game-types';
 
@@ -86,6 +89,39 @@ export default function Shell(): React.ReactElement {
   // Voyage event state
   const [pendingEvent, setPendingEvent] = useState<VoyageEvent | null>(null);
   const [eventToast, setEventToast] = useState<string | null>(null);
+
+  // Sailing overlay data (fed by ShipMarker callbacks)
+  const [sailingOverlayData, setSailingOverlayData] = useState<{
+    currentTurn: number;
+    totalTurns: number;
+    weatherDescription: string;
+    season: Season;
+    monthName: string;
+    lastEventMessage?: string;
+  } | null>(null);
+
+  const handleTurnAdvanced = useCallback((result: SailingTurnResult) => {
+    setSailingOverlayData({
+      currentTurn: result.turnNumber,
+      totalTurns: result.totalTurns,
+      weatherDescription: result.weatherDescription,
+      season: result.season,
+      monthName: result.monthName,
+      lastEventMessage: result.event ? undefined : 'Uneventful sailing...',
+    });
+  }, []);
+
+  const handleVoyageStarted = useCallback((totalTurns: number) => {
+    const mods = getWeatherModifiers(gameState?.currentTurn ?? 0);
+    const desc = getSeasonalWeatherDescription(gameState?.currentTurn ?? 0);
+    setSailingOverlayData({
+      currentTurn: 0,
+      totalTurns,
+      weatherDescription: desc,
+      season: mods.season,
+      monthName: mods.monthName,
+    });
+  }, [gameState?.currentTurn]);
 
   // Build port coordinates map from loaded ports for ShipMarker
   const [portCoords, setPortCoords] = React.useState<Map<string, [number, number]>>(new Map());
@@ -189,6 +225,11 @@ export default function Shell(): React.ReactElement {
   };
 
   const isSailing = gameState?.type === 'sailing';
+
+  // Clear overlay data when no longer sailing
+  useEffect(() => {
+    if (!isSailing) setSailingOverlayData(null);
+  }, [isSailing]);
   const sailingState = isSailing ? (gameState as SailingState) : null;
   const isTrading = gameState?.type === 'trading';
 
@@ -210,10 +251,35 @@ export default function Shell(): React.ReactElement {
       <div style={{ position: 'absolute', inset: 0, zIndex: 0 }}>
         <MapArea onPortSelected={() => setShowFullMap(false)}>
           {sailingState && portCoords.size > 0 && (
-            <ShipMarker sailingState={sailingState} portCoords={portCoords} />
+            <ShipMarker
+              sailingState={sailingState}
+              portCoords={portCoords}
+              onTurnAdvanced={handleTurnAdvanced}
+              onVoyageStarted={handleVoyageStarted}
+            />
           )}
         </MapArea>
       </div>
+
+      {/* ── Sailing overlay (top-center, above map) ──────────────────── */}
+      {isSailing && sailingOverlayData && sailingState && (
+        <SailingOverlay
+          departurePort={
+            sailingState.departurePortId
+              ? sailingState.departurePortId.charAt(0).toUpperCase() + sailingState.departurePortId.slice(1).replace(/_/g, ' ')
+              : 'Unknown'
+          }
+          destinationPort={
+            sailingState.destination.charAt(0).toUpperCase() + sailingState.destination.slice(1).replace(/_/g, ' ')
+          }
+          currentTurn={sailingOverlayData.currentTurn}
+          totalTurns={sailingOverlayData.totalTurns}
+          weatherDescription={sailingOverlayData.weatherDescription}
+          season={sailingOverlayData.season}
+          monthName={sailingOverlayData.monthName}
+          lastEventMessage={sailingOverlayData.lastEventMessage}
+        />
+      )}
 
       {/* ── Port scene overlay on map when at port ──────────────────── */}
       {isTrading && selectedPortId && !showFullMap && (
