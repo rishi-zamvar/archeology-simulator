@@ -1,3 +1,19 @@
+---
+gsd_state_version: 1.0
+milestone: v1.1
+milestone_name: Integration & macOS Polish
+status: executing
+stopped_at: Completed 07-04-PLAN.md (renderer IPCResponse unwrap — Phase 7 complete)
+last_updated: "2026-03-31T10:28:31.487Z"
+last_activity: 2026-03-31
+progress:
+  total_phases: 3
+  completed_phases: 1
+  total_plans: 6
+  completed_plans: 2
+  percent: 86
+---
+
 # Project State
 
 ## Project Reference
@@ -5,29 +21,32 @@
 See: .planning/PROJECT.md (updated 2026-03-17)
 
 **Core value:** Students learn ancient Mediterranean history by making decisions as a merchant captain, not by reading about them.
-**Current focus:** v1.2 — Coding Hygiene
+**Current focus:** Phase 05 — image-sourcing-curation
 
 ## Current Position
 
-Phase: 7 — IPC Foundation
-Plan: 04 of 04 (renderer IPCResponse unwrap complete)
-Status: Phase 7 verified — 4/4 must-haves pass
-Last activity: 2026-03-17 — Phase 7 verified complete
+Phase: 6
+Plan: Not started
+Status: Executing Phase 05
+Last activity: 2026-03-31
 
 Progress: [█████████████████░░░] 86% (v1.0 + v1.1 Phase 4 complete, Phase 7 complete)
 
 ## Performance Metrics
 
 **v1.0 Velocity:**
+
 - Total plans completed: 13
 - Phases: 3
 - Timeline: 1 day
 
 **v1.1 Velocity:**
+
 - Total plans completed: 2
 - Phases: 1 complete (Phase 4 done)
 
 **v1.2 Velocity:**
+
 - Total plans completed: 4
 - Phases: 1 complete (Phase 7 done, all 4 plans)
 
