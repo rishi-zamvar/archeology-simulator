@@ -148,6 +148,22 @@ export function initializeDatabase(dbPath: string): Database.Database {
     db.prepare(`
       CREATE INDEX IF NOT EXISTS idx_curated_images_port_id ON curated_images (port_id)
     `).run();
+
+    // journal_entries: persistent captain's journal log (Phase 10)
+    db.prepare(`
+      CREATE TABLE IF NOT EXISTS journal_entries (
+        id          INTEGER PRIMARY KEY AUTOINCREMENT,
+        turn        INTEGER NOT NULL,
+        entry_type  TEXT NOT NULL CHECK(entry_type IN ('trade','voyage_event','arrival','departure','note')),
+        title       TEXT NOT NULL,
+        body_json   TEXT NOT NULL DEFAULT '{}',
+        created_at  TEXT NOT NULL DEFAULT (datetime('now'))
+      )
+    `).run();
+
+    db.prepare(`
+      CREATE INDEX IF NOT EXISTS idx_journal_entries_turn ON journal_entries (turn)
+    `).run();
   })();
 
   return db;

@@ -113,3 +113,30 @@ export interface VoyageEventChoice {
   label: string;
   outcome: string;  // human-readable consequence description
 }
+
+// ─── Journal ─────────────────────────────────────────────────────────────────
+
+export type JournalEntryType = 'trade' | 'voyage_event' | 'arrival' | 'departure' | 'note';
+
+export type TradeBody = { goodId: string; goodName: string; qty: number; pricePerUnit: number; totalValue: number; portId: string; portName: string; action: 'buy' | 'sell' };
+export type EventBody = { eventType: string; choiceId: string; outcome: string; goldDelta: number };
+export type ArrivalBody = { portId: string; portName: string };
+export type DepartureBody = { portId: string; portName: string; destination: string };
+export type NoteBody = { text: string };
+
+export type JournalBodyMap = {
+  trade: TradeBody;
+  voyage_event: EventBody;
+  arrival: ArrivalBody;
+  departure: DepartureBody;
+  note: NoteBody;
+};
+
+export interface JournalEntry {
+  id: number;
+  turn: number;
+  entryType: JournalEntryType;
+  title: string;
+  body: JournalBodyMap[JournalEntryType];
+  createdAt: string;
+}

@@ -13,7 +13,7 @@
 
 import type Database from 'better-sqlite3';
 import type { GameState } from '../../game/types';
-import type { Port, Good, MarketGood, PlayerInventory, CargoItem } from '../../shared/game-types';
+import type { Port, Good, MarketGood, PlayerInventory, CargoItem, JournalEntry, JournalEntryType } from '../../shared/game-types';
 
 // ─── Game State ──────────────────────────────────────────────────────────────
 
@@ -790,4 +790,52 @@ export function getTransactionHistory(
     pricePerUnit: r.price_per_unit,
     totalValue: r.total_value,
   }));
+}
+
+// ─── Journal ─────────────────────────────────────────────────────────────────
+
+/**
+ * Insert a journal entry. Call INSIDE an existing transaction for atomicity
+ * with the action that triggered the entry (buy, sell, event resolve, state transition).
+ * Can also be called standalone for player notes.
+ */
+export function insertJournalEntry(
+  db: Database.Database,
+  turn: number,
+  entryType: JournalEntryType,
+  title: string,
+  bodyJson: Record<string, unknown>
+): void {
+  db.prepare(`
+    INSERT INTO journal_entries (turn, entry_type, title, body_json, created_at)
+    VALUES (?, ?, ?, ?, datetime('now'))
+  `).run(turn, entryType, title, JSON.stringify(bodyJson));
+}
+
+/**
+ * Retrieve journal entries, newest first.
+ * Optional limit parameter (default: all entries).
+ */
+export function getJournalEntries(db: Database.Database, limit?: number): JournalEntry[] {
+  const sql = limit
+    ? 'SELECT * FROM journal_entries ORDER BY turn DESC, id DESC LIMIT ?'
+    : 'SELECT * FROM journal_entries ORDER BY turn DESC, id DESC';
+  const rows = limit
+    ? db.prepare(sql).all(limit) as Array<{ id: number; turn: number; entry_type: string; title: string; body_json: string; created_at: string }>
+    : db.prepare(sql).all() as Array<{ id: number; turn: number; entry_type: string; title: string; body_json: string; created_at: string }>;
+  return rows.map(r => ({
+    id: r.id,
+    turn: r.turn,
+    entryType: r.entry_type as JournalEntryType,
+    title: r.title,
+    body: JSON.parse(r.body_json),
+    createdAt: r.created_at,
+  }));
+}
+
+/**
+ * Delete all journal entries — called on New Game reset.
+ */
+export function clearJournalEntries(db: Database.Database): void {
+  db.prepare('DELETE FROM journal_entries').run();
 }
