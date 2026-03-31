@@ -5,8 +5,9 @@
  * Run RED to confirm failure, then GREEN after implementing src/game/weather.ts.
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { getSeason, getWeatherModifiers, getSeasonalWeatherDescription } from '../../src/game/weather';
+import { rollVoyageEvent } from '../../src/game/events';
 
 // ── WX-01: Season derivation for all 12 Athenian months ──────────────────────
 
@@ -243,5 +244,75 @@ describe('getSeasonalWeatherDescription — historically grounded descriptions',
       expect(typeof desc).toBe('string');
       expect(desc.length).toBeGreaterThan(0);
     }
+  });
+});
+
+// ── Seasonal weights integration with rollVoyageEvent ────────────────────────
+
+describe('rollVoyageEvent — seasonal weights parameter', () => {
+  it('test_givenNoSeasonalWeights_whenRollVoyageEvent_thenReturnsValidEventOrNull', () => {
+    // Ensure backward compatibility: calling without seasonalWeights still works
+    let gotEvent = false;
+    let gotNull = false;
+    for (let i = 0; i < 200; i++) {
+      const result = rollVoyageEvent(0);
+      if (result === null) {
+        gotNull = true;
+      } else {
+        gotEvent = true;
+        expect(['storm', 'pirate', 'calm']).toContain(result.type);
+        expect(result.id).toBeDefined();
+        expect(result.title).toBeDefined();
+      }
+      if (gotEvent && gotNull) break;
+    }
+    // With 70% event chance over 200 rolls, we should see both outcomes
+    expect(gotEvent).toBe(true);
+  });
+
+  it('test_givenWinterWeights_whenRollVoyageEvent1000Times_thenStormRateHigherThanSummer', () => {
+    const winterWeights = { storm: 40, pirate: 30, calm: 30 };
+    const summerWeights = { storm: 5, pirate: 25, calm: 70 };
+
+    let winterStorms = 0;
+    let winterTotal = 0;
+    let summerStorms = 0;
+    let summerTotal = 0;
+
+    // Force event occurrence by mocking the first Math.random call
+    const originalRandom = Math.random;
+    let callCount = 0;
+    Math.random = () => {
+      callCount++;
+      // First call is the 70% occurrence check — return 0.5 to always trigger
+      if (callCount % 3 === 1) return 0.5;
+      // Remaining calls: pseudo-random based on counter for weight selection + pool pick
+      return ((callCount * 7919) % 997) / 997;
+    };
+
+    for (let i = 0; i < 1000; i++) {
+      callCount = i * 3;
+      const result = rollVoyageEvent(4, undefined, undefined, winterWeights);
+      if (result) {
+        winterTotal++;
+        if (result.type === 'storm') winterStorms++;
+      }
+    }
+
+    for (let i = 0; i < 1000; i++) {
+      callCount = i * 3;
+      const result = rollVoyageEvent(0, undefined, undefined, summerWeights);
+      if (result) {
+        summerTotal++;
+        if (result.type === 'storm') summerStorms++;
+      }
+    }
+
+    Math.random = originalRandom;
+
+    // Winter storm rate should be significantly higher than summer
+    const winterStormRate = winterStorms / winterTotal;
+    const summerStormRate = summerStorms / summerTotal;
+    expect(winterStormRate).toBeGreaterThan(summerStormRate);
   });
 });

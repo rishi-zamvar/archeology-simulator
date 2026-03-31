@@ -474,17 +474,21 @@ const EVENT_WEIGHTS: Record<string, number> = {
 export function rollVoyageEvent(
   _turn: number,
   _fromPortId?: string,
-  _toPortId?: string
+  _toPortId?: string,
+  seasonalWeights?: { storm: number; pirate: number; calm: number }
 ): VoyageEvent | null {
   // 70% chance of an event occurring this voyage
   if (Math.random() > 0.7) return null;
 
+  // Use seasonal weights if provided, otherwise fall back to hardcoded defaults
+  const weights = seasonalWeights ?? EVENT_WEIGHTS;
+
   // Weighted type selection
-  const total = Object.values(EVENT_WEIGHTS).reduce((a, b) => a + b, 0);
+  const total = Object.values(weights).reduce((a, b) => a + b, 0);
   let rand = Math.random() * total;
   let selectedType = 'calm';
 
-  for (const [type, weight] of Object.entries(EVENT_WEIGHTS)) {
+  for (const [type, weight] of Object.entries(weights)) {
     rand -= weight;
     if (rand <= 0) {
       selectedType = type;
