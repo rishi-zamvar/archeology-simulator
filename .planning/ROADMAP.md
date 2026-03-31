@@ -114,11 +114,11 @@ Plans:
   2. Total profit/loss preview updates as the player adjusts the quantity being sold
   3. Player can see where and when each cargo item was originally purchased
   4. Launching the game shows a title screen with game description, new game button, and continue button (if a save exists)
-**Plans**: 3 plans
+**Plans**: 2 plans
 
 Plans:
-- [ ] 12-01: TBD
-- [ ] 12-02: TBD
+- [ ] 12-01-PLAN.md — Trade P&L indicators and purchase provenance in TradePanel (TRD-01, TRD-02, TRD-03)
+- [ ] 12-02-PLAN.md — Title screen with hasSave/newGame IPC and Shell gating (UI-01)
 
 ## Progress
 
@@ -135,4 +135,4 @@ Plans:
 | 9. Seasonal Weather | v1.3 | 1/3 | In Progress|  |
 | 10. Captain's Journal | v1.3 | 3/3 | Complete    | 2026-03-31 |
 | 11. Sailing Animation | v1.3 | 2/2 | Complete    | 2026-03-31 |
-| 12. Trade UX & Title Screen | v1.3 | 0/? | Not started | - |
+| 12. Trade UX & Title Screen | v1.3 | 0/2 | Not started | - |
