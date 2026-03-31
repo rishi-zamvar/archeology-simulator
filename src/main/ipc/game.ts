@@ -38,8 +38,9 @@ import {
 import { performAction } from '../../game/engine';
 import { getReachablePorts } from '../../game/voyage';
 import { rollVoyageEvent, resolveEventChoice } from '../../game/events';
-import { getWeatherModifiers } from '../../game/weather';
-import type { GameAction, GameResult, GameState, TutorialPhase } from '../../game/types';
+import { getWeatherModifiers, getSeason, getSeasonalWeatherDescription } from '../../game/weather';
+import type { SailingTurnResult } from '../../game/sailing';
+import type { GameAction, GameResult, GameState, SailingState, TutorialPhase } from '../../game/types';
 import type { VoyageEvent } from '../../shared/game-types';
 
 // New games start the tutorial from the beginning.
@@ -61,6 +62,17 @@ function withTutorialDefault(state: GameState): GameState {
 // Single-player game: only one event can be pending at a time.
 let pendingVoyageEvent: VoyageEvent | null = null;
 
+// Phase 11: Sailing context preserved when an encounter fires mid-voyage.
+// Used by resolveEvent to resume sailing instead of returning to idle.
+interface PendingSailingContext {
+  destination: string;
+  eta: number;
+  departurePortId?: string;
+  voyageTurnsTotal?: number;
+  voyageTurnsElapsed?: number;
+}
+let pendingSailingContext: PendingSailingContext | null = null;
+
 export function registerGameIPCHandlers(db: Database.Database): void {
   /**
    * game:action — apply action to current state, auto-save, broadcast update.
@@ -79,10 +91,12 @@ export function registerGameIPCHandlers(db: Database.Database): void {
           return { success: false, state: current, error: `Save failed: ${message}` };
         }
 
-        // After SET_SAIL, roll for a voyage event. If one fires, interrupt
-        // the sailing state with ENCOUNTER and store the pending event.
+        // Phase 11: SET_SAIL no longer rolls events inline — events are now
+        // rolled per-turn via game:advanceSailingTurn. SET_SAIL only transitions
+        // to sailing state and logs the departure journal entry.
         if (action.type === 'SET_SAIL') {
           pendingVoyageEvent = null; // clear any stale event from prior voyage
+          pendingSailingContext = null; // clear stale sailing context
 
           // Auto-log departure to captain's journal (Phase 10 — JRN-04)
           if (current.type === 'trading' && current.selectedPort) {
@@ -91,38 +105,6 @@ export function registerGameIPCHandlers(db: Database.Database): void {
               `Departed from ${depPort?.ancientName ?? current.selectedPort}`,
               { portId: current.selectedPort, portName: depPort?.ancientName ?? current.selectedPort, destination: 'the open sea' }
             );
-          }
-
-          const mods = getWeatherModifiers(result.state.currentTurn);
-          const event = rollVoyageEvent(
-            result.state.currentTurn,
-            undefined,
-            undefined,
-            { storm: mods.stormWeight, pirate: mods.pirateWeight, calm: mods.calmWeight }
-          );
-          if (event) {
-            pendingVoyageEvent = event;
-            // Transition FSM: sailing → encountered
-            const encounterResult = performAction(result.state, {
-              type: 'ENCOUNTER',
-              eventType: event.type,
-            });
-            if (encounterResult.success) {
-              try {
-                saveGameStateAtomic(db, encounterResult.state);
-              } catch (err) {
-                // Non-fatal: event won't interrupt but voyage proceeds
-                log.warn('Non-fatal: failed to save encounter state', { error: String(err) });
-                pendingVoyageEvent = null;
-              }
-              // Broadcast encountered state so renderer opens EventCard
-              for (const win of BrowserWindow.getAllWindows()) {
-                if (!win.isDestroyed()) {
-                  win.webContents.send('subscribe:game:updated', encounterResult.state);
-                }
-              }
-              return { success: true, state: encounterResult.state };
-            }
           }
         }
 
@@ -253,6 +235,86 @@ export function registerGameIPCHandlers(db: Database.Database): void {
   wrapHandler('game:getPendingEvent', async () => {
     return pendingVoyageEvent;
   });
+
+  /**
+   * game:advanceSailingTurn — Phase 11: advance one turn during a voyage.
+   * Rolls for an event, updates game state, returns SailingTurnResult.
+   * Called repeatedly by the renderer during sailing animation.
+   */
+  wrapHandler<SailingTurnResult, []>(
+    'game:advanceSailingTurn',
+    async () => {
+      const current = withTutorialDefault(loadGameState(db) ?? INITIAL_STATE);
+      if (current.type !== 'sailing') {
+        throw new Error('Not in sailing state');
+      }
+
+      // Advance turn
+      const elapsed = (current.voyageTurnsElapsed ?? 0) + 1;
+      const total = current.voyageTurnsTotal ?? 1;
+      const newTurn = current.currentTurn + 1;
+      const arrived = elapsed >= total;
+
+      // Get weather for this turn
+      const mods = getWeatherModifiers(newTurn);
+      const weatherDesc = getSeasonalWeatherDescription(newTurn);
+      const { season, monthName } = getSeason(newTurn);
+
+      // Roll for event
+      const event = rollVoyageEvent(
+        newTurn,
+        current.departurePortId,
+        current.destination,
+        { storm: mods.stormWeight, pirate: mods.pirateWeight, calm: mods.calmWeight }
+      );
+
+      // Update state: advance currentTurn, voyageTurnsElapsed
+      const updatedSailing: GameState = {
+        ...current,
+        currentTurn: newTurn,
+        voyageTurnsElapsed: elapsed,
+      };
+
+      if (event) {
+        // Store pending event and sailing context for resume after resolution
+        pendingVoyageEvent = event;
+        pendingSailingContext = {
+          destination: current.destination,
+          eta: current.eta,
+          departurePortId: current.departurePortId,
+          voyageTurnsTotal: total,
+          voyageTurnsElapsed: elapsed,
+        };
+
+        const encResult = performAction(updatedSailing, {
+          type: 'ENCOUNTER',
+          eventType: event.type,
+        });
+        if (encResult.success) {
+          saveGameStateAtomic(db, encResult.state);
+          // Broadcast so renderer shows EventCard
+          for (const win of BrowserWindow.getAllWindows()) {
+            if (!win.isDestroyed()) {
+              win.webContents.send('subscribe:game:updated', encResult.state);
+            }
+          }
+        }
+      } else {
+        // No event — just save the advanced turn
+        saveGameStateAtomic(db, updatedSailing);
+      }
+
+      return {
+        turnNumber: elapsed,
+        totalTurns: total,
+        event,
+        weatherDescription: weatherDesc,
+        season,
+        monthName,
+        arrived,
+      };
+    }
+  );
 
   /**
    * game:get-curated-images — return curated image metadata for a good or port.
@@ -412,9 +474,26 @@ export function registerGameIPCHandlers(db: Database.Database): void {
         { eventType: event.type, choiceId, outcome: outcome.message, goldDelta: outcome.goldDelta }
       );
 
-      // Transition FSM: encountered → idle
+      // Transition FSM: encountered → sailing (resume) or encountered → idle
       const current = withTutorialDefault(loadGameState(db) ?? INITIAL_STATE);
-      const nextResult = performAction(current, { type: 'RESOLVE' });
+      const sailCtx = pendingSailingContext;
+      const voyageStillInProgress = sailCtx &&
+        sailCtx.voyageTurnsElapsed !== undefined &&
+        sailCtx.voyageTurnsTotal !== undefined &&
+        sailCtx.voyageTurnsElapsed < sailCtx.voyageTurnsTotal;
+
+      const nextAction = voyageStillInProgress
+        ? {
+            type: 'RESUME_SAILING' as const,
+            destination: sailCtx!.destination,
+            eta: sailCtx!.eta,
+            departurePortId: sailCtx!.departurePortId,
+            voyageTurnsTotal: sailCtx!.voyageTurnsTotal,
+            voyageTurnsElapsed: sailCtx!.voyageTurnsElapsed,
+          }
+        : { type: 'RESOLVE' as const };
+
+      const nextResult = performAction(current, nextAction);
       if (nextResult.success) {
         try {
           saveGameStateAtomic(db, nextResult.state);
@@ -425,6 +504,7 @@ export function registerGameIPCHandlers(db: Database.Database): void {
       }
 
       pendingVoyageEvent = null;
+      pendingSailingContext = null;
 
       // Broadcast updated state
       const finalState = loadGameState(db) ?? nextResult.state;

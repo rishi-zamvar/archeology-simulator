@@ -54,6 +54,9 @@ export interface IPCBridge {
     // Phase 4 Plan 2: curated offline images
     getCuratedImages: (query: { goodId?: string; portId?: string }) => Promise<IPCResponse<import('../main/db/queries').CuratedImage[]>>;
 
+    // Phase 11: per-turn sailing advancement
+    advanceSailingTurn: () => Promise<IPCResponse<import('../game/sailing').SailingTurnResult>>;
+
     // Phase 9 Plan 3: seasonal weather — wait for spring
     waitForSpring: () => Promise<IPCResponse<import('../game/types').GameResult>>;
 

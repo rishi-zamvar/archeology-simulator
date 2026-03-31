@@ -145,6 +145,17 @@ export function handleAction(current: GameState, action: GameAction): GameState 
             currentTurn: current.currentTurn,
             tutorialPhase: current.tutorialPhase,
           };
+        case 'RESUME_SAILING':
+          return {
+            type: 'sailing',
+            currentTurn: current.currentTurn,
+            destination: action.destination,
+            eta: action.eta,
+            departurePortId: action.departurePortId,
+            voyageTurnsTotal: action.voyageTurnsTotal,
+            voyageTurnsElapsed: action.voyageTurnsElapsed,
+            tutorialPhase: current.tutorialPhase,
+          };
         default:
           throw new Error(`Invalid transition: encountered -> ${action.type}`);
       }

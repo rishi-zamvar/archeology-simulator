@@ -52,6 +52,8 @@ const api: IPCBridge = {
     // Phase 4 Plan 2: curated offline images
     getCuratedImages: (query: { goodId?: string; portId?: string }) =>
       ipcRenderer!.invoke('game:get-curated-images', query),
+    // Phase 11: per-turn sailing advancement
+    advanceSailingTurn: () => ipcRenderer!.invoke('game:advanceSailingTurn'),
     // Phase 9 Plan 3: seasonal weather — wait for spring
     waitForSpring: () => ipcRenderer!.invoke('game:waitForSpring'),
     // Scan resources/images/ for available image files

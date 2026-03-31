@@ -102,6 +102,16 @@ export type TutorialAdvanceAction = {
   type: 'TUTORIAL_ADVANCE';
 };
 
+// Phase 11: Resume sailing after encounter resolution mid-voyage
+export type ResumeSailingAction = {
+  type: 'RESUME_SAILING';
+  destination: string;
+  eta: number;
+  departurePortId?: string;
+  voyageTurnsTotal?: number;
+  voyageTurnsElapsed?: number;
+};
+
 export type GameAction =
   | StartTradeAction
   | CompleteTradeAction
@@ -110,7 +120,8 @@ export type GameAction =
   | EncounterAction
   | ResolveAction
   | TutorialSkipAction
-  | TutorialAdvanceAction;
+  | TutorialAdvanceAction
+  | ResumeSailingAction;
 
 // ---------- Result ----------
 
