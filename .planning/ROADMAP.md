@@ -107,6 +107,10 @@ Plans:
   1. When any IPC call fails (e.g., database error), the player sees a visible error message rather than a silent failure or unhandled promise rejection
   2. `tsc --noEmit` completes with zero errors — the ShipMarker.tsx MotionLayer interface mismatch is resolved
   3. Every `eslint-disable` comment either has a written justification in a code comment explaining why it is necessary, or has been removed
+**Plans**: 1 plan
+
+Plans:
+- [ ] 08-01-PLAN.md — Fix ShipMarker tsc errors, add eslint-disable justifications, wire error toast for silent IPC failures
 
 ---
 
@@ -123,4 +127,4 @@ Plans:
 | 5. Image Sourcing & Curation | v1.1 | 0/4 | Not started | - |
 | 6. UI Integration | v1.1 | 2/2 | Complete | 2026-03-31 |
 | 7. IPC Foundation | v1.2 | 4/4 | Complete | 2026-03-17 |
-| 8. Surface Cleanup | v1.2 | 0/TBD | Not started | - |
+| 8. Surface Cleanup | v1.2 | 0/1 | Not started | - |
