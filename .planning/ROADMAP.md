@@ -67,8 +67,8 @@ Plans:
 **Depends on**: Phase 5
 **Requirements**: INFRA-03
 **Success Criteria** (what must be TRUE):
-  1. Arriving at any of the 5 ports displays the curated historical illustration instead of the programmatic SVG
-  2. Opening the market for any of the 3 trade goods displays the curated artifact photos instead of Met API results
+  1. Arriving at any of the 25 ports displays the curated historical illustration instead of the programmatic SVG
+  2. Opening the market for any of the 8 trade goods displays the curated artifact photos instead of Met API results
   3. The app loads and displays all images with no network requests — fully offline
 **Plans**: 2 plans
 
