@@ -50,11 +50,17 @@ Students learn ancient Mediterranean history — trade networks, cultures, geogr
 - Mobile/tablet versions — desktop Electron only
 - Real-time gameplay — strictly turn-based
 
-## Current State
+## Current Milestone: v1.3 Gameplay Depth & Polish
 
-All milestones shipped (v1.0, v1.1, v1.2). No active milestone.
+**Goal:** Deepen gameplay with seasonal weather, a captain's journal, sailing animations, and trade profit/loss feedback.
 
-**Shipped:**
+**Target features:**
+- Seasonal sailing system with weather affecting route safety and travel time
+- Captain's journal/log tracking voyages, trades, and notable events
+- Active ship animation during sailing (visible movement on map between ports)
+- Profit/loss indicator on trade panel showing price difference before confirming a sale
+
+**Previously shipped:**
 - v1.0 MVP — Playable trade simulator with 25 ports, events, audio, tutorial
 - v1.1 Integration — 57 curated images (ports + trade goods), fully offline, attribution displays
 - v1.2 Coding Hygiene — IPCResponse<T>, structured logging, zero tsc errors, error toast
@@ -96,4 +102,22 @@ Shipped v1.0 with 7,732 lines of TypeScript across 100 files.
 | Vite 7.3.1 | Latest stable; Vite 8 not released | ✓ Good |
 
 ---
-*Last updated: 2026-03-31 after v1.1 + v1.2 milestones shipped*
+## Evolution
+
+This document evolves at phase transitions and milestone boundaries.
+
+**After each phase transition** (via `/gsd:transition`):
+1. Requirements invalidated? → Move to Out of Scope with reason
+2. Requirements validated? → Move to Validated with phase reference
+3. New requirements emerged? → Add to Active
+4. Decisions to log? → Add to Key Decisions
+5. "What This Is" still accurate? → Update if drifted
+
+**After each milestone** (via `/gsd:complete-milestone`):
+1. Full review of all sections
+2. Core Value check — still the right priority?
+3. Audit Out of Scope — reasons still valid?
+4. Update Context with current state
+
+---
+*Last updated: 2026-03-31 — v1.3 milestone started*
