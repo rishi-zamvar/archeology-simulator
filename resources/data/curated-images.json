@@ -54,5 +54,124 @@
     "filePath": "images/ports/knossos.jpg",
     "attribution": "Unknown Artist, Palace of Knossos reconstruction, date unknown",
     "sourceUrl": "https://commons.wikimedia.org/wiki/File:Le_Palais_de_Knossos_en_Cr%C3%A8te._Reconstitution.jpg"
+  },
+  {
+    "id": "port-syracuse-01",
+    "portId": "syracuse",
+    "filePath": "images/ports/syracuse.jpg",
+    "attribution": "Joseph Roux, Bay and Port of Syracuse, 1804",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Map_of_the_bay_and_port_of_Syracuse_View_of_the_city_-_Roux_Joseph_-_1804.jpg"
+  },
+  {
+    "id": "port-massalia-01",
+    "portId": "massalia",
+    "filePath": "images/ports/massalia.jpg",
+    "attribution": "Claude Joseph Vernet, Entrance to the Port of Marseille, 18th century, oil on canvas",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Vernet-entre-port-Marseille.jpg"
+  },
+  {
+    "id": "port-taras-01",
+    "portId": "taras",
+    "filePath": "images/ports/taras.jpg",
+    "attribution": "Unknown Artist, Ancient Taranto, 16th century",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Ancient_Taranto_(16th_century).jpg"
+  },
+  {
+    "id": "port-ostia-01",
+    "portId": "ostia",
+    "filePath": "images/ports/ostia.jpg",
+    "attribution": "Leonardo Cocorante, Port of Ostia in Calm Weather, 1740s, oil on canvas, Lowe Art Museum",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:%27Port_of_Ostia_in_Calm_Weather%27,_oil_on_canvas_painting_by_Leonardo_Cocorante,_1740s,_Lowe_Art_Museum.jpg"
+  },
+  {
+    "id": "port-carthage-01",
+    "portId": "carthage",
+    "filePath": "images/ports/carthage.jpg",
+    "attribution": "J.M.W. Turner, Dido Building Carthage, 1815, oil on canvas, National Gallery, London",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Turner_Dido_Building_Carthage.jpg"
+  },
+  {
+    "id": "port-alexandria-01",
+    "portId": "alexandria",
+    "filePath": "images/ports/alexandria.jpg",
+    "attribution": "Philip Galle after Maarten van Heemskerck, Pharos of Alexandria, 1572, engraving",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Philip_Galle_-_Lighthouse_of_Alexandria_(Pharos_of_Alexandria)_-_1572.jpg"
+  },
+  {
+    "id": "port-tyre-01",
+    "portId": "tyre",
+    "filePath": "images/ports/tyre.jpg",
+    "attribution": "John Martin, Destruction of Tyre, 19th century, oil on canvas",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:John_Martin_-_Destruction_of_Tyre_-_Google_Art_Project.jpg"
+  },
+  {
+    "id": "port-sidon-01",
+    "portId": "sidon",
+    "filePath": "images/ports/sidon.jpg",
+    "attribution": "Unknown Artist, Port of Sidon, 19th century",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Port_of_Sidon_19th_Century.jpg"
+  },
+  {
+    "id": "port-utica-01",
+    "portId": "utica",
+    "filePath": "images/ports/utica.jpg",
+    "attribution": "AI-generated reconstruction, ancient Phoenician port of Utica, 18th century engraving style",
+    "sourceUrl": ""
+  },
+  {
+    "id": "port-leptis-01",
+    "portId": "leptis",
+    "filePath": "images/ports/leptis.jpg",
+    "attribution": "AI-generated reconstruction, ancient Roman port of Leptis Magna, 18th century engraving style",
+    "sourceUrl": ""
+  },
+  {
+    "id": "port-naukratis-01",
+    "portId": "naukratis",
+    "filePath": "images/ports/naukratis.jpg",
+    "attribution": "AI-generated reconstruction, ancient Greek emporion of Naukratis, 18th century engraving style",
+    "sourceUrl": ""
+  },
+  {
+    "id": "port-memphis-01",
+    "portId": "memphis",
+    "filePath": "images/ports/memphis.jpg",
+    "attribution": "AI-generated reconstruction, ancient Egyptian capital Memphis, 18th century engraving style",
+    "sourceUrl": ""
+  },
+  {
+    "id": "port-byblos-01",
+    "portId": "byblos",
+    "filePath": "images/ports/byblos.jpg",
+    "attribution": "AI-generated reconstruction, ancient Phoenician port of Byblos, 18th century engraving style",
+    "sourceUrl": ""
+  },
+  {
+    "id": "port-kition-01",
+    "portId": "kition",
+    "filePath": "images/ports/kition.jpg",
+    "attribution": "AI-generated reconstruction, ancient Phoenician city of Kition, 18th century engraving style",
+    "sourceUrl": ""
+  },
+  {
+    "id": "port-salamis_cy-01",
+    "portId": "salamis_cy",
+    "filePath": "images/ports/salamis_cy.jpg",
+    "attribution": "AI-generated reconstruction, ancient Greek city of Salamis on Cyprus, 18th century engraving style",
+    "sourceUrl": ""
+  },
+  {
+    "id": "port-emporion-01",
+    "portId": "emporion",
+    "filePath": "images/ports/emporion.jpg",
+    "attribution": "AI-generated reconstruction, ancient Greek trading post of Emporion, 18th century engraving style",
+    "sourceUrl": ""
+  },
+  {
+    "id": "port-gadir-01",
+    "portId": "gadir",
+    "filePath": "images/ports/gadir.jpg",
+    "attribution": "AI-generated reconstruction, ancient Phoenician colony of Gadir, 18th century engraving style",
+    "sourceUrl": ""
   }
 ]
