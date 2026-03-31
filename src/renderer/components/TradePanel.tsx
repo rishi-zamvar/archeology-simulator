@@ -230,19 +230,51 @@ export default function TradePanel({
                 </span>
               </div>
 
-              {/* Carrying indicator */}
-              {carried > 0 && (
-                <div
-                  style={{
-                    ...SUBTEXT,
-                    fontSize: '0.7rem',
-                    marginBottom: '0.3rem',
-                    color: '#5a7a45',
-                  }}
-                >
-                  Carrying: {carried}
-                </div>
-              )}
+              {/* Carrying indicator + P&L + provenance */}
+              {carried > 0 && (() => {
+                const cargoForGood = inventory.cargoItems.filter(c => c.goodId === good.id);
+                const totalQty = cargoForGood.reduce((s, c) => s + c.quantity, 0);
+                const totalCost = cargoForGood.reduce((s, c) => s + c.quantity * c.boughtAtPrice, 0);
+                const avgPurchasePrice = totalQty > 0 ? totalCost / totalQty : 0;
+                const profitPerUnit = good.currentPrice - avgPurchasePrice;
+                const totalPL = profitPerUnit * qty;
+
+                return (
+                  <>
+                    <div
+                      style={{
+                        ...SUBTEXT,
+                        fontSize: '0.7rem',
+                        marginBottom: '0.15rem',
+                        color: '#5a7a45',
+                      }}
+                    >
+                      Carrying: {carried}
+                    </div>
+                    {/* P&L indicator (TRD-01, TRD-02) */}
+                    <div style={{
+                      ...SUBTEXT,
+                      fontSize: '0.7rem',
+                      color: profitPerUnit > 0 ? '#2b5c4a' : profitPerUnit < 0 ? '#8b2e2e' : '#7a5c45',
+                      fontWeight: 600,
+                      marginBottom: '0.15rem',
+                    }}>
+                      {profitPerUnit > 0 ? '+' : ''}{Math.round(profitPerUnit)}g/unit
+                      {' '}({profitPerUnit > 0 ? '+' : ''}{Math.round(totalPL)}g for {qty})
+                    </div>
+                    {/* Purchase provenance (TRD-03) */}
+                    {cargoForGood.map((batch, i) => {
+                      const portLabel = batch.boughtAtPort.charAt(0).toUpperCase() + batch.boughtAtPort.slice(1).replace(/_/g, ' ');
+                      const turnLabel = batch.boughtAtTurn != null ? `, turn ${batch.boughtAtTurn}` : '';
+                      return (
+                        <div key={i} style={{ ...SUBTEXT, fontSize: '0.65rem', opacity: 0.8, marginBottom: '0.05rem' }}>
+                          {batch.quantity}x bought at {portLabel} for {batch.boughtAtPrice}g{turnLabel}
+                        </div>
+                      );
+                    })}
+                  </>
+                );
+              })()}
 
               {/* Quantity + buttons */}
               <div
