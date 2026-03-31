@@ -68,7 +68,7 @@ See [v1.2-ROADMAP.md](milestones/v1.2-ROADMAP.md) for full details.
 **Plans**: 3 plans
 
 Plans:
-- [ ] 09-01-PLAN.md — weather.ts pure functions + TDD tests (WX-01 through WX-04)
+- [x] 09-01-PLAN.md — weather.ts pure functions + TDD tests (WX-01 through WX-04)
 - [ ] 09-02-PLAN.md — seasonal event weights + voyage duration IPC wiring (WX-02, WX-03)
 - [ ] 09-03-PLAN.md — season header display, mare clausum modal, logbook seasonal text (WX-01, WX-04)
 
@@ -131,7 +131,7 @@ Plans:
 | 6. Dead Code Removal | v1.1 | 2/2 | Complete | 2026-03-31 |
 | 7. IPC & Logging | v1.2 | 3/3 | Complete | 2026-03-31 |
 | 8. TypeScript & Error UX | v1.2 | 2/2 | Complete | 2026-03-31 |
-| 9. Seasonal Weather | v1.3 | 0/? | Not started | - |
+| 9. Seasonal Weather | v1.3 | 1/3 | In Progress|  |
 | 10. Captain's Journal | v1.3 | 0/? | Not started | - |
 | 11. Sailing Animation | v1.3 | 0/? | Not started | - |
 | 12. Trade UX & Title Screen | v1.3 | 0/? | Not started | - |

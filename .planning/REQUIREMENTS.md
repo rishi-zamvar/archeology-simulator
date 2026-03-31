@@ -3,10 +3,10 @@
 ## v1.3 Requirements
 
 ### Seasonal Weather
-- [ ] **WX-01**: Season (spring/summer/autumn/winter) derived from turn number using Mediterranean calendar
-- [ ] **WX-02**: Voyage duration modified by seasonal weather (winter slower, summer faster)
-- [ ] **WX-03**: Voyage event probabilities adjusted by season (storms more likely in winter)
-- [ ] **WX-04**: Mare clausum warning shown before departing during dangerous winter months
+- [x] **WX-01**: Season (spring/summer/autumn/winter) derived from turn number using Mediterranean calendar
+- [x] **WX-02**: Voyage duration modified by seasonal weather (winter slower, summer faster)
+- [x] **WX-03**: Voyage event probabilities adjusted by season (storms more likely in winter)
+- [x] **WX-04**: Mare clausum warning shown before departing during dangerous winter months
 
 ### Captain's Journal
 - [ ] **JRN-01**: Journal entries persisted in SQLite (survive restart and save/load)
@@ -51,10 +51,10 @@
 
 | REQ-ID | Phase | Status |
 |--------|-------|--------|
-| WX-01 | Phase 9 | Pending |
-| WX-02 | Phase 9 | Pending |
-| WX-03 | Phase 9 | Pending |
-| WX-04 | Phase 9 | Pending |
+| WX-01 | Phase 9 | Complete |
+| WX-02 | Phase 9 | Complete |
+| WX-03 | Phase 9 | Complete |
+| WX-04 | Phase 9 | Complete |
 | JRN-01 | Phase 10 | Pending |
 | JRN-02 | Phase 10 | Pending |
 | JRN-03 | Phase 10 | Pending |
