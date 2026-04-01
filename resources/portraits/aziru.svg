@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- Aziru: Phoenician merchant with turban -->
+  <g fill="#6a3d9a">
+    <!-- Head -->
+    <ellipse cx="32" cy="30" rx="11" ry="13"/>
+    <!-- Shoulders -->
+    <path d="M16 52 Q16 44 24 42 L32 40 L40 42 Q48 44 48 52 L48 64 L16 64Z"/>
+    <!-- Turban - wrapped layers -->
+    <ellipse cx="32" cy="18" rx="14" ry="8"/>
+    <ellipse cx="32" cy="16" rx="12" ry="6"/>
+    <ellipse cx="32" cy="14" rx="9" ry="5"/>
+    <!-- Turban tail -->
+    <path d="M44 20 Q48 24 46 30" stroke="#6a3d9a" stroke-width="3" fill="none"/>
+  </g>
+</svg>

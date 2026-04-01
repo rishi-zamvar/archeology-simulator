@@ -39,9 +39,10 @@ export function evaluateObjective(objective: QuestObjective, ctx: GameContext): 
           (!objective.action || t.action === objective.action),
       );
 
-    case 'talk_to_npc':
-      // Stub for Phase 17 -- NPC dialogue state tracking
-      return false;
+    case 'talk_to_npc': {
+      const npcState = ctx.npcDialogueState.get(objective.npcId!);
+      return npcState !== undefined && npcState.timesSpoken > 0;
+    }
 
     default:
       return false;

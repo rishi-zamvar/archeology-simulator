@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- Taharqa: Egyptian trader with nemes headdress -->
+  <g fill="#c4956a">
+    <!-- Head -->
+    <ellipse cx="32" cy="28" rx="11" ry="13"/>
+    <!-- Shoulders -->
+    <path d="M16 52 Q16 42 24 40 L32 38 L40 40 Q48 42 48 52 L48 64 L16 64Z"/>
+    <!-- Nemes headdress - central panel -->
+    <path d="M22 12 L32 6 L42 12 L42 18 L22 18Z"/>
+    <!-- Nemes side flaps -->
+    <path d="M20 18 L14 40 L22 38 L22 18Z"/>
+    <path d="M44 18 L50 40 L42 38 L42 18Z"/>
+    <!-- Nemes band -->
+    <rect x="20" y="17" width="24" height="3" rx="1"/>
+  </g>
+</svg>

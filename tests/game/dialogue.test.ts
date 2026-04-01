@@ -31,6 +31,7 @@ function makeContext(overrides: Partial<GameContext> = {}): GameContext {
     season: 'summer',
     currentPortId: null,
     recentTrades: [],
+    npcDialogueState: new Map(),
     ...overrides,
   };
 }

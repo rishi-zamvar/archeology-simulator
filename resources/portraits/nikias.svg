@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- Nikias: Athenian merchant with laurel wreath -->
+  <g fill="#2c3e7a">
+    <!-- Head -->
+    <ellipse cx="32" cy="28" rx="12" ry="14"/>
+    <!-- Shoulders -->
+    <path d="M16 52 Q16 42 24 40 L32 38 L40 40 Q48 42 48 52 L48 64 L16 64Z"/>
+    <!-- Laurel wreath left -->
+    <ellipse cx="21" cy="20" rx="3" ry="5" transform="rotate(-20 21 20)"/>
+    <ellipse cx="19" cy="24" rx="2.5" ry="4.5" transform="rotate(-35 19 24)"/>
+    <!-- Laurel wreath right -->
+    <ellipse cx="43" cy="20" rx="3" ry="5" transform="rotate(20 43 20)"/>
+    <ellipse cx="45" cy="24" rx="2.5" ry="4.5" transform="rotate(35 45 24)"/>
+    <!-- Wreath band -->
+    <rect x="22" y="17" width="20" height="2" rx="1"/>
+  </g>
+</svg>

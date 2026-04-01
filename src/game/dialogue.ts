@@ -26,6 +26,7 @@ export interface GameContext {
   season: string;
   currentPortId: string | null;
   recentTrades: Array<{ goodId: string; portId: string; action: 'buy' | 'sell'; quantity: number }>;
+  npcDialogueState: Map<string, { timesSpoken: number; lastNodeId: string | null }>;
 }
 
 // ── Type Guards ──────────────────────────────────────────────────────────────

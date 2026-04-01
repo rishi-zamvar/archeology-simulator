@@ -30,6 +30,7 @@ function makeContext(overrides: Partial<GameContext> = {}): GameContext {
     season: 'summer',
     currentPortId: null,
     recentTrades: [],
+    npcDialogueState: new Map(),
     ...overrides,
   };
 }
@@ -159,8 +160,29 @@ describe('evaluateObjective', () => {
       npcId: 'nikias',
     };
 
-    it('test_givenStub_whenEvaluateTalkToNpc_thenFalse', () => {
+    it('test_givenNpcSpoken_whenEvaluateTalkToNpc_thenTrue', () => {
+      const ctx = makeContext({
+        npcDialogueState: new Map([['nikias', { timesSpoken: 1, lastNodeId: 'greeting' }]]),
+      });
+      expect(evaluateObjective(objective, ctx)).toBe(true);
+    });
+
+    it('test_givenNpcNotSpoken_whenEvaluateTalkToNpc_thenFalse', () => {
       const ctx = makeContext();
+      expect(evaluateObjective(objective, ctx)).toBe(false);
+    });
+
+    it('test_givenNpcTimesSpokenZero_whenEvaluateTalkToNpc_thenFalse', () => {
+      const ctx = makeContext({
+        npcDialogueState: new Map([['nikias', { timesSpoken: 0, lastNodeId: null }]]),
+      });
+      expect(evaluateObjective(objective, ctx)).toBe(false);
+    });
+
+    it('test_givenWrongNpc_whenEvaluateTalkToNpc_thenFalse', () => {
+      const ctx = makeContext({
+        npcDialogueState: new Map([['taharqa', { timesSpoken: 3, lastNodeId: 'quest_offer' }]]),
+      });
       expect(evaluateObjective(objective, ctx)).toBe(false);
     });
   });

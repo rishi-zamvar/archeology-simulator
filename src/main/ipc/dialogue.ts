@@ -146,6 +146,13 @@ export function buildGameContext(db: Database.Database): GameContext {
     });
   }
 
+  // NPC dialogue state for talk_to_npc quest objective evaluation
+  const npcDialogueState = new Map<string, { timesSpoken: number; lastNodeId: string | null }>();
+  const npcRows = db.prepare('SELECT npc_id, times_spoken, last_node_id FROM npc_dialogue_state').all() as Array<{ npc_id: string; times_spoken: number; last_node_id: string | null }>;
+  for (const row of npcRows) {
+    npcDialogueState.set(row.npc_id, { timesSpoken: row.times_spoken, lastNodeId: row.last_node_id });
+  }
+
   return {
     questProgress,
     reputation,
@@ -155,6 +162,7 @@ export function buildGameContext(db: Database.Database): GameContext {
     season,
     currentPortId,
     recentTrades,
+    npcDialogueState,
   };
 }
 

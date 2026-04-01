@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- Hanno: Roman official with toga drape -->
+  <g fill="#556b2f">
+    <!-- Head -->
+    <ellipse cx="32" cy="26" rx="11" ry="13"/>
+    <!-- Shoulders and toga -->
+    <path d="M12 52 Q12 42 22 40 L32 38 L42 40 Q52 42 52 52 L52 64 L12 64Z"/>
+    <!-- Toga drape over left shoulder -->
+    <path d="M12 52 Q10 44 18 38 L26 34 Q22 36 18 42 Q14 48 12 52Z"/>
+    <!-- Toga fold line -->
+    <path d="M18 42 Q24 46 28 52" stroke="#3d4d1f" stroke-width="1.5" fill="none"/>
+    <!-- Short Roman hair -->
+    <path d="M21 18 Q24 12 32 11 Q40 12 43 18 Q42 14 32 13 Q22 14 21 18Z"/>
+  </g>
+</svg>
