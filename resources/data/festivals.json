@@ -1,0 +1,150 @@
+[
+  {
+    "id": "panathenaia",
+    "portId": "athens",
+    "name": "Great Panathenaia",
+    "description": "Athens celebrates the birthday of Athena with grand processions, athletic games, and ritual sacrifices. Potters compete to create the finest prize amphorae.",
+    "season": "summer",
+    "monthIndex": 0,
+    "priceEffects": [
+      { "goodId": "pottery", "modifier": 1.5 },
+      { "goodId": "attic_pottery", "modifier": 1.5 },
+      { "goodId": "olive_oil", "modifier": 1.3 }
+    ]
+  },
+  {
+    "id": "opet",
+    "portId": "memphis",
+    "name": "Festival of Opet",
+    "description": "The pharaoh processes from Karnak to Luxor as the Nile's flood brings renewal. Grain stores are opened and prices drop as Egypt celebrates abundance.",
+    "season": "autumn",
+    "monthIndex": 3,
+    "priceEffects": [
+      { "goodId": "wheat", "modifier": 0.7 },
+      { "goodId": "papyrus", "modifier": 0.8 }
+    ]
+  },
+  {
+    "id": "isthmian_games",
+    "portId": "corinth",
+    "name": "Isthmian Games",
+    "description": "Athletes and spectators from across Greece gather at Corinth for the biennial games dedicated to Poseidon. Trade booms as visitors flood the isthmus.",
+    "season": "spring",
+    "monthIndex": 8,
+    "priceEffects": [
+      { "goodId": "wine", "modifier": 1.4 },
+      { "goodId": "pottery", "modifier": 1.3 },
+      { "goodId": "wheat", "modifier": 1.2 }
+    ]
+  },
+  {
+    "id": "melqart_festival",
+    "portId": "tyre",
+    "name": "Festival of Melqart",
+    "description": "Tyre honors its patron god Melqart with sacred fires and ritual offerings. Merchants bring precious goods as temple dedications.",
+    "season": "spring",
+    "monthIndex": 9,
+    "priceEffects": [
+      { "goodId": "purple_dye", "modifier": 1.4 },
+      { "goodId": "glass", "modifier": 1.3 },
+      { "goodId": "spices", "modifier": 1.2 }
+    ]
+  },
+  {
+    "id": "dionysia",
+    "portId": "athens",
+    "name": "City Dionysia",
+    "description": "The great dramatic festival of Athens, where playwrights compete with tragedies and comedies. Wine flows freely in honor of Dionysos.",
+    "season": "spring",
+    "monthIndex": 8,
+    "priceEffects": [
+      { "goodId": "wine", "modifier": 1.5 },
+      { "goodId": "wheat", "modifier": 1.2 }
+    ]
+  },
+  {
+    "id": "thesmophoria",
+    "portId": "syracuse",
+    "name": "Thesmophoria",
+    "description": "Women celebrate the harvest festival of Demeter with secret rites. Grain offerings are central to the ceremony.",
+    "season": "autumn",
+    "monthIndex": 3,
+    "priceEffects": [
+      { "goodId": "wheat", "modifier": 0.7 },
+      { "goodId": "wine", "modifier": 0.8 }
+    ]
+  },
+  {
+    "id": "navigium_isidis",
+    "portId": "alexandria",
+    "name": "Navigium Isidis",
+    "description": "The opening of the sailing season is celebrated with a grand procession to the harbor. A decorated ship is launched as an offering to Isis, protector of sailors.",
+    "season": "spring",
+    "monthIndex": 8,
+    "priceEffects": [
+      { "goodId": "timber", "modifier": 1.3 },
+      { "goodId": "textiles", "modifier": 1.2 }
+    ]
+  },
+  {
+    "id": "adonia",
+    "portId": "byblos",
+    "name": "Festival of Adonis",
+    "description": "Byblos mourns and celebrates the death and rebirth of Adonis. Women plant 'Gardens of Adonis' and merchants bring offerings of spices and fine goods.",
+    "season": "summer",
+    "monthIndex": 1,
+    "priceEffects": [
+      { "goodId": "spices", "modifier": 1.4 },
+      { "goodId": "textiles", "modifier": 1.3 }
+    ]
+  },
+  {
+    "id": "saturnalia_ostia",
+    "portId": "ostia",
+    "name": "Saturnalia",
+    "description": "Rome's great winter festival of gift-giving and feasting. Social rules are relaxed and the markets are filled with luxury goods.",
+    "season": "winter",
+    "monthIndex": 5,
+    "priceEffects": [
+      { "goodId": "wine", "modifier": 1.4 },
+      { "goodId": "spices", "modifier": 1.3 },
+      { "goodId": "garum", "modifier": 1.2 }
+    ]
+  },
+  {
+    "id": "carthage_tophet",
+    "portId": "carthage",
+    "name": "Festival of Tanit",
+    "description": "Carthage honors Tanit, goddess of fertility, with processions and offerings at the sacred tophet. Merchants bring their finest goods as dedications.",
+    "season": "summer",
+    "monthIndex": 0,
+    "priceEffects": [
+      { "goodId": "textiles", "modifier": 1.3 },
+      { "goodId": "wheat", "modifier": 0.8 }
+    ]
+  },
+  {
+    "id": "karneia",
+    "portId": "sparta",
+    "name": "Karneia",
+    "description": "Sparta's festival honoring Apollo Karneios. No military campaigns may be launched during the nine days of celebration. Trade in weapons and bronze slows.",
+    "season": "summer",
+    "monthIndex": 1,
+    "priceEffects": [
+      { "goodId": "bronze", "modifier": 0.7 },
+      { "goodId": "wine", "modifier": 1.3 }
+    ]
+  },
+  {
+    "id": "halieia",
+    "portId": "rhodes",
+    "name": "Halieia",
+    "description": "Rhodes celebrates its patron god Helios with athletic competitions and nautical races. Visitors arrive from across the Aegean, boosting local trade.",
+    "season": "autumn",
+    "monthIndex": 4,
+    "priceEffects": [
+      { "goodId": "wine", "modifier": 1.3 },
+      { "goodId": "olive_oil", "modifier": 1.2 }
+    ]
+  }
+]

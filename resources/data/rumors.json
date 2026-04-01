@@ -1,0 +1,62 @@
+{
+  "greece": [
+    { "text": "A Phoenician captain told me silver is selling for a fortune in Tyre this season. The temples there demand it for votive offerings.", "hintPort": "tyre", "hintGood": "silver", "hintDirection": "high_demand" },
+    { "text": "Word from the docks: Alexandrian grain ships haven't arrived in weeks. Wheat prices in Athens are climbing fast.", "hintPort": "athens", "hintGood": "wheat", "hintDirection": "high_demand" },
+    { "text": "A merchant from Syracuse says Sicilian wine is flowing cheap this year. Good vintage, they say.", "hintPort": "syracuse", "hintGood": "wine", "hintDirection": "low_price" },
+    { "text": "Sailors speak of Egyptian papyrus being scarce — the Nile floods were poor. Scribes in Athens pay dearly for it.", "hintPort": "athens", "hintGood": "papyrus", "hintDirection": "high_demand" },
+    { "text": "I overheard that bronze from Cyprus is cheap right now. The mines at Kition are producing more than the smiths can work.", "hintPort": "kition", "hintGood": "bronze", "hintDirection": "low_price" },
+    { "text": "They say Corinthian pottery workshops are idle — too many pots, not enough buyers. A shrewd trader could fill a hold cheaply.", "hintPort": "corinth", "hintGood": "pottery", "hintDirection": "low_price" },
+    { "text": "A Cretan sailor mentioned that Tyrian purple is fetching outrageous prices in Rome. Senators pay anything for that color.", "hintPort": "ostia", "hintGood": "purple_dye", "hintDirection": "high_demand" },
+    { "text": "Garum from Gadir is the talk of every port tavern. The Iberians make the finest fish sauce, and Egypt craves it.", "hintPort": "alexandria", "hintGood": "garum", "hintDirection": "high_demand" }
+  ],
+  "levant": [
+    { "text": "A caravan driver says olive oil is scarce in Memphis. The Egyptian priests need it for temple lamps.", "hintPort": "memphis", "hintGood": "olive_oil", "hintDirection": "high_demand" },
+    { "text": "Phoenician glass is selling well in Greece. The Athenians love our translucent vessels.", "hintPort": "athens", "hintGood": "glass", "hintDirection": "high_demand" },
+    { "text": "Ships from Iberia bring word: silver from the western mines is flooding the market. Prices there are very low.", "hintPort": "emporion", "hintGood": "silver", "hintDirection": "low_price" },
+    { "text": "The temples in Byblos are paying well for spices. Frankincense for the rituals of Baal, they say.", "hintPort": "byblos", "hintGood": "spices", "hintDirection": "high_demand" },
+    { "text": "A Rhodian merchant told me textiles are cheap in Miletos. The weavers there have had a productive season.", "hintPort": "miletos", "hintGood": "textiles", "hintDirection": "low_price" },
+    { "text": "Cedar timber from these mountains fetches a king's ransom in treeless Egypt. The pharaohs need it for their ships.", "hintPort": "alexandria", "hintGood": "timber", "hintDirection": "high_demand" },
+    { "text": "I hear the Carthaginians are buying up all the grain they can find. Preparing for something, no doubt.", "hintPort": "carthage", "hintGood": "wheat", "hintDirection": "high_demand" },
+    { "text": "A sailor from Salamis says Cypriot bronze is cheap as dirt. Every mine on the island is working double.", "hintPort": "salamis_cy", "hintGood": "bronze", "hintDirection": "low_price" }
+  ],
+  "egypt": [
+    { "text": "Greek traders in the harbor say Athens pays handsomely for our papyrus. Their philosophers consume scrolls like bread.", "hintPort": "athens", "hintGood": "papyrus", "hintDirection": "high_demand" },
+    { "text": "A Phoenician captain warns that spice caravans from Arabia have been raided. Spice prices are rising everywhere.", "hintPort": "tyre", "hintGood": "spices", "hintDirection": "high_demand" },
+    { "text": "Wine from Massalia is particularly fine this year, and they're selling cheap to undercut the Greeks.", "hintPort": "massalia", "hintGood": "wine", "hintDirection": "low_price" },
+    { "text": "I heard Lepcis Magna has surplus grain from a good harvest. A trader could buy low there.", "hintPort": "leptis", "hintGood": "wheat", "hintDirection": "low_price" },
+    { "text": "The silphium from Cyrenaica grows rarer each year. Any merchant with silphium can name their price in Greece.", "hintPort": "athens", "hintGood": "silphium", "hintDirection": "high_demand" },
+    { "text": "Pottery from Athens commands respect here. Our nobles love the painted scenes of Greek heroes.", "hintPort": "athens", "hintGood": "attic_pottery", "hintDirection": "low_price" },
+    { "text": "The Sidonians have perfected a new glassblowing technique. Their wares are the finest — and the cheapest — in years.", "hintPort": "sidon", "hintGood": "glass", "hintDirection": "low_price" },
+    { "text": "Gadir's garum is said to fetch double its weight in silver when sold in Ostia. The Romans are mad for it.", "hintPort": "ostia", "hintGood": "garum", "hintDirection": "high_demand" }
+  ],
+  "north_africa": [
+    { "text": "Merchants from the east say bronze is in short supply around Byzantion. The Thracian mines are exhausted.", "hintPort": "byzantion", "hintGood": "bronze", "hintDirection": "high_demand" },
+    { "text": "I hear textiles from Tyre are cheap now. The dye-works are overproducing to compete with Egyptian linen.", "hintPort": "tyre", "hintGood": "textiles", "hintDirection": "low_price" },
+    { "text": "Grain ships heading to Athens fetch good prices. The city always needs more than it grows.", "hintPort": "athens", "hintGood": "wheat", "hintDirection": "high_demand" },
+    { "text": "Silver from the Laurion mines near Athens is being sold cheaply. A good time to buy and sell east.", "hintPort": "athens", "hintGood": "silver", "hintDirection": "low_price" },
+    { "text": "A trader from Ostia says Rome devours olive oil faster than Greece can produce it. Good margins there.", "hintPort": "ostia", "hintGood": "olive_oil", "hintDirection": "high_demand" },
+    { "text": "Timber is scarce in our ports. Any captain bringing cedar from Byblos would be welcomed warmly.", "hintPort": "carthage", "hintGood": "timber", "hintDirection": "high_demand" },
+    { "text": "The Sicilians have wine to spare. Syracuse practically gives it away at the docks.", "hintPort": "syracuse", "hintGood": "wine", "hintDirection": "low_price" },
+    { "text": "Word is that papyrus prices in Naukratis have dropped. The scribes there have more than they can use.", "hintPort": "naukratis", "hintGood": "papyrus", "hintDirection": "low_price" }
+  ],
+  "italy": [
+    { "text": "Egyptian grain is the lifeblood of Rome. Any captain bringing wheat to Ostia will find eager buyers.", "hintPort": "ostia", "hintGood": "wheat", "hintDirection": "high_demand" },
+    { "text": "A Carthaginian trader says silphium is nearly impossible to find. If you spot any, buy it — it sells for a fortune.", "hintPort": "carthage", "hintGood": "silphium", "hintDirection": "high_demand" },
+    { "text": "Iberian silver is flooding western markets. Emporion is the place to buy it cheap.", "hintPort": "emporion", "hintGood": "silver", "hintDirection": "low_price" },
+    { "text": "The Phoenicians in Sidon have glassware of extraordinary quality. Cheap there, dear everywhere else.", "hintPort": "sidon", "hintGood": "glass", "hintDirection": "low_price" },
+    { "text": "Spice merchants from the east say pepper and cinnamon are scarce this season. Prices in Tyre are climbing.", "hintPort": "tyre", "hintGood": "spices", "hintDirection": "high_demand" },
+    { "text": "Purple dye from Tyre is always in demand here. Roman nobles will pay anything to wear the imperial color.", "hintPort": "ostia", "hintGood": "purple_dye", "hintDirection": "high_demand" },
+    { "text": "I heard that Knossos has fine wine at bargain prices. The Cretans had an excellent harvest.", "hintPort": "knossos", "hintGood": "wine", "hintDirection": "low_price" },
+    { "text": "A Greek sailor says Attic pottery sells well in Carthage. The North Africans prize it highly.", "hintPort": "carthage", "hintGood": "attic_pottery", "hintDirection": "high_demand" }
+  ],
+  "iberia": [
+    { "text": "Phoenician traders say olive oil is expensive in Egypt. They cannot get enough of it for their temples.", "hintPort": "alexandria", "hintGood": "olive_oil", "hintDirection": "high_demand" },
+    { "text": "Silver from our mines sells for triple its cost when shipped to Tyre. The Phoenicians value it highly.", "hintPort": "tyre", "hintGood": "silver", "hintDirection": "high_demand" },
+    { "text": "A Greek merchant told me textiles are cheap in Ephesos. The Ionian weavers had a good year.", "hintPort": "ephesos", "hintGood": "textiles", "hintDirection": "low_price" },
+    { "text": "Garum from our coast is the finest in the world, and Rome cannot get enough. Ostia pays well.", "hintPort": "ostia", "hintGood": "garum", "hintDirection": "high_demand" },
+    { "text": "I hear bronze tools fetch high prices in Sparta. Their army always needs more.", "hintPort": "sparta", "hintGood": "bronze", "hintDirection": "high_demand" },
+    { "text": "Egyptian papyrus is hard to find out here. If you bring scrolls from Alexandria, scholars will pay handsomely.", "hintPort": "emporion", "hintGood": "papyrus", "hintDirection": "high_demand" },
+    { "text": "Wine from Rhodes is said to be the best value this year. The Rhodians are eager to sell.", "hintPort": "rhodes", "hintGood": "wine", "hintDirection": "low_price" },
+    { "text": "A Carthaginian captain says wheat from Utica is cheap and plentiful after their harvest.", "hintPort": "utica", "hintGood": "wheat", "hintDirection": "low_price" }
+  ]
+}

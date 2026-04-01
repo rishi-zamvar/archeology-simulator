@@ -12,6 +12,21 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import type { Port, VoyageRoute, PortLore, PortAccessLevel } from '../../shared/game-types';
 
+interface Rumor {
+  text: string;
+  hintPort: string;
+  hintGood: string;
+  hintDirection: string;
+}
+
+interface FestivalInfo {
+  id: string;
+  name: string;
+  description: string;
+  season: string;
+  priceEffects: Array<{ goodId: string; modifier: number }>;
+}
+
 interface ReachableDestination {
   port: Port;
   route: VoyageRoute;
@@ -36,6 +51,8 @@ export default function PortInfoPanel({
   const [reputation, setReputation] = useState<{ tierName: string; tierLevel: number; score: number; region: string } | null>(null);
   const [accessLevel, setAccessLevel] = useState<PortAccessLevel>('unknown');
   const [destAccessMap, setDestAccessMap] = useState<Map<string, string>>(new Map());
+  const [rumors, setRumors] = useState<Rumor[]>([]);
+  const [festival, setFestival] = useState<FestivalInfo | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
@@ -48,16 +65,20 @@ export default function PortInfoPanel({
     setLore(null);
     setReputation(null);
     setAccessLevel('unknown');
+    setRumors([]);
+    setFestival(null);
 
-    // Fetch port details, reachable destinations, lore, reputation, and access level in parallel
+    // Fetch port details, reachable destinations, lore, reputation, access level, rumors, and festival in parallel
     Promise.all([
       window.api.game.getPortDetails(portId),
       window.api.game.getReachablePorts(portId, currentTurn),
       window.api.game.getPortLore(portId),
       window.api.game.getPortReputation(portId),
       window.api.game.getPortAccessLevel(portId),
+      window.api.game.getRumors(portId, currentTurn ?? 0),
+      window.api.game.getActiveFestival(portId, currentTurn ?? 0),
     ])
-      .then(([portRes, reachableRes, loreRes, repRes, accessRes]) => {
+      .then(([portRes, reachableRes, loreRes, repRes, accessRes, rumorsRes, festivalRes]) => {
         if (cancelled) return;
         if (!portRes.success) throw new Error(portRes.error);
         if (!reachableRes.success) throw new Error(reachableRes.error);
@@ -80,6 +101,8 @@ export default function PortInfoPanel({
         }).catch(() => {});
         if (repRes.success && repRes.data) setReputation(repRes.data);
         if (accessRes.success) setAccessLevel(accessRes.data);
+        if (rumorsRes.success && rumorsRes.data) setRumors(rumorsRes.data);
+        if (festivalRes.success && festivalRes.data) setFestival(festivalRes.data);
         setIsLoading(false);
       })
       .catch((err: unknown) => {
@@ -265,6 +288,116 @@ export default function PortInfoPanel({
               </span>
             )}
           </p>
+        </div>
+      )}
+
+      {/* Festival banner — shown when a festival is active at this port */}
+      {!isLoading && festival && accessLevel !== 'unknown' && (
+        <div
+          style={{
+            marginTop: '0.5rem',
+            marginBottom: '0.75rem',
+            padding: '0.6rem 0.5rem',
+            background: 'linear-gradient(135deg, rgba(212, 160, 23, 0.12) 0%, rgba(196, 149, 106, 0.08) 100%)',
+            border: '1px solid rgba(212, 160, 23, 0.4)',
+            borderRadius: 4,
+            borderLeft: '3px solid #d4a017',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.3rem' }}>
+            <span style={{ fontSize: '0.85rem' }}>{'\u2728'}</span>
+            <h4
+              style={{
+                fontFamily: "'Cinzel', serif",
+                fontSize: '0.65rem',
+                color: '#8b6914',
+                margin: 0,
+                textTransform: 'uppercase',
+                letterSpacing: '0.1em',
+                fontWeight: 700,
+              }}
+            >
+              {festival.name}
+            </h4>
+          </div>
+          <p
+            style={{
+              fontFamily: "'Lora', Georgia, serif",
+              fontSize: '0.72rem',
+              color: '#5a3e2b',
+              lineHeight: 1.5,
+              margin: 0,
+              fontStyle: 'italic',
+            }}
+          >
+            {festival.description}
+          </p>
+          <div style={{ marginTop: '0.3rem' }}>
+            {festival.priceEffects.map(e => (
+              <span
+                key={e.goodId}
+                style={{
+                  display: 'inline-block',
+                  fontFamily: "'Lora', Georgia, serif",
+                  fontSize: '0.6rem',
+                  color: e.modifier > 1 ? '#9b4444' : '#5a8f5a',
+                  marginRight: '0.5rem',
+                }}
+              >
+                {e.goodId.replace(/_/g, ' ')}: {e.modifier > 1 ? '+' : ''}{Math.round((e.modifier - 1) * 100)}%
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Tavern Rumors — trade hints from NPCs at this port */}
+      {!isLoading && rumors.length > 0 && accessLevel !== 'unknown' && (
+        <div
+          style={{
+            marginTop: '0.5rem',
+            marginBottom: '0.75rem',
+            padding: '0.5rem',
+            backgroundColor: 'rgba(139, 105, 20, 0.06)',
+            border: '1px solid rgba(139, 105, 20, 0.2)',
+            borderRadius: 4,
+          }}
+        >
+          <h4
+            style={{
+              fontFamily: "'Cinzel', serif",
+              fontSize: '0.65rem',
+              color: '#7a5c45',
+              marginBottom: '0.4rem',
+              marginTop: 0,
+              textTransform: 'uppercase',
+              letterSpacing: '0.08em',
+              fontWeight: 700,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.35rem',
+            }}
+          >
+            <span style={{ fontSize: '0.75rem' }}>{'\u2709'}</span>
+            Tavern Rumors
+          </h4>
+          {rumors.map((rumor, i) => (
+            <p
+              key={i}
+              style={{
+                fontFamily: "'Lora', Georgia, serif",
+                fontSize: '0.72rem',
+                color: '#3d2b1f',
+                lineHeight: 1.55,
+                margin: i < rumors.length - 1 ? '0 0 0.4rem' : 0,
+                fontStyle: 'italic',
+                paddingLeft: '0.3rem',
+                borderLeft: '2px solid rgba(196, 149, 106, 0.3)',
+              }}
+            >
+              &ldquo;{rumor.text}&rdquo;
+            </p>
+          ))}
         </div>
       )}
 

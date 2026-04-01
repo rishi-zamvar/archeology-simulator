@@ -83,7 +83,14 @@ const TYPE_ORDER: Record<string, number> = {
 
 type QuestWithProgress = { quest: QuestDefinition; progress: QuestProgress };
 
-type LogbookTab = 'journal' | 'quests';
+interface PostcardData {
+  portId: string;
+  portName: string;
+  description: string;
+  discoveredAtTurn: number;
+}
+
+type LogbookTab = 'journal' | 'quests' | 'postcards';
 
 export default function Logbook({ currentTurn, gameStateType, portName, season, monthName, seasonTint }: LogbookProps): React.ReactElement {
   const [open, setOpen] = useState(false);
@@ -96,6 +103,10 @@ export default function Logbook({ currentTurn, gameStateType, portName, season, 
 
   // Quest state
   const [questData, setQuestData] = useState<QuestWithProgress[]>([]);
+
+  // Postcard state
+  const [postcards, setPostcards] = useState<PostcardData[]>([]);
+  const [totalPorts, setTotalPorts] = useState(0);
 
   // Load journal entries from DB on mount
   useEffect(() => {
@@ -111,6 +122,16 @@ export default function Logbook({ currentTurn, gameStateType, portName, season, 
     });
   }, []);
 
+  // Load postcards on mount
+  useEffect(() => {
+    window.api.game.getPostcards().then((res) => {
+      if (res.success) {
+        setPostcards(res.data.postcards);
+        setTotalPorts(res.data.totalPorts);
+      }
+    });
+  }, []);
+
   // Re-fetch when game state updates (trade, event, arrival, etc.)
   useEffect(() => {
     const cleanup = window.api.subscribe('game:updated', () => {
@@ -119,6 +140,12 @@ export default function Logbook({ currentTurn, gameStateType, portName, season, 
       });
       window.api.quest.getAll().then((res) => {
         if (res.success) setQuestData(res.data);
+      });
+      window.api.game.getPostcards().then((res) => {
+        if (res.success) {
+          setPostcards(res.data.postcards);
+          setTotalPorts(res.data.totalPorts);
+        }
       });
     });
     return cleanup;
@@ -314,6 +341,9 @@ export default function Logbook({ currentTurn, gameStateType, portName, season, 
             <button type="button" onClick={() => setActiveTab('quests')} style={tabStyle(activeTab === 'quests')}>
               Quests{activeQuests.length > 0 ? ` (${activeQuests.length})` : ''}
             </button>
+            <button type="button" onClick={() => setActiveTab('postcards')} style={tabStyle(activeTab === 'postcards')}>
+              Postcards
+            </button>
           </div>
 
           {/* Tab content */}
@@ -455,13 +485,16 @@ export default function Logbook({ currentTurn, gameStateType, portName, season, 
                   </button>
                 </form>
               </>
-            ) : (
+            ) : activeTab === 'quests' ? (
               /* ── Quests tab content ──────────────────────────────── */
               <QuestsTabContent
                 activeQuests={activeQuests}
                 completedQuests={completedQuests}
                 availableQuests={availableQuests}
               />
+            ) : (
+              /* ── Postcards tab content ──────────────────────────── */
+              <PostcardsTabContent postcards={postcards} totalPorts={totalPorts} />
             )}
           </div>
         </div>
@@ -627,6 +660,95 @@ function QuestsTabContent({
           </div>
         </div>
       ))}
+    </div>
+  );
+}
+
+/* ── PostcardsTabContent — renders collected port postcards ───────────── */
+
+function PostcardsTabContent({
+  postcards,
+  totalPorts,
+}: {
+  postcards: PostcardData[];
+  totalPorts: number;
+}): React.ReactElement {
+  return (
+    <div>
+      {/* Collection count */}
+      <div style={{
+        fontFamily: "'Cinzel', Georgia, serif",
+        fontSize: '0.6rem',
+        fontWeight: 700,
+        color: '#7a5c45',
+        textAlign: 'center',
+        padding: '0.5rem 0',
+        letterSpacing: '0.1em',
+        textTransform: 'uppercase' as const,
+        borderBottom: '1px solid rgba(196, 149, 106, 0.3)',
+        marginBottom: '0.5rem',
+      }}>
+        {postcards.length}/{totalPorts} Postcards Collected
+      </div>
+
+      {postcards.length === 0 ? (
+        <div style={{
+          fontFamily: "'Lora', Georgia, serif",
+          fontSize: '0.75rem',
+          color: '#7a5c45',
+          fontStyle: 'italic',
+          textAlign: 'center',
+          padding: '1.5rem 1rem',
+        }}>
+          Visit new ports to collect postcards.
+        </div>
+      ) : (
+        postcards.map((pc) => (
+          <div
+            key={pc.portId}
+            style={{
+              marginBottom: '0.6rem',
+              padding: '0.5rem',
+              borderRadius: 4,
+              background: 'rgba(196, 149, 106, 0.06)',
+              border: '1px solid rgba(196, 149, 106, 0.2)',
+              borderLeft: '3px solid #c4956a',
+            }}
+          >
+            <div style={{
+              fontFamily: "'Cinzel', Georgia, serif",
+              fontSize: '0.65rem',
+              fontWeight: 700,
+              color: '#5a3e2b',
+              marginBottom: '0.2rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.4rem',
+            }}>
+              <span style={{ color: '#c4956a', fontSize: '0.7rem' }}>{'\u2726'}</span>
+              {pc.portName}
+            </div>
+            <p style={{
+              fontFamily: "'Lora', Georgia, serif",
+              fontSize: '0.65rem',
+              color: '#3d2b1f',
+              lineHeight: 1.55,
+              margin: 0,
+              fontStyle: 'italic',
+            }}>
+              {pc.description}
+            </p>
+            <div style={{
+              fontFamily: "'Lora', Georgia, serif",
+              fontSize: '0.5rem',
+              color: '#a08870',
+              marginTop: '0.2rem',
+            }}>
+              Turn {pc.discoveredAtTurn}
+            </div>
+          </div>
+        ))
+      )}
     </div>
   );
 }
