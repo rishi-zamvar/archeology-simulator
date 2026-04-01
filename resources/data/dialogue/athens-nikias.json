@@ -1,0 +1,62 @@
+{
+  "npc_id": "nikias",
+  "port_id": "athens",
+  "root_node": "greeting",
+  "nodes": [
+    {
+      "id": "greeting",
+      "speaker": "Nikias",
+      "text": "Welcome to Piraeus, captain. The merchant house of Kephalos has need of your services.",
+      "conditions": { "type": "quest", "id": "main_quest", "status": "not_started" },
+      "choices": [
+        { "text": "I am at your service.", "next": "quest_offer", "effects": [] },
+        { "text": "What sort of work?", "next": "quest_details", "effects": [] }
+      ]
+    },
+    {
+      "id": "quest_offer",
+      "speaker": "Nikias",
+      "text": "We need Tyrian purple from Sidon. The festival of Athena approaches and the priests require new vestments.",
+      "choices": [
+        {
+          "text": "I will sail to Sidon.",
+          "next": "quest_accepted",
+          "effects": [
+            { "type": "quest_update", "questId": "main_quest", "status": "active" },
+            { "type": "journal_entry", "title": "Commission from Nikias", "text": "The merchant Nikias of Athens has tasked me with procuring Tyrian purple from the Phoenician city of Sidon." }
+          ]
+        },
+        { "text": "The journey is too dangerous.", "next": "quest_declined", "effects": [] }
+      ]
+    },
+    {
+      "id": "quest_accepted",
+      "speaker": "Nikias",
+      "text": "Excellent. May Poseidon grant you fair winds. You will find the Phoenician dye merchants near the harbor temple.",
+      "choices": []
+    },
+    {
+      "id": "quest_declined",
+      "speaker": "Nikias",
+      "text": "A cautious captain lives longer, I suppose. Return if you change your mind.",
+      "choices": []
+    },
+    {
+      "id": "quest_details",
+      "speaker": "Nikias",
+      "text": "The Phoenicians of Sidon produce the finest purple dye in all the Mediterranean -- extracted from the murex snail. It is worth more than silver by weight.",
+      "choices": [
+        { "text": "Tell me more about Tyrian purple.", "next": "lore_purple", "effects": [] },
+        { "text": "I will fetch it.", "next": "quest_offer", "effects": [] }
+      ]
+    },
+    {
+      "id": "lore_purple",
+      "speaker": "Nikias",
+      "text": "Each murex yields but a single drop. It takes ten thousand shells to dye one garment. The Phoenicians have guarded this secret for centuries. Pliny himself wrote of its magnificence.",
+      "choices": [
+        { "text": "Fascinating. I will seek it out.", "next": "quest_offer", "effects": [] }
+      ]
+    }
+  ]
+}
