@@ -16,6 +16,7 @@ interface DialogueModalProps {
   npcId: string;
   initialNode: DialogueNode;
   initialChoices: DialogueChoice[];
+  portraitUrl: string | null;
   onDismiss: () => void;
 }
 
@@ -23,6 +24,7 @@ export default function DialogueModal({
   npcId,
   initialNode,
   initialChoices,
+  portraitUrl,
   onDismiss,
 }: DialogueModalProps): React.ReactElement {
   const [currentNode, setCurrentNode] = useState<DialogueNode>(initialNode);
@@ -96,20 +98,35 @@ export default function DialogueModal({
           fontFamily: "'Lora', Georgia, serif",
         }}
       >
-        {/* Speaker name */}
-        <h2
-          id="dialogue-speaker-name"
-          style={{
-            fontFamily: "'Cinzel', 'Times New Roman', serif",
-            fontSize: 18,
-            fontWeight: 700,
-            color: '#7a5c45',
-            marginTop: 0,
-            marginBottom: 8,
-          }}
-        >
-          {currentNode.speaker}
-        </h2>
+        {/* Speaker row with portrait */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 8 }}>
+          {portraitUrl && (
+            <img
+              src={portraitUrl}
+              alt={currentNode.speaker}
+              style={{
+                width: 64,
+                height: 64,
+                borderRadius: 4,
+                border: '2px solid #c4956a',
+                backgroundColor: '#fdf5e6',
+              }}
+            />
+          )}
+          <h2
+            id="dialogue-speaker-name"
+            style={{
+              fontFamily: "'Cinzel', 'Times New Roman', serif",
+              fontSize: 18,
+              fontWeight: 700,
+              color: '#7a5c45',
+              marginTop: 0,
+              marginBottom: 0,
+            }}
+          >
+            {currentNode.speaker}
+          </h2>
+        </div>
 
         {/* Dialogue text */}
         <p

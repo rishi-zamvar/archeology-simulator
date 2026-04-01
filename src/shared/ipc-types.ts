@@ -75,9 +75,9 @@ export interface IPCBridge {
   };
   /** Phase 14: Dialogue Engine */
   dialogue: {
-    getNodes: (npcId: string) => Promise<IPCResponse<{ node: import('./game-types').DialogueNode; availableChoices: import('./game-types').DialogueChoice[]; npcId: string }>>;
+    getNodes: (npcId: string) => Promise<IPCResponse<{ node: import('./game-types').DialogueNode; availableChoices: import('./game-types').DialogueChoice[]; npcId: string; portraitUrl: string | null }>>;
     advanceNode: (npcId: string, nodeId: string, choiceIndex: number) => Promise<IPCResponse<{ node: import('./game-types').DialogueNode | null; availableChoices: import('./game-types').DialogueChoice[]; effectsApplied: string[] }>>;
-    getAvailableNpcs: (portId: string) => Promise<IPCResponse<Array<{ npcId: string; name: string }>>>;
+    getAvailableNpcs: (portId: string) => Promise<IPCResponse<Array<{ npcId: string; name: string; portraitUrl: string | null }>>>;
   };
   /** Phase 15: Quest System */
   quest: {

@@ -97,8 +97,9 @@ export default function Shell(): React.ReactElement {
     npcId: string;
     node: DialogueNode;
     choices: DialogueChoice[];
+    portraitUrl: string | null;
   } | null>(null);
-  const [availableNpcs, setAvailableNpcs] = useState<Array<{ npcId: string; name: string }>>([]);
+  const [availableNpcs, setAvailableNpcs] = useState<Array<{ npcId: string; name: string; portraitUrl: string | null }>>([]);
 
   // Phase 15: Active quest indicator and completion toast
   const [activeQuest, setActiveQuest] = useState<{ quest: QuestDefinition; progress: QuestProgress } | null>(null);
@@ -343,6 +344,7 @@ export default function Shell(): React.ReactElement {
           npcId,
           node: res.data.node,
           choices: res.data.availableChoices,
+          portraitUrl: res.data.portraitUrl,
         });
       } else {
         showError(res.error ?? 'Failed to start dialogue');
@@ -751,6 +753,7 @@ export default function Shell(): React.ReactElement {
           npcId={dialogueNpc.npcId}
           initialNode={dialogueNpc.node}
           initialChoices={dialogueNpc.choices}
+          portraitUrl={dialogueNpc.portraitUrl}
           onDismiss={() => {
             setDialogueNpc(null);
             // Re-check available NPCs after dialogue (conditions may have changed)

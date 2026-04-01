@@ -33,6 +33,13 @@ import type {
 
 const log = createLogger('DialogueIPC');
 
+// ── Portrait URL helper ────────────────────────────────────────────────────
+
+function getPortraitUrl(npcId: string): string | null {
+  const portraitPath = path.join(getResourcesBase(), 'portraits', `${npcId}.svg`);
+  return fs.existsSync(portraitPath) ? `file://${portraitPath}` : null;
+}
+
 // ── Module-level dialogue file cache ────────────────────────────────────────
 
 const dialogueCache = new Map<string, DialogueFile>();
@@ -203,8 +210,15 @@ function applyEffects(db: Database.Database, effects: DialogueEffect[], currentT
         break;
       }
       case 'port_unlock': {
-        // TODO: Phase 19 — port unlocking via dialogue effects
-        applied.push(`port_unlock: stubbed`);
+        const portId = effect.portId as string;
+        db.prepare(`
+          INSERT INTO port_access (port_id, status, discovered)
+          VALUES (?, 'discovered', 1)
+          ON CONFLICT(port_id) DO UPDATE SET
+            status = CASE WHEN status = 'unknown' THEN 'discovered' ELSE status END,
+            discovered = 1
+        `).run(portId);
+        applied.push(`port_unlock: ${portId}`);
         break;
       }
       case 'trade_offer': {
@@ -225,7 +239,7 @@ export function registerDialogueIPCHandlers(db: Database.Database): void {
    * dialogue:getNodes — return dialogue node + available choices for an NPC.
    * Looks up NPC dialogue file, builds GameContext, finds entry node.
    */
-  wrapHandler<{ node: DialogueNode; availableChoices: DialogueChoice[]; npcId: string }, [string]>(
+  wrapHandler<{ node: DialogueNode; availableChoices: DialogueChoice[]; npcId: string; portraitUrl: string | null }, [string]>(
     'dialogue:getNodes',
     async (npcId) => {
       const dialogueFile = findDialogueFileForNpc(npcId);
@@ -256,7 +270,7 @@ export function registerDialogueIPCHandlers(db: Database.Database): void {
 
       log.info('Dialogue started', { npcId, nodeId: node.id, choiceCount: availableChoices.length });
 
-      return { node, availableChoices, npcId };
+      return { node, availableChoices, npcId, portraitUrl: getPortraitUrl(npcId) };
     },
     (npcId) => {
       if (!npcId || typeof npcId !== 'string') return 'npcId required';
@@ -336,14 +350,14 @@ export function registerDialogueIPCHandlers(db: Database.Database): void {
    * dialogue:getAvailableNpcs — return NPCs available at a given port.
    * Scans dialogue files for matching port_id, checks entry conditions.
    */
-  wrapHandler<Array<{ npcId: string; name: string }>, [string]>(
+  wrapHandler<Array<{ npcId: string; name: string; portraitUrl: string | null }>, [string]>(
     'dialogue:getAvailableNpcs',
     async (portId) => {
       const portFiles = findDialogueFilesForPort(portId);
       if (portFiles.length === 0) return [];
 
       const ctx = buildGameContext(db);
-      const available: Array<{ npcId: string; name: string }> = [];
+      const available: Array<{ npcId: string; name: string; portraitUrl: string | null }> = [];
 
       for (const file of portFiles) {
         const entryNode = findEntryNode(file, ctx);
@@ -351,6 +365,7 @@ export function registerDialogueIPCHandlers(db: Database.Database): void {
           available.push({
             npcId: file.npc_id,
             name: entryNode.speaker,
+            portraitUrl: getPortraitUrl(file.npc_id),
           });
         }
       }
