@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-02)
 
 **Core value:** Students learn ancient Mediterranean history by making decisions as a merchant captain, not by reading about them.
-**Current focus:** Phase 26 — audio-atmosphere
+**Current focus:** Phase 28 — world-events-collectibles
 
 ## Current Position
 
-Phase: 27
+Phase: 28
 Plan: Not started
-Status: Executing Phase 26
+Status: Phase 27 complete
 Last activity: 2026-04-01
 
-Progress: [████████████████░░░░] 79% (phases 1-23 complete, 24-29 remaining)
+Progress: [█████████████████░░░] 83% (phases 1-27 complete, 28-29 remaining)
 
 ## Accumulated Context
 
@@ -50,6 +50,6 @@ Progress: [████████████████░░░░] 79% (ph
 
 ## Session Continuity
 
-Last session: 2026-03-31
-Stopped at: Roadmap created for v2.1 milestone
+Last session: 2026-04-01
+Stopped at: Completed Phase 27 (Ship & Crew)
 Resume file: None -- next step is `/gsd:plan-phase 24`
