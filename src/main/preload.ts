@@ -63,6 +63,10 @@ const api: IPCBridge = {
     getPortLore: (portId: string) => ipcRenderer!.invoke('game:getPortLore', portId),
     // Phase 18: Reputation
     getPortReputation: (portId: string) => ipcRenderer!.invoke('game:getPortReputation', portId),
+    // Phase 19: Port Access
+    getPortAccessLevel: (portId: string) => ipcRenderer!.invoke('game:getPortAccessLevel', portId),
+    getAllPortAccess: () => ipcRenderer!.invoke('game:getAllPortAccess'),
+    autoDiscoverPort: (portId: string, turn: number) => ipcRenderer!.invoke('game:autoDiscoverPort', portId, turn),
     // Scan resources/images/ for available image files
     scanResourceImages: () =>
       ipcRenderer!.invoke('game:scan-resource-images'),

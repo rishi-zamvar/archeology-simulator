@@ -70,6 +70,11 @@ export interface IPCBridge {
     // Phase 18: Reputation
     getPortReputation: (portId: string) => Promise<IPCResponse<{ region: string; score: number; tierName: string; tierLevel: number }>>;
 
+    // Phase 19: Port Access
+    getPortAccessLevel: (portId: string) => Promise<IPCResponse<import('./game-types').PortAccessLevel>>;
+    getAllPortAccess: () => Promise<IPCResponse<import('./game-types').PortAccessInfo[]>>;
+    autoDiscoverPort: (portId: string, turn: number) => Promise<IPCResponse<boolean>>;
+
     // Scan resources/images/ for available image files on disk
     scanResourceImages: () => Promise<IPCResponse<{
       ports: Record<string, string>;

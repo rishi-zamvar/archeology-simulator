@@ -7,7 +7,7 @@
  */
 
 import type Database from 'better-sqlite3';
-import { saveGameStateAtomic, loadGameState } from '../db/queries';
+import { saveGameStateAtomic, loadGameState, seedStartingPorts, setPortAccessLevel, getAllPortAccess } from '../db/queries';
 import { PLAYER_DATA_TABLES } from '../db/schema';
 import type { GameState } from '../../game/types';
 import { wrapHandler } from '../lib/ipc-wrapper';
@@ -48,7 +48,26 @@ export function registerSaveIPCHandlers(db: Database.Database): void {
     'game:load',
     async () => {
       log.info('Loading game state');
-      return withTutorialDefault(loadGameState(db) ?? INITIAL_STATE);
+      const state = loadGameState(db);
+
+      // Backward compatibility: v1.3 saves have game_state but no port_access rows.
+      // Treat all 25 existing ports as unlocked so returning players can access everything.
+      if (state) {
+        const portAccessRows = getAllPortAccess(db);
+        const hasAnyPortAccess = portAccessRows.some(p => p.status !== 'unknown');
+        if (!hasAnyPortAccess) {
+          log.info('Legacy save detected — unlocking all ports for backward compatibility');
+          const allPorts = db.prepare('SELECT id FROM ports').all() as Array<{ id: string }>;
+          const insertLegacy = db.transaction(() => {
+            for (const port of allPorts) {
+              setPortAccessLevel(db, port.id, 'unlocked', 'legacy_save');
+            }
+          });
+          insertLegacy();
+        }
+      }
+
+      return withTutorialDefault(state ?? INITIAL_STATE);
     },
   );
 
@@ -93,6 +112,8 @@ export function registerSaveIPCHandlers(db: Database.Database): void {
         }
         // Re-insert fresh state
         saveGameStateAtomic(db, INITIAL_STATE);
+        // Seed starting ports: Piraeus (athens) unlocked, Corinth unlocked, Miletus discovered
+        seedStartingPorts(db);
       });
       reset();
       return INITIAL_STATE;

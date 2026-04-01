@@ -36,6 +36,9 @@ import {
   insertJournalEntry,
   getPortLore,
   getPortReputation,
+  getPortAccessLevel,
+  getAllPortAccess,
+  autoDiscoverPort,
 } from '../db/queries';
 import { evaluateActiveQuests } from './quest';
 import { performAction } from '../../game/engine';
@@ -44,7 +47,7 @@ import { rollVoyageEvent, resolveEventChoice } from '../../game/events';
 import { getWeatherModifiers, getSeason, getSeasonalWeatherDescription } from '../../game/weather';
 import type { SailingTurnResult } from '../../game/sailing';
 import type { GameAction, GameResult, GameState, SailingState, TutorialPhase } from '../../game/types';
-import type { VoyageEvent, PortLore } from '../../shared/game-types';
+import type { VoyageEvent, PortLore, PortAccessLevel, PortAccessInfo } from '../../shared/game-types';
 
 // New games start the tutorial from the beginning.
 // Existing saves that pre-date the tutorial system will have tutorialPhase=undefined;
@@ -595,6 +598,37 @@ export function registerGameIPCHandlers(db: Database.Database): void {
     'game:getPortReputation',
     async (portId) => getPortReputation(db, portId),
     (portId) => (!portId || typeof portId !== 'string' ? 'portId required' : null),
+  );
+
+  /**
+   * game:getPortAccessLevel — return the access level for a specific port.
+   */
+  wrapHandler<PortAccessLevel, [string]>(
+    'game:getPortAccessLevel',
+    async (portId) => getPortAccessLevel(db, portId),
+    (portId) => (!portId || typeof portId !== 'string' ? 'portId required' : null),
+  );
+
+  /**
+   * game:getAllPortAccess — return access info for all ports.
+   */
+  wrapHandler<PortAccessInfo[]>(
+    'game:getAllPortAccess',
+    async () => getAllPortAccess(db),
+  );
+
+  /**
+   * game:autoDiscoverPort — auto-discover a port on visit (unknown -> discovered).
+   * Returns true if status was upgraded, false if already discovered/unlocked.
+   */
+  wrapHandler<boolean, [string, number]>(
+    'game:autoDiscoverPort',
+    async (portId, turn) => autoDiscoverPort(db, portId, turn),
+    (portId, turn) => {
+      if (!portId || typeof portId !== 'string') return 'portId required';
+      if (typeof turn !== 'number') return 'turn required';
+      return null;
+    },
   );
 }
 
