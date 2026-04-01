@@ -68,6 +68,27 @@ export interface PlayerInventory {
   cargoItems: CargoItem[];
   cargoCapacity: number;  // max units (one ship type: 50)
   currentCargo: number;   // sum of all quantities
+  hullCondition: number;  // 0-100: ship hull integrity (Phase 27)
+  crewMorale: number;     // 0-100: crew morale level (Phase 27)
+}
+
+/**
+ * MoraleLevel — derived crew morale tier with gameplay effects.
+ */
+export type MoraleLevel = 'enthusiastic' | 'steady' | 'disgruntled';
+
+/**
+ * ShipCrewStatus — combined ship and crew status for UI display.
+ */
+export interface ShipCrewStatus {
+  hullCondition: number;
+  crewMorale: number;
+  moraleLevel: MoraleLevel;
+  hullWarning: boolean;    // hull < 30
+  canSail: boolean;        // hull >= 10
+  speedModifier: number;   // 1.05 enthusiastic, 1.0 steady, 0.9 disgruntled
+  tradeCostModifier: number; // 1.0 normal, 1.05 disgruntled
+  repairCost: number;      // gold to fully repair (10g per point)
 }
 
 /**
@@ -235,7 +256,7 @@ export interface PortAccess {
 
 // --- v2.0 Dialogue Engine Types ---
 
-export type ConditionType = 'quest' | 'reputation' | 'visited_port' | 'has_cargo' | 'turn_range' | 'season';
+export type ConditionType = 'quest' | 'reputation' | 'visited_port' | 'has_cargo' | 'turn_range' | 'season' | 'traded_good' | 'not_visited_port';
 
 export interface QuestCondition { type: 'quest'; id: string; status: QuestStatus | 'not_started'; }
 export interface ReputationCondition { type: 'reputation'; region: string; min?: number; max?: number; }
@@ -243,10 +264,15 @@ export interface VisitedPortCondition { type: 'visited_port'; portId: string; }
 export interface HasCargoCondition { type: 'has_cargo'; goodId: string; minQuantity?: number; }
 export interface TurnRangeCondition { type: 'turn_range'; min?: number; max?: number; }
 export interface SeasonCondition { type: 'season'; season: string; }
+/** NAR-01: NPC memory — checks if player has traded (bought or sold) a specific good */
+export interface TradedGoodCondition { type: 'traded_good'; goodId: string; action?: 'buy' | 'sell'; }
+/** NAR-02: Port gossip — checks if player has NOT visited a port yet */
+export interface NotVisitedPortCondition { type: 'not_visited_port'; portId: string; }
 
 export type DialogueCondition =
   | QuestCondition | ReputationCondition | VisitedPortCondition
-  | HasCargoCondition | TurnRangeCondition | SeasonCondition;
+  | HasCargoCondition | TurnRangeCondition | SeasonCondition
+  | TradedGoodCondition | NotVisitedPortCondition;
 
 export type CompositeCondition =
   | DialogueCondition

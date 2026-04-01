@@ -74,6 +74,17 @@ function evaluateLeafCondition(condition: DialogueCondition, ctx: GameContext): 
     case 'season': {
       return ctx.season === condition.season;
     }
+    case 'traded_good': {
+      // NAR-01: NPC memory — check if player has traded a specific good
+      return ctx.recentTrades.some(t =>
+        t.goodId === condition.goodId &&
+        (condition.action === undefined || t.action === condition.action)
+      );
+    }
+    case 'not_visited_port': {
+      // NAR-02: Port gossip — check if player has NOT visited a port
+      return !ctx.visitedPorts.has(condition.portId);
+    }
     default:
       return false;
   }

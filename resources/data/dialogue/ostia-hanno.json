@@ -135,7 +135,65 @@
       "id": "farewell_complete",
       "speaker": "Hanno",
       "text": "Safe travels, captain. Remember -- Rome watches the sea, and those who trade fairly will always find a welcome at Ostia.",
-      "choices": []
+      "choices": [
+        { "text": "Any news from the provinces?", "next": "gossip_hub", "effects": [] }
+      ]
+    },
+    {
+      "id": "memory_olive_oil_trade",
+      "speaker": "Hanno",
+      "text": "I see you have been trading olive oil, captain. Rome approves. Our baths consume vast quantities, and the lamps of the Eternal City burn through the night. Keep the supply flowing and you will have powerful friends.",
+      "conditions": { "type": "traded_good", "goodId": "olive_oil" },
+      "choices": [
+        { "text": "A steady market is a merchant's dream.", "next": "farewell_complete", "effects": [] },
+        { "text": "What news from abroad?", "next": "gossip_hub", "effects": [] }
+      ]
+    },
+    {
+      "id": "memory_pottery_trade",
+      "speaker": "Hanno",
+      "text": "Greek pottery, captain? The Roman nobles collect it eagerly -- those painted scenes of heroes and gods. The Etruscans taught us to appreciate fine craftsmanship. Continue trading it and you will find buyers at every dock in Italia.",
+      "conditions": { "type": "traded_good", "goodId": "pottery" },
+      "choices": [
+        { "text": "Art travels well.", "next": "farewell_complete", "effects": [] },
+        { "text": "Any other gossip?", "next": "gossip_hub", "effects": [] }
+      ]
+    },
+    {
+      "id": "gossip_hub",
+      "speaker": "Hanno",
+      "text": "Rome hears everything, captain. Our legions march, but our merchants listen.",
+      "choices": [
+        {
+          "text": "What news from Athens?",
+          "next": "gossip_athens",
+          "effects": [],
+          "conditions": { "type": "not_visited_port", "portId": "athens" }
+        },
+        {
+          "text": "What about Egypt?",
+          "next": "gossip_egypt",
+          "effects": [],
+          "conditions": { "type": "not_visited_port", "portId": "memphis" }
+        },
+        { "text": "Never mind. Farewell.", "next": "farewell_complete", "effects": [] }
+      ]
+    },
+    {
+      "id": "gossip_athens",
+      "speaker": "Hanno",
+      "text": "The Athenians are expanding their fleet at Piraeus. Nikias of the house of Kephalos pays well for purple dye from Tyre -- the festival of Athena approaches. Greek olive oil is also the finest in the world, though a Roman should not admit that too loudly.",
+      "choices": [
+        { "text": "I may visit Athens.", "next": "farewell_complete", "effects": [] }
+      ]
+    },
+    {
+      "id": "gossip_egypt",
+      "speaker": "Hanno",
+      "text": "Egyptian grain shipments have been larger than usual -- the Nile flood was generous. Taharqa at Memphis runs the temple granaries and always needs ships to carry surplus north. Papyrus is also in demand -- our scribes and lawyers consume mountains of it.",
+      "choices": [
+        { "text": "Egypt is always profitable.", "next": "farewell_complete", "effects": [] }
+      ]
     }
   ]
 }

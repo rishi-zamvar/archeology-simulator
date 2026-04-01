@@ -87,7 +87,65 @@
       "id": "quest_complete_farewell",
       "speaker": "Nikias",
       "text": "Indeed it was. You are always welcome at the house of Kephalos, captain. Perhaps we shall have more work for you in the future.",
-      "choices": []
+      "choices": [
+        { "text": "Any news from other ports?", "next": "gossip_hub", "effects": [] }
+      ]
+    },
+    {
+      "id": "memory_pottery_trade",
+      "speaker": "Nikias",
+      "text": "I see you have been trading pottery, captain -- good, the potters of the Kerameikos district will be pleased. Attic black-figure ware is our pride, and every amphora that reaches foreign shores spreads the glory of Athens.",
+      "conditions": { "type": "traded_good", "goodId": "pottery" },
+      "choices": [
+        { "text": "It fetches a fine price abroad.", "next": "greeting_complete", "effects": [] },
+        { "text": "Any news from other ports?", "next": "gossip_hub", "effects": [] }
+      ]
+    },
+    {
+      "id": "memory_olive_oil_trade",
+      "speaker": "Nikias",
+      "text": "You have been dealing in olive oil, I hear. The sacred groves of Athena produce the finest oil in all Hellas. The Romans and Egyptians prize it above all others.",
+      "conditions": { "type": "traded_good", "goodId": "olive_oil" },
+      "choices": [
+        { "text": "A profitable commodity indeed.", "next": "greeting_complete", "effects": [] },
+        { "text": "What else is happening in the Mediterranean?", "next": "gossip_hub", "effects": [] }
+      ]
+    },
+    {
+      "id": "gossip_hub",
+      "speaker": "Nikias",
+      "text": "The docks of Piraeus are full of talk, captain. What would you like to hear about?",
+      "choices": [
+        {
+          "text": "What news from Egypt?",
+          "next": "gossip_egypt",
+          "effects": [],
+          "conditions": { "type": "not_visited_port", "portId": "memphis" }
+        },
+        {
+          "text": "What do they say about Carthage?",
+          "next": "gossip_carthage",
+          "effects": [],
+          "conditions": { "type": "not_visited_port", "portId": "carthage" }
+        },
+        { "text": "Never mind. Farewell.", "next": "quest_complete_farewell", "effects": [] }
+      ]
+    },
+    {
+      "id": "gossip_egypt",
+      "speaker": "Nikias",
+      "text": "Traders from Naukratis say the Nile flood was generous this year. The granaries of Memphis overflow with grain, and Taharqa the grain factor seeks foreign captains to carry the surplus. If you sail south, you will find profitable cargo.",
+      "choices": [
+        { "text": "I may sail there soon.", "next": "quest_complete_farewell", "effects": [] }
+      ]
+    },
+    {
+      "id": "gossip_carthage",
+      "speaker": "Nikias",
+      "text": "Phoenician merchants whisper that Elissa of Carthage seeks a captain bold enough to sail beyond the Pillars of Melqart. The western ocean holds riches, they say -- Iberian wine and tin from the far islands. A dangerous voyage, but lucrative.",
+      "choices": [
+        { "text": "Beyond the Pillars? I will consider it.", "next": "quest_complete_farewell", "effects": [] }
+      ]
     }
   ]
 }

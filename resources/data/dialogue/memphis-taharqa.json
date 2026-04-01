@@ -148,7 +148,65 @@
       "id": "farewell_complete",
       "speaker": "Taharqa",
       "text": "May the Eye of Horus protect you on your voyages, captain. You are always welcome at the docks of Men-nefer.",
-      "choices": []
+      "choices": [
+        { "text": "What news from distant lands?", "next": "gossip_hub", "effects": [] }
+      ]
+    },
+    {
+      "id": "memory_grain_trade",
+      "speaker": "Taharqa",
+      "text": "I hear you have been trading grain, captain. The priests of Ptah smile on those who carry the gift of the Nile to hungry lands. You understand the oldest trade in the world.",
+      "conditions": { "type": "traded_good", "goodId": "grain" },
+      "choices": [
+        { "text": "Egypt's grain feeds the world.", "next": "farewell_complete", "effects": [] },
+        { "text": "What news from abroad?", "next": "gossip_hub", "effects": [] }
+      ]
+    },
+    {
+      "id": "memory_papyrus_trade",
+      "speaker": "Taharqa",
+      "text": "Papyrus, captain? You carry the very medium of knowledge. The scribes of the House of Life cut reeds from the Delta marshes and press them into sheets finer than any parchment. Every scholar from Athens to Babylon depends on Egyptian papyrus.",
+      "conditions": { "type": "traded_good", "goodId": "papyrus" },
+      "choices": [
+        { "text": "A precious cargo indeed.", "next": "farewell_complete", "effects": [] },
+        { "text": "Any other news?", "next": "gossip_hub", "effects": [] }
+      ]
+    },
+    {
+      "id": "gossip_hub",
+      "speaker": "Taharqa",
+      "text": "Merchants from many lands dock at Men-nefer, captain. Their tongues wag freely over beer.",
+      "choices": [
+        {
+          "text": "What do they say about Tyre?",
+          "next": "gossip_tyre",
+          "effects": [],
+          "conditions": { "type": "not_visited_port", "portId": "tyre" }
+        },
+        {
+          "text": "Any news from the western sea?",
+          "next": "gossip_carthage",
+          "effects": [],
+          "conditions": { "type": "not_visited_port", "portId": "carthage" }
+        },
+        { "text": "No matter. Farewell.", "next": "farewell_complete", "effects": [] }
+      ]
+    },
+    {
+      "id": "gossip_tyre",
+      "speaker": "Taharqa",
+      "text": "Traders from Tyre say purple dye prices have risen -- the murex harvests were poor this season. Aziru the spice merchant pays well for wine and seeks reliable captains. The Phoenician coast is always worth a visit, if you can avoid the pirates.",
+      "choices": [
+        { "text": "I will keep that in mind.", "next": "farewell_complete", "effects": [] }
+      ]
+    },
+    {
+      "id": "gossip_carthage",
+      "speaker": "Taharqa",
+      "text": "A Carthaginian ship arrived last month with tales of the western ocean. Elissa of the House of Barca sends expeditions beyond the Pillars of Melqart. She seeks bold captains, they say. The voyage is long but the rewards are great.",
+      "choices": [
+        { "text": "Beyond the Pillars... intriguing.", "next": "farewell_complete", "effects": [] }
+      ]
     }
   ]
 }

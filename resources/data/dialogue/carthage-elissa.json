@@ -125,7 +125,65 @@
       "id": "farewell_complete",
       "speaker": "Elissa",
       "text": "Sail well, captain. The House of Barca remembers its friends. May Tanit watch over your voyages.",
-      "choices": []
+      "choices": [
+        { "text": "Any rumors from distant shores?", "next": "gossip_hub", "effects": [] }
+      ]
+    },
+    {
+      "id": "memory_grain_trade",
+      "speaker": "Elissa",
+      "text": "Word reaches me that you have been trading grain, captain. Our African estates produce fine wheat -- but Egyptian grain from the Nile flood is the richest in the world. A shrewd choice.",
+      "conditions": { "type": "traded_good", "goodId": "grain" },
+      "choices": [
+        { "text": "Grain feeds armies and cities.", "next": "farewell_complete", "effects": [] },
+        { "text": "What other news do you have?", "next": "gossip_hub", "effects": [] }
+      ]
+    },
+    {
+      "id": "memory_silver_trade",
+      "speaker": "Elissa",
+      "text": "Silver, captain? You have an eye for wealth. The Iberian mines at Gadir produce more silver than anywhere in the known world. Carthage controls those routes -- remember that.",
+      "conditions": { "type": "traded_good", "goodId": "silver" },
+      "choices": [
+        { "text": "A valuable reminder.", "next": "farewell_complete", "effects": [] },
+        { "text": "What else have your ships brought in?", "next": "gossip_hub", "effects": [] }
+      ]
+    },
+    {
+      "id": "gossip_hub",
+      "speaker": "Elissa",
+      "text": "My ships bring news as well as cargo, captain. The Mediterranean is full of whispers.",
+      "choices": [
+        {
+          "text": "What news from Tyre?",
+          "next": "gossip_tyre",
+          "effects": [],
+          "conditions": { "type": "not_visited_port", "portId": "tyre" }
+        },
+        {
+          "text": "What do they say about Egypt?",
+          "next": "gossip_egypt",
+          "effects": [],
+          "conditions": { "type": "not_visited_port", "portId": "memphis" }
+        },
+        { "text": "No matter. Farewell.", "next": "farewell_complete", "effects": [] }
+      ]
+    },
+    {
+      "id": "gossip_tyre",
+      "speaker": "Elissa",
+      "text": "Our mother city thrives, though the Babylonians eye her walls with envy. Aziru the spice merchant seeks reliable captains to carry wine from Byblos. The Phoenician coast is dangerous but profitable -- and the purple dye of Tyre is worth more than gold.",
+      "choices": [
+        { "text": "I may sail to Tyre.", "next": "farewell_complete", "effects": [] }
+      ]
+    },
+    {
+      "id": "gossip_egypt",
+      "speaker": "Elissa",
+      "text": "The Nile has flooded generously, they say. Memphis overflows with grain, and Taharqa the temple factor seeks foreign ships. The Greeks at Naukratis grow rich on the trade. If you can navigate the Delta, there is profit to be had.",
+      "choices": [
+        { "text": "Egypt sounds promising.", "next": "farewell_complete", "effects": [] }
+      ]
     }
   ]
 }

@@ -149,7 +149,65 @@
       "id": "farewell_complete",
       "speaker": "Aziru",
       "text": "Sail safely, captain. Remember -- in every port of the Mediterranean, you will find a Phoenician merchant. We are everywhere. May Melqart of Tyre protect you.",
-      "choices": []
+      "choices": [
+        { "text": "Any news from the trade routes?", "next": "gossip_hub", "effects": [] }
+      ]
+    },
+    {
+      "id": "memory_purple_dye_trade",
+      "speaker": "Aziru",
+      "text": "I hear you have been trading in purple dye, captain. You understand the value of our craft. The murex snail is Tyre's greatest treasure -- guard your cargo well, for pirates know its worth.",
+      "conditions": { "type": "traded_good", "goodId": "purple_dye" },
+      "choices": [
+        { "text": "I guard it with my life.", "next": "farewell_complete", "effects": [] },
+        { "text": "What news from abroad?", "next": "gossip_hub", "effects": [] }
+      ]
+    },
+    {
+      "id": "memory_wine_trade",
+      "speaker": "Aziru",
+      "text": "A wine trader, are you? The vintners of Byblos will be pleased. Fine wine is the currency of friendship in every port of the Mediterranean.",
+      "conditions": { "type": "traded_good", "goodId": "wine" },
+      "choices": [
+        { "text": "Wine opens many doors.", "next": "farewell_complete", "effects": [] },
+        { "text": "What else have you heard?", "next": "gossip_hub", "effects": [] }
+      ]
+    },
+    {
+      "id": "gossip_hub",
+      "speaker": "Aziru",
+      "text": "The Phoenician trade network stretches far, captain. My cousins bring news from every shore.",
+      "choices": [
+        {
+          "text": "What news from Rome?",
+          "next": "gossip_rome",
+          "effects": [],
+          "conditions": { "type": "not_visited_port", "portId": "ostia" }
+        },
+        {
+          "text": "What do they say about Athens?",
+          "next": "gossip_athens",
+          "effects": [],
+          "conditions": { "type": "not_visited_port", "portId": "athens" }
+        },
+        { "text": "No matter. Safe trading.", "next": "farewell_complete", "effects": [] }
+      ]
+    },
+    {
+      "id": "gossip_rome",
+      "speaker": "Aziru",
+      "text": "The Romans at Ostia hunger for olive oil -- they use it for everything: cooking, bathing, their lamps. A captain named Hanno collects customs there and always seeks traders willing to carry cargo from Greece. The Romans pay well, though they are... demanding.",
+      "choices": [
+        { "text": "I may visit Ostia.", "next": "farewell_complete", "effects": [] }
+      ]
+    },
+    {
+      "id": "gossip_athens",
+      "speaker": "Aziru",
+      "text": "The Athenians are building a great fleet at Piraeus. Nikias of the house of Kephalos seeks captains to carry pottery and purple dye for the festival of Athena. If you sail to Athens, seek him at the merchant quarter.",
+      "choices": [
+        { "text": "Perhaps I shall.", "next": "farewell_complete", "effects": [] }
+      ]
     }
   ]
 }
