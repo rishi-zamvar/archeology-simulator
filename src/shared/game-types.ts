@@ -26,6 +26,7 @@ export interface Port {
   description: string;  // 1-2 sentence student-accessible description
   pleiadesId?: string;  // e.g. '579885'
   culturalDescription?: string; // richer historical/cultural context for port info panel
+  ambientDescription?: string;  // sensory arrival description (sights, sounds, smells)
 }
 
 /**

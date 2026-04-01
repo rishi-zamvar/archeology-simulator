@@ -222,6 +222,11 @@ const MIGRATIONS: Migration[] = [
       )
     `).run();
   },
+
+  // v8 (index 7): Ambient descriptions for ports
+  (db) => {
+    db.prepare(`ALTER TABLE ports ADD COLUMN ambient_description TEXT`).run();
+  },
 ];
 
 /**
