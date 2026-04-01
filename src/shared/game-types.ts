@@ -182,3 +182,53 @@ export interface PortAccess {
   discoveredTurn?: number;
   unlockMethod?: string;
 }
+
+// --- v2.0 Dialogue Engine Types ---
+
+export type ConditionType = 'quest' | 'reputation' | 'visited_port' | 'has_cargo' | 'turn_range' | 'season';
+
+export interface QuestCondition { type: 'quest'; id: string; status: QuestStatus | 'not_started'; }
+export interface ReputationCondition { type: 'reputation'; region: string; min?: number; max?: number; }
+export interface VisitedPortCondition { type: 'visited_port'; portId: string; }
+export interface HasCargoCondition { type: 'has_cargo'; goodId: string; minQuantity?: number; }
+export interface TurnRangeCondition { type: 'turn_range'; min?: number; max?: number; }
+export interface SeasonCondition { type: 'season'; season: string; }
+
+export type DialogueCondition =
+  | QuestCondition | ReputationCondition | VisitedPortCondition
+  | HasCargoCondition | TurnRangeCondition | SeasonCondition;
+
+export type CompositeCondition =
+  | DialogueCondition
+  | { $and: CompositeCondition[] }
+  | { $or: CompositeCondition[] }
+  | { $not: CompositeCondition };
+
+export type EffectType = 'quest_update' | 'reputation_change' | 'port_unlock' | 'journal_entry' | 'trade_offer';
+
+export interface DialogueEffect {
+  type: EffectType;
+  [key: string]: unknown;
+}
+
+export interface DialogueChoice {
+  text: string;
+  next: string;
+  effects: DialogueEffect[];
+  conditions?: CompositeCondition;
+}
+
+export interface DialogueNode {
+  id: string;
+  speaker: string;
+  text: string;
+  conditions?: CompositeCondition;
+  choices: DialogueChoice[];
+}
+
+export interface DialogueFile {
+  npc_id: string;
+  port_id: string;
+  root_node: string;
+  nodes: DialogueNode[];
+}
