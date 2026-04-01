@@ -9,9 +9,9 @@
 
 ## Quest & Narrative
 
-- [ ] **QUEST-01**: Main storyline begins at Piraeus with a commission from an Athenian merchant house
-- [ ] **QUEST-02**: Quests involve historically plausible merchant activities (deliver goods, source materials, negotiate deals)
-- [ ] **QUEST-03**: Completing quests advances the story and teaches history through gameplay
+- [x] **QUEST-01**: Main storyline begins at Piraeus with a commission from an Athenian merchant house
+- [x] **QUEST-02**: Quests involve historically plausible merchant activities (deliver goods, source materials, negotiate deals)
+- [x] **QUEST-03**: Completing quests advances the story and teaches history through gameplay
 - [ ] **QUEST-04**: Win condition exists — completing the merchant's odyssey across the Mediterranean
 
 ## NPCs & Dialogue

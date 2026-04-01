@@ -87,7 +87,7 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 15-01-PLAN.md -- Pure quest engine, types, data (Tyre port + pottery/purple_dye goods), unit tests
+- [x] 15-01-PLAN.md -- Pure quest engine, types, data (Tyre port + pottery/purple_dye goods), unit tests
 - [ ] 15-02-PLAN.md -- Quest IPC handlers, game loop integration, preload bridge, integration tests
 - [ ] 15-03-PLAN.md -- Quest UI (Logbook tab + Shell indicator), human verification of full quest flow
 
@@ -163,7 +163,7 @@ Note: Phase 15 and Phase 16 can proceed in parallel after Phase 14 completes. Ph
 |-------|-----------|----------------|--------|-----------|
 | 13. Infrastructure & Migration System | v2.0 | 2/2 | Complete    | 2026-04-01 |
 | 14. Dialogue Engine & Content Pipeline | v2.0 | 2/2 | Complete    | 2026-04-01 |
-| 15. Quest System Foundation | v2.0 | 0/3 | Not started | - |
+| 15. Quest System Foundation | v2.0 | 1/3 | In Progress|  |
 | 16. Port Content & World Building | v2.0 | 0/TBD | Not started | - |
 | 17. NPC Characters & Dialogue Content | v2.0 | 0/TBD | Not started | - |
 | 18. Reputation & Trade Integration | v2.0 | 0/TBD | Not started | - |
