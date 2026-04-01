@@ -87,29 +87,32 @@ export default function DialogueModal({
     >
       {/* Parchment card */}
       <div
+        className="animate-fade-in"
         style={{
           width: '90%',
           maxWidth: 600,
-          padding: 32,
+          padding: '2rem 2.25rem',
           backgroundColor: '#fdf5e6',
           border: '2px solid #c4956a',
-          borderRadius: 8,
-          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
+          borderRadius: 10,
+          boxShadow: '0 12px 40px rgba(0, 0, 0, 0.45)',
           fontFamily: "'Lora', Georgia, serif",
         }}
       >
         {/* Speaker row with portrait */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 8 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 16 }}>
           {portraitUrl && (
             <img
               src={portraitUrl}
               alt={currentNode.speaker}
               style={{
-                width: 64,
-                height: 64,
-                borderRadius: 4,
+                width: 72,
+                height: 72,
+                borderRadius: 6,
                 border: '2px solid #c4956a',
-                backgroundColor: '#fdf5e6',
+                backgroundColor: '#f0e4cc',
+                objectFit: 'cover',
+                boxShadow: '0 2px 8px rgba(61, 43, 31, 0.15)',
               }}
             />
           )}
@@ -117,11 +120,12 @@ export default function DialogueModal({
             id="dialogue-speaker-name"
             style={{
               fontFamily: "'Cinzel', 'Times New Roman', serif",
-              fontSize: 18,
+              fontSize: 20,
               fontWeight: 700,
-              color: '#7a5c45',
+              color: '#5a3e2b',
               marginTop: 0,
               marginBottom: 0,
+              letterSpacing: '0.03em',
             }}
           >
             {currentNode.speaker}
@@ -134,9 +138,9 @@ export default function DialogueModal({
             fontFamily: "'Lora', Georgia, serif",
             fontSize: 16,
             color: '#1a0f0a',
-            lineHeight: 1.6,
+            lineHeight: 1.75,
             marginTop: 0,
-            marginBottom: 24,
+            marginBottom: 28,
           }}
         >
           {currentNode.text}
@@ -163,7 +167,7 @@ export default function DialogueModal({
 
         {/* Choice buttons */}
         {!isTerminal && !error && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {availableChoices.map((choice, index) => (
               <button
                 key={`${currentNode.id}-${index}`}
@@ -173,20 +177,22 @@ export default function DialogueModal({
                 onMouseLeave={() => setHoveredIndex(null)}
                 style={{
                   width: '100%',
-                  padding: '12px 16px',
-                  marginBottom: 8,
-                  backgroundColor: hoveredIndex === index ? 'rgba(196, 149, 106, 0.15)' : 'transparent',
-                  border: '1px solid #c4956a',
-                  borderRadius: 4,
+                  padding: '14px 18px',
+                  backgroundColor: hoveredIndex === index ? 'rgba(196, 149, 106, 0.18)' : 'rgba(196, 149, 106, 0.05)',
+                  border: hoveredIndex === index ? '1px solid #b8894a' : '1px solid #d4c4a8',
+                  borderRadius: 6,
                   cursor: resolving ? 'not-allowed' : 'pointer',
                   fontFamily: "'Lora', Georgia, serif",
                   fontSize: 14,
                   color: '#1a0f0a',
                   textAlign: 'left',
-                  transition: 'background-color 0.15s',
+                  lineHeight: 1.5,
+                  transition: 'background-color 0.2s ease, border-color 0.2s ease, transform 0.15s ease',
                   opacity: resolving ? 0.6 : 1,
+                  transform: hoveredIndex === index ? 'translateX(4px)' : 'translateX(0)',
                 }}
               >
+                <span style={{ color: '#c4956a', marginRight: 8, fontWeight: 600 }}>&rsaquo;</span>
                 {choice.text}
               </button>
             ))}
@@ -197,19 +203,23 @@ export default function DialogueModal({
         {isTerminal && !error && (
           <button
             onClick={onDismiss}
+            onMouseEnter={() => setHoveredIndex(-1)}
+            onMouseLeave={() => setHoveredIndex(null)}
             style={{
               width: '100%',
-              padding: '12px 16px',
-              backgroundColor: 'transparent',
+              padding: '14px 18px',
+              backgroundColor: hoveredIndex === -1 ? 'rgba(196, 149, 106, 0.15)' : 'transparent',
               border: '1px solid #c4956a',
-              borderRadius: 4,
+              borderRadius: 6,
               cursor: 'pointer',
-              fontFamily: "'Lora', Georgia, serif",
-              fontSize: 14,
+              fontFamily: "'Cinzel', Georgia, serif",
+              fontSize: 13,
+              fontWeight: 600,
+              letterSpacing: '0.06em',
               fontStyle: 'italic',
               color: '#7a5c45',
               textAlign: 'center',
-              transition: 'background-color 0.15s',
+              transition: 'background-color 0.2s ease',
             }}
           >
             Farewell
