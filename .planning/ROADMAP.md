@@ -57,7 +57,7 @@ Seasonal weather with Athenian calendar, captain's journal with auto-logging, an
 **Plans**: 2 plans
 
 Plans:
-- [ ] 13-01-PLAN.md -- Migration runner, new table types, 7 migrations (v1 baseline through v7 port_access), migration tests
+- [x] 13-01-PLAN.md -- Migration runner, new table types, 7 migrations (v1 baseline through v7 port_access), migration tests
 - [ ] 13-02-PLAN.md -- Consolidate new-game reset with PLAYER_DATA_TABLES, add db:schemaVersion IPC
 
 ### Phase 14: Dialogue Engine & Content Pipeline
@@ -154,7 +154,7 @@ Note: Phase 15 and Phase 16 can proceed in parallel after Phase 14 completes. Ph
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 13. Infrastructure & Migration System | v2.0 | 0/2 | Planned | - |
+| 13. Infrastructure & Migration System | v2.0 | 1/2 | In Progress | - |
 | 14. Dialogue Engine & Content Pipeline | v2.0 | 0/TBD | Not started | - |
 | 15. Quest System Foundation | v2.0 | 0/TBD | Not started | - |
 | 16. Port Content & World Building | v2.0 | 0/TBD | Not started | - |
