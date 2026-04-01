@@ -35,6 +35,7 @@ import {
   getCuratedImagesForPort,
   insertJournalEntry,
   getPortLore,
+  getPortReputation,
 } from '../db/queries';
 import { evaluateActiveQuests } from './quest';
 import { performAction } from '../../game/engine';
@@ -585,6 +586,15 @@ export function registerGameIPCHandlers(db: Database.Database): void {
     'game:getPortLore',
     async (portId) => getPortLore(db, portId),
     (portId) => (!portId || typeof portId !== 'string' ? 'portId is required' : null),
+  );
+
+  /**
+   * game:getPortReputation — return player's reputation tier at a port.
+   */
+  wrapHandler<ReturnType<typeof getPortReputation>, [string]>(
+    'game:getPortReputation',
+    async (portId) => getPortReputation(db, portId),
+    (portId) => (!portId || typeof portId !== 'string' ? 'portId required' : null),
   );
 }
 
