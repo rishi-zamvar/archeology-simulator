@@ -13,7 +13,7 @@ import type Database from 'better-sqlite3';
 import { app } from 'electron';
 import { wrapHandler } from '../lib/ipc-wrapper';
 import { createLogger } from '../lib/logger';
-import { loadGameState, insertJournalEntry } from '../db/queries';
+import { loadGameState, insertJournalEntryIfUnderCap, markDiscovery, hasDiscovery, getPortLore } from '../db/queries';
 import { getResourcesBase } from '../lib/paths';
 import { getSeason } from '../../game/weather';
 import {
@@ -205,7 +205,13 @@ function applyEffects(db: Database.Database, effects: DialogueEffect[], currentT
       case 'journal_entry': {
         const title = effect.title as string;
         const text = effect.text as string;
-        insertJournalEntry(db, currentTurn, 'note', title, { text });
+        const npcId = effect.npcId as string | undefined;
+        const npcName = effect.npcName as string | undefined;
+        insertJournalEntryIfUnderCap(db, currentTurn, 'dialogue', title, {
+          npcId: npcId ?? 'unknown',
+          npcName: npcName ?? 'Unknown',
+          summary: text,
+        }, 'narrative');
         applied.push(`journal_entry: ${title}`);
         break;
       }
@@ -324,6 +330,28 @@ export function registerDialogueIPCHandlers(db: Database.Database): void {
       // Get next node
       const nextNode = getNextNode(dialogueFile.nodes, selectedChoice.next);
       const nextChoices = nextNode ? getAvailableChoices(nextNode, freshCtx) : [];
+
+      // Phase 20: Educational discovery check — when dialogue ends at a port with lore,
+      // check if this port's culture is a first-time discovery.
+      if (!nextNode && dialogueFile.port_id) {
+        const portId = dialogueFile.port_id;
+        const discoverySubject = `port_culture_${portId}`;
+        if (!hasDiscovery(db, discoverySubject)) {
+          const lore = getPortLore(db, portId);
+          if (lore?.culture) {
+            const isNew = markDiscovery(db, 'port_culture', discoverySubject, freshCtx.currentTurn);
+            if (isNew) {
+              const portRow = db.prepare('SELECT ancient_name FROM ports WHERE id = ?').get(portId) as { ancient_name: string } | undefined;
+              const portName = portRow?.ancient_name ?? portId;
+              insertJournalEntryIfUnderCap(db, freshCtx.currentTurn, 'discovery',
+                `Discovered: Culture of ${portName}`,
+                { category: 'port_culture' as const, subject: discoverySubject, text: lore.culture },
+                'narrative'
+              );
+            }
+          }
+        }
+      }
 
       log.info('Dialogue advanced', {
         npcId,

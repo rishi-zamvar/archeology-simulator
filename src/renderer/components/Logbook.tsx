@@ -17,7 +17,7 @@ export interface LogEntry {
   turn: number;
   date: string;
   text: string;
-  type: 'weather' | 'rumor' | 'arrival' | 'departure' | 'event' | 'trade' | 'note';
+  type: 'weather' | 'rumor' | 'arrival' | 'departure' | 'event' | 'trade' | 'note' | 'quest' | 'dialogue' | 'discovery';
 }
 
 // Generate trader rumors based on turn
@@ -70,8 +70,11 @@ type DisplayEntry = {
 const TYPE_ORDER: Record<string, number> = {
   weather: 0,
   rumor: 1,
+  discovery: 1.5,
   arrival: 2,
+  quest: 2.5,
   departure: 3,
+  dialogue: 3.5,
   trade: 4,
   event: 5,
   note: 6,
@@ -130,12 +133,18 @@ export default function Logbook({ currentTurn, gameStateType, portName, season, 
 
     // Add DB entries
     for (const e of dbEntries) {
+      const typeMap: Record<string, LogEntry['type']> = {
+        voyage_event: 'event',
+        quest: 'quest',
+        dialogue: 'dialogue',
+        discovery: 'discovery',
+      };
       all.push({
         id: `db-${e.id}`,
         turn: e.turn,
         date: turnToDate(e.turn),
         text: e.title,
-        type: e.entryType === 'voyage_event' ? 'event' : e.entryType as LogEntry['type'],
+        type: typeMap[e.entryType] ?? (e.entryType as LogEntry['type']),
       });
     }
 
@@ -205,6 +214,9 @@ export default function Logbook({ currentTurn, gameStateType, portName, season, 
     event: '\u2694',     // crossed swords
     trade: '\u2696',     // scales
     note: '\u270E',      // pencil
+    quest: '\u2694',     // crossed swords
+    dialogue: '\u2709',  // envelope (speech)
+    discovery: '\u2726', // four-pointed star
   };
 
   function handleSubmitNote(e: React.FormEvent) {
@@ -326,40 +338,62 @@ export default function Logbook({ currentTurn, gameStateType, portName, season, 
                     The log is empty. Your journey has yet to begin.
                   </div>
                 ) : (
-                  displayEntries.map((entry) => (
-                    <div
-                      key={entry.id}
-                      style={{
-                        display: 'flex',
-                        gap: '0.4rem',
-                        padding: '0.35rem 0.25rem',
-                        borderBottom: '1px solid rgba(196, 149, 106, 0.2)',
-                      }}
-                    >
-                      <span style={{ fontSize: '0.75rem', flexShrink: 0, width: 18, textAlign: 'center' }}>
-                        {typeIcon[entry.type]}
-                      </span>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{
-                          fontFamily: "'Lora', Georgia, serif",
-                          fontSize: '0.7rem',
-                          color: '#3d2b1f',
-                          lineHeight: 1.5,
-                        }}>
-                          {entry.text}
-                        </div>
-                        <div style={{
-                          fontFamily: "'Lora', Georgia, serif",
-                          fontSize: '0.55rem',
-                          color: '#a08870',
-                          marginTop: 1,
-                        }}>
-                          {entry.date}
+                  displayEntries.map((entry) => {
+                    const isDiscovery = entry.type === 'discovery';
+                    return (
+                      <div
+                        key={entry.id}
+                        style={{
+                          display: 'flex',
+                          gap: '0.4rem',
+                          padding: '0.35rem 0.25rem',
+                          borderBottom: '1px solid rgba(196, 149, 106, 0.2)',
+                          ...(isDiscovery ? {
+                            borderLeft: '3px solid #c4956a',
+                            background: 'rgba(196, 149, 106, 0.08)',
+                            paddingLeft: '0.5rem',
+                          } : {}),
+                        }}
+                      >
+                        <span style={{ fontSize: '0.75rem', flexShrink: 0, width: 18, textAlign: 'center' }}>
+                          {typeIcon[entry.type]}
+                        </span>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          {isDiscovery && (
+                            <div style={{
+                              fontFamily: "'Cinzel', Georgia, serif",
+                              fontSize: '0.45rem',
+                              fontWeight: 700,
+                              color: '#c4956a',
+                              letterSpacing: '0.1em',
+                              textTransform: 'uppercase' as const,
+                              marginBottom: 2,
+                            }}>
+                              DISCOVERY
+                            </div>
+                          )}
+                          <div style={{
+                            fontFamily: "'Lora', Georgia, serif",
+                            fontSize: '0.7rem',
+                            color: '#3d2b1f',
+                            lineHeight: 1.5,
+                            ...(isDiscovery ? { fontStyle: 'italic' } : {}),
+                          }}>
+                            {entry.text}
+                          </div>
+                          <div style={{
+                            fontFamily: "'Lora', Georgia, serif",
+                            fontSize: '0.55rem',
+                            color: '#a08870',
+                            marginTop: 1,
+                          }}>
+                            {entry.date}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))
-                )}
+                    );
+                  }))
+                }
 
                 {/* Note input — Phase 10 JRN-05 */}
                 <form onSubmit={handleSubmitNote} style={{ borderTop: '1px solid #c4956a', marginTop: '0.5rem', paddingTop: '0.5rem' }}>

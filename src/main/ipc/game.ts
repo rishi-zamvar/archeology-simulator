@@ -34,6 +34,9 @@ import {
   getCuratedImagesForGood,
   getCuratedImagesForPort,
   insertJournalEntry,
+  insertJournalEntryIfUnderCap,
+  hasDiscovery,
+  markDiscovery,
   getPortLore,
   getPortReputation,
   getPortAccessLevel,
@@ -116,11 +119,25 @@ export function registerGameIPCHandlers(db: Database.Database): void {
 
         // Auto-log arrival to captain's journal (Phase 10 — JRN-04)
         if (current.type === 'sailing' && result.state.type === 'trading' && result.state.selectedPort) {
-          const arrPort = getPortById(db, result.state.selectedPort);
+          const arrPortId = result.state.selectedPort;
+          const arrPort = getPortById(db, arrPortId);
           insertJournalEntry(db, result.state.currentTurn, 'arrival',
-            `Arrived at ${arrPort?.ancientName ?? result.state.selectedPort}`,
-            { portId: result.state.selectedPort, portName: arrPort?.ancientName ?? result.state.selectedPort }
+            `Arrived at ${arrPort?.ancientName ?? arrPortId}`,
+            { portId: arrPortId, portName: arrPort?.ancientName ?? arrPortId }
           );
+
+          // Phase 20: First-visit discovery — record port culture on first arrival
+          const discoverySubject = `port_visit_${arrPortId}`;
+          if (!hasDiscovery(db, discoverySubject)) {
+            const isNew = markDiscovery(db, 'port_culture', discoverySubject, result.state.currentTurn);
+            if (isNew && arrPort?.ambientDescription) {
+              insertJournalEntryIfUnderCap(db, result.state.currentTurn, 'discovery',
+                `Discovered: ${arrPort.ancientName ?? arrPortId}`,
+                { category: 'port_culture' as const, subject: discoverySubject, text: arrPort.ambientDescription },
+                'narrative'
+              );
+            }
+          }
 
           // Phase 15: Evaluate quests on port arrival
           evaluateActiveQuests(db);

@@ -15,7 +15,7 @@ import type Database from 'better-sqlite3';
 import { wrapHandler } from '../lib/ipc-wrapper';
 import { createLogger } from '../lib/logger';
 import { getResourcesBase } from '../lib/paths';
-import { insertJournalEntry } from '../db/queries';
+import { insertJournalEntryIfUnderCap } from '../db/queries';
 import {
   advanceQuest,
   loadQuestDefinitions,
@@ -115,8 +115,25 @@ export function evaluateActiveQuests(db: Database.Database): QuestProgress[] {
         status: newProgress.status,
       });
 
-      // If quest completed, apply rewards
+      // Phase 20: Log objective completion to journal
+      if (newProgress.currentObjective > progress.currentObjective) {
+        const completedObj = quest.objectives[progress.currentObjective];
+        if (completedObj) {
+          insertJournalEntryIfUnderCap(db, ctx.currentTurn, 'quest',
+            `${quest.name}: ${completedObj.description}`,
+            { questId, questName: quest.name, milestone: completedObj.description },
+            'quest'
+          );
+        }
+      }
+
+      // If quest completed, apply rewards + log completion
       if (newProgress.status === 'completed') {
+        insertJournalEntryIfUnderCap(db, ctx.currentTurn, 'quest',
+          `${quest.name} Complete`,
+          { questId, questName: quest.name, milestone: 'Quest completed' },
+          'narrative'
+        );
         applyQuestRewards(db, quest, ctx.currentTurn);
       }
 
@@ -145,7 +162,11 @@ function applyQuestRewards(db: Database.Database, quest: QuestDefinition, curren
         break;
       }
       case 'journal_entry': {
-        insertJournalEntry(db, currentTurn, 'note', reward.title!, { text: reward.text });
+        insertJournalEntryIfUnderCap(db, currentTurn, 'quest', reward.title!, {
+          questId: quest.id,
+          questName: quest.name,
+          milestone: reward.title!,
+        }, 'quest');
         log.info('Quest reward: journal entry', { questId: quest.id, title: reward.title });
         break;
       }
