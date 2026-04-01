@@ -162,8 +162,13 @@ Plans:
   3. The journal reads as a personal history record of the merchant's odyssey by end of game
   4. An intro sequence at Piraeus sets the scene and introduces the story before gameplay begins
   5. A win condition exists: completing the merchant's odyssey triggers a satisfying conclusion sequence
-**Plans**: TBD
+**Plans**: 3 plans
 **UI hint**: yes
+
+Plans:
+- [ ] 20-01-PLAN.md -- Journal integration: new entry types (quest/dialogue/discovery), discovery tracking, cap enforcement, Logbook UI
+- [ ] 20-02-PLAN.md -- Expanded voyage events: 12+ new historically accurate events (storms, pirates, calm encounters)
+- [ ] 20-03-PLAN.md -- Intro sequence at Piraeus, win condition meta-quest, conclusion screen with journey stats
 
 ## Progress
 
@@ -181,4 +186,4 @@ Note: Phase 15 and Phase 16 can proceed in parallel after Phase 14 completes. Ph
 | 17. NPC Characters & Dialogue Content | v2.0 | 2/2 | Complete    | 2026-04-01 |
 | 18. Reputation & Trade Integration | v2.0 | 2/2 | Complete    | 2026-04-01 |
 | 19. Progressive Port Unlocking | v2.0 | 2/2 | Complete    | 2026-04-01 |
-| 20. Journal Integration & Game Polish | v2.0 | 0/TBD | Not started | - |
+| 20. Journal Integration & Game Polish | v2.0 | 0/3 | Not started | - |
