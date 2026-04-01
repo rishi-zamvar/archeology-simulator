@@ -114,6 +114,28 @@
   transition: opacity 0.3s ease, transform 0.3s ease;
 }
 
+/* ── Top panel: hover to reveal ─────────────────────────────────────── */
+
+.top-panel-content {
+  transform: translateY(-100%);
+  opacity: 0;
+  transition: transform 0.35s ease, opacity 0.25s ease;
+  pointer-events: none;
+}
+
+.top-panel-trigger:hover .top-panel-content {
+  transform: translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Keep panel open while mouse is inside it */
+.top-panel-content:hover {
+  transform: translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+
 /* Base body styles */
 body {
   background-color: var(--parchment-bg);

@@ -539,8 +539,8 @@ export default function Shell(): React.ReactElement {
             portId={selectedPortId}
             portName={portDisplayName}
             region={portRegions.get(selectedPortId) ?? 'greece'}
-            onOpenMarket={toggleRightPanel}
-            onOpenHarbor={toggleLeftPanel}
+            onOpenMarket={() => {}}
+            onOpenHarbor={() => {}}
           />
         </div>
       )}
@@ -585,82 +585,51 @@ export default function Shell(): React.ReactElement {
         </div>
       )}
 
-      {/* ── Side Panel with Harbor/Market tabs — only on port scene ── */}
-      {selectedPortId && isTrading && !showFullMap && (leftPanelOpen || rightPanelOpen) && (
+      {/* ── Slide-down panel — hover top edge to reveal, contains Harbor + Market ── */}
+      {selectedPortId && isTrading && !showFullMap && (
         <div
+          className="top-panel-trigger"
           style={{
-            ...FLOAT_PANEL,
-            top: 16,
-            right: 16,
-            width: 380,
-            maxHeight: 'calc(100vh - 100px)',
-            display: 'flex',
-            flexDirection: 'column',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            zIndex: 1200,
           }}
         >
-          {/* Tab bar */}
-          <div style={{
-            display: 'flex',
-            borderBottom: '1px solid #e8d5b8',
-            marginBottom: '0.5rem',
-          }}>
-            {['Harbor', 'Market'].map(tab => {
-              const isActive = tab === 'Harbor' ? leftPanelOpen && !rightPanelOpen : rightPanelOpen;
-              return (
-                <button
-                  key={tab}
-                  type="button"
-                  onClick={() => {
-                    if (tab === 'Harbor') { openLeftPanel(); }
-                    else { openRightPanel(); }
-                  }}
-                  style={{
-                    flex: 1,
-                    padding: '0.5rem',
-                    border: 'none',
-                    borderBottom: isActive ? '2px solid #c4956a' : '2px solid transparent',
-                    background: 'none',
-                    fontFamily: "'Cinzel', Georgia, serif",
-                    fontSize: '0.7rem',
-                    fontWeight: 700,
-                    color: isActive ? '#5a3e2b' : '#9a8570',
-                    cursor: 'pointer',
-                    letterSpacing: '0.06em',
-                    textTransform: 'uppercase',
-                    transition: 'color 0.2s, border-color 0.2s',
-                  }}
-                >
-                  {tab}
-                </button>
-              );
-            })}
-            <button
-              type="button"
-              onClick={() => { toggleLeftPanel(); toggleRightPanel(); }}
-              style={{
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer',
-                fontSize: '0.9rem',
-                color: '#9a8570',
-                padding: '0 8px',
-              }}
-            >
-              x
-            </button>
-          </div>
+          {/* Invisible hover trigger zone */}
+          <div style={{ height: 8, cursor: 'pointer' }} />
 
-          {/* Tab content */}
-          <div style={{ flex: 1, overflowY: 'auto', minHeight: 0 }}>
-            {leftPanelOpen && !rightPanelOpen && (
+          {/* Panel that slides down on hover */}
+          <div
+            className="top-panel-content"
+            style={{
+              backgroundColor: 'rgba(253, 248, 240, 0.97)',
+              borderBottom: '1px solid #c4956a',
+              boxShadow: '0 4px 20px rgba(61, 43, 31, 0.15)',
+              maxHeight: 'calc(100vh - 60px)',
+              overflowY: 'auto',
+              padding: '0.75rem 1.5rem',
+              display: 'flex',
+              gap: '1.5rem',
+              backdropFilter: 'blur(6px)',
+            }}
+          >
+            {/* Left: Harbor info (port details + destinations) */}
+            <div style={{ flex: 1, minWidth: 0, maxWidth: 400 }}>
               <PortInfoPanel
                 portId={selectedPortId}
                 currentTurn={gameState?.currentTurn ?? 0}
-                onClose={() => { setSelectedPort(null); toggleLeftPanel(); }}
+                onClose={() => { /* no-op — panel hides on mouse leave */ }}
                 onNavigate={handleNavigate}
               />
-            )}
-            {rightPanelOpen && (
+            </div>
+
+            {/* Divider */}
+            <div style={{ width: 1, backgroundColor: '#e8d5b8', flexShrink: 0 }} />
+
+            {/* Right: Market (trade goods) */}
+            <div style={{ flex: 1, minWidth: 0, maxWidth: 450 }}>
               <TradePanel
                 portId={selectedPortId}
                 portName={portDisplayName}
@@ -669,7 +638,7 @@ export default function Shell(): React.ReactElement {
                 onBuy={handleBuy}
                 onSell={handleSell}
               />
-            )}
+            </div>
           </div>
         </div>
       )}
