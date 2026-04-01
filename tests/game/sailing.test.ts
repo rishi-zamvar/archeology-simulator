@@ -8,24 +8,19 @@ import { describe, it, expect } from 'vitest';
 import { calculateAnimationDuration, interpolateLatLng } from '../../src/game/sailing';
 
 describe('calculateAnimationDuration', () => {
-  it('test_given1Turn_whenCalculating_thenReturnsClampedMinimum2000', () => {
-    expect(calculateAnimationDuration(1)).toBe(2000);
+  it('test_given1Turn_whenCalculating_thenReturns4000ms', () => {
+    // 1 month voyage = 4 seconds animation
+    expect(calculateAnimationDuration(1)).toBe(4000);
   });
 
-  it('test_given4Turns_whenCalculating_thenReturns2000EqualsMin', () => {
-    expect(calculateAnimationDuration(4)).toBe(2000);
+  it('test_given2Turns_whenCalculating_thenReturns8000ms', () => {
+    // 2 month voyage = 8 seconds animation
+    expect(calculateAnimationDuration(2)).toBe(8000);
   });
 
-  it('test_given5Turns_whenCalculating_thenReturns2500', () => {
-    expect(calculateAnimationDuration(5)).toBe(2500);
-  });
-
-  it('test_given10Turns_whenCalculating_thenReturns5000', () => {
-    expect(calculateAnimationDuration(10)).toBe(5000);
-  });
-
-  it('test_given20Turns_whenCalculating_thenReturnsClampedMaximum8000', () => {
-    expect(calculateAnimationDuration(20)).toBe(8000);
+  it('test_given3Turns_whenCalculating_thenReturnsClampedMaximum10000', () => {
+    // 3 month voyage (rare, with weather) = clamped to 10s
+    expect(calculateAnimationDuration(3)).toBe(10000);
   });
 });
 

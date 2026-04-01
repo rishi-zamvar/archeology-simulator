@@ -4,8 +4,8 @@
  * Shows:
  *   - Port ancient name (heading) and modern name (subtitle)
  *   - Historical description
- *   - Reachable destinations: up to 5 nearest, with distance in km,
- *     voyage duration in turns, and "Sail" button
+ *   - Reachable destinations: ports within 2 months sailing, with distance
+ *     in km, voyage duration in months, and "Sail" button
  *
  * Uses an AbortController-inspired cancelled flag pattern to avoid
  * setting state after unmount or after portId has changed (stale responses).
@@ -300,7 +300,7 @@ export default function PortInfoPanel({
                     }}
                   >
                     {Math.round(route.distanceKm)} km &middot; {route.durationTurns}{' '}
-                    {route.durationTurns === 1 ? 'day' : 'days'}
+                    {route.durationTurns === 1 ? 'month' : 'months'}
                   </div>
                 </div>
 

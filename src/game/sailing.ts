@@ -11,13 +11,14 @@ import type { Season } from './weather';
 
 // ── Animation Utilities ─────────────────────────────────────────────────────
 
-const MIN_ANIMATION_MS = 2000;
-const MAX_ANIMATION_MS = 8000;
-const MS_PER_TURN = 500;
+const MIN_ANIMATION_MS = 3000;
+const MAX_ANIMATION_MS = 10000;
+const MS_PER_TURN = 4000;
 
 /**
  * Calculate animation duration in milliseconds proportional to voyage turn count.
- * 500ms per turn, clamped to [2000, 8000] ms.
+ * 4000ms (4s) per turn — each turn is one month of sailing. Voyages are typically
+ * 1-2 months, so animations range from 4s to 8s. Clamped to [3000, 10000] ms.
  */
 export function calculateAnimationDuration(durationTurns: number): number {
   return Math.min(MAX_ANIMATION_MS, Math.max(MIN_ANIMATION_MS, durationTurns * MS_PER_TURN));

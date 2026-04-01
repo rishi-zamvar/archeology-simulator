@@ -112,7 +112,7 @@ export default function SailingOverlay({
           marginBottom: 4,
         }}
       >
-        Turn {currentTurn} of {totalTurns}
+        Month {currentTurn} of {totalTurns}
       </div>
 
       {/* Season badge + month */}
