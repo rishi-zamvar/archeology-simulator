@@ -1,14 +1,13 @@
 /**
- * ShipMarker -- animated ship marker with smooth sea route animation.
+ * ShipMarker -- animated ship along sea route.
  *
- * Uses a single leaflet.motion polyline along the full sea route for
- * smooth continuous animation. No zoom forcing — camera gently pans.
- * Double-click anywhere to skip the animation and arrive instantly.
+ * Single leaflet.motion polyline for smooth animation. No zoom changes.
+ * Double-click to skip. Turns advanced after animation completes.
  *
- * MUST be rendered inside a MapContainer (uses useMap() hook internally).
+ * MUST be rendered inside a MapContainer.
  */
 
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef } from 'react';
 import { useMap } from 'react-leaflet';
 import L from 'leaflet';
 import type { SailingState } from '../../game/types';
@@ -16,7 +15,6 @@ import { calculateAnimationDuration } from '../../game/sailing';
 import { getSeaRoute } from '../../game/sea-routes';
 import type { SailingTurnResult } from '../../game/sailing';
 
-// Import leaflet.motion for side-effects
 import 'leaflet.motion/dist/leaflet.motion.js';
 
 interface MotionLayer {
@@ -32,13 +30,12 @@ type LeafletWithMotion = typeof L & {
     polyline: (
       latlngs: [number, number][],
       options: Record<string, unknown>,
-      motionOptions: { auto?: boolean; duration?: number; speed?: number },
-      markerOptions?: { icon?: L.Icon | L.DivIcon; showMarker?: boolean; removeOnEnd?: boolean }
+      motionOptions: { auto?: boolean; duration?: number },
+      markerOptions?: { icon?: L.DivIcon; showMarker?: boolean; removeOnEnd?: boolean }
     ) => MotionLayer;
   };
 };
 
-// Ship icon -- SVG trireme
 function createShipIcon(): L.DivIcon {
   return L.divIcon({
     className: 'ship-icon',
@@ -77,200 +74,97 @@ export default function ShipMarker({
   onVoyageStarted,
 }: ShipMarkerProps): null {
   const map = useMap();
-  const motionLayerRef = useRef<MotionLayer | null>(null);
-  const routeLineRef = useRef<L.Polyline | null>(null);
-  const cleanedUpRef = useRef(false);
-  const skipRequestedRef = useRef(false);
+  const motionRef = useRef<MotionLayer | null>(null);
+  const routeRef = useRef<L.Polyline | null>(null);
+  const doneRef = useRef(false);
 
   const { destination, departurePortId } = sailingState;
-
-  // Double-click to skip animation
-  const handleSkip = useCallback(() => {
-    skipRequestedRef.current = true;
-  }, []);
 
   useEffect(() => {
     const destCoords = portCoords.get(destination);
     const deptCoords = departurePortId ? portCoords.get(departurePortId) : undefined;
-
     if (!destCoords) return;
 
-    cleanedUpRef.current = false;
-    skipRequestedRef.current = false;
+    doneRef.current = false;
 
-    const startCoords: [number, number] = deptCoords ?? [destCoords[0] - 0.5, destCoords[1] - 0.5];
-    const endCoords: [number, number] = destCoords;
+    const start: [number, number] = deptCoords ?? [destCoords[0] - 0.5, destCoords[1] - 0.5];
+    const route = getSeaRoute(departurePortId ?? '', destination, start, destCoords);
 
-    // Build sea route with waypoints
-    const seaRoute = getSeaRoute(departurePortId ?? '', destination, startCoords, endCoords);
-
-    // Clean up previous layers
-    if (motionLayerRef.current) {
-      motionLayerRef.current.motionStop();
-      map.removeLayer(motionLayerRef.current as unknown as L.Layer);
-      motionLayerRef.current = null;
-    }
-    if (routeLineRef.current) {
-      map.removeLayer(routeLineRef.current);
-      routeLineRef.current = null;
-    }
+    // Cleanup previous
+    if (motionRef.current) { motionRef.current.motionStop(); map.removeLayer(motionRef.current as unknown as L.Layer); }
+    if (routeRef.current) { map.removeLayer(routeRef.current); }
 
     // Dashed route line
-    const routeLine = L.polyline(seaRoute, {
-      color: '#7a5c45',
-      weight: 2,
-      dashArray: '10, 8',
-      opacity: 0.7,
-    });
-    routeLine.addTo(map);
-    routeLineRef.current = routeLine;
+    const line = L.polyline(route, { color: '#7a5c45', weight: 2, dashArray: '10, 8', opacity: 0.7 });
+    line.addTo(map);
+    routeRef.current = line;
 
     const totalTurns = sailingState.voyageTurnsTotal ?? 1;
-    const totalMs = calculateAnimationDuration(totalTurns);
-
-    // Don't force zoom — just gently pan to show the route without changing zoom level
-    const routeBounds = L.latLngBounds(seaRoute.map(p => L.latLng(p[0], p[1])));
-    map.flyToBounds(routeBounds.pad(0.3), { duration: 1, maxZoom: map.getZoom() });
+    const durationMs = calculateAnimationDuration(totalTurns);
 
     onVoyageStarted?.(totalTurns);
 
     const lm = L as LeafletWithMotion;
 
-    // Listen for double-click to skip
-    map.getContainer().addEventListener('dblclick', handleSkip);
-
-    // Single smooth animation along the full route
-    const motionLayer = lm.motion.polyline(
-      seaRoute,
+    // Single smooth animation along full route
+    const motion = lm.motion.polyline(
+      route,
       { color: 'transparent', weight: 0 },
-      { auto: true, duration: totalMs },
+      { auto: true, duration: durationMs },
       { icon: createShipIcon(), showMarker: true, removeOnEnd: false },
     );
+    motionRef.current = motion;
+    motion.addTo(map);
 
-    motionLayerRef.current = motionLayer;
-    motionLayer.addTo(map);
+    // When animation finishes, advance all turns and arrive
+    async function finishVoyage() {
+      if (doneRef.current) return;
+      doneRef.current = true;
 
-    // Advance turns on a timer (evenly spaced across animation)
-    const msPerTurn = totalMs / totalTurns;
-    let turnsAdvanced = 0;
-
-    const turnTimer = setInterval(async () => {
-      if (cleanedUpRef.current || turnsAdvanced >= totalTurns) {
-        clearInterval(turnTimer);
-        return;
+      // Stop and clean up animation
+      if (motionRef.current) {
+        motionRef.current.motionStop();
+        map.removeLayer(motionRef.current as unknown as L.Layer);
+        motionRef.current = null;
+      }
+      if (routeRef.current) {
+        map.removeLayer(routeRef.current);
+        routeRef.current = null;
       }
 
-      turnsAdvanced++;
-      const result = await window.api.game.advanceSailingTurn();
-
-      if (cleanedUpRef.current) return;
-
-      if (result.success && result.data) {
-        onTurnAdvanced?.(result.data);
-
-        if (result.data.event !== null) {
-          // Pause animation for event
-          motionLayer.motionStop();
-          await waitForSailingResume();
-          if (cleanedUpRef.current) return;
-          motionLayer.motionStart();
-        }
-
-        if (result.data.arrived || skipRequestedRef.current) {
-          clearInterval(turnTimer);
-          // Skip remaining turns if double-clicked
-          if (skipRequestedRef.current && !result.data.arrived) {
-            while (turnsAdvanced < totalTurns) {
-              turnsAdvanced++;
-              const skipResult = await window.api.game.advanceSailingTurn();
-              if (skipResult.success && skipResult.data) {
-                onTurnAdvanced?.(skipResult.data);
-                if (skipResult.data.arrived) break;
-              }
-            }
-          }
-          // Arrive
-          motionLayer.motionStop();
-          map.removeLayer(motionLayer as unknown as L.Layer);
-          motionLayerRef.current = null;
-          await window.api.game.action({ type: 'ARRIVE' });
-          if (cleanedUpRef.current) return;
-          await window.api.game.action({ type: 'START_TRADE', port: destination });
-          return;
-        }
-      }
-    }, msPerTurn);
-
-    // Also handle motion-ended (animation finished naturally)
-    motionLayer.on('motion-ended', async () => {
-      clearInterval(turnTimer);
-      if (cleanedUpRef.current) return;
-
-      // Advance any remaining turns
-      while (turnsAdvanced < totalTurns) {
-        turnsAdvanced++;
+      // Advance all turns
+      for (let i = 0; i < totalTurns; i++) {
         const result = await window.api.game.advanceSailingTurn();
         if (result.success && result.data) {
           onTurnAdvanced?.(result.data);
+          if (result.data.event !== null) {
+            // Wait for event resolution
+            await new Promise<void>(resolve => {
+              const unsub = window.api.subscribe('game:updated', (data: unknown) => {
+                if ((data as { type: string }).type === 'sailing') { unsub(); resolve(); }
+              });
+            });
+          }
           if (result.data.arrived) break;
         }
       }
 
-      motionLayer.motionStop();
-      map.removeLayer(motionLayer as unknown as L.Layer);
-      motionLayerRef.current = null;
-
+      // Arrive at destination
       await window.api.game.action({ type: 'ARRIVE' });
-      if (cleanedUpRef.current) return;
       await window.api.game.action({ type: 'START_TRADE', port: destination });
-    });
-
-    // Gentle camera follow using a periodic pan
-    const followTimer = setInterval(() => {
-      if (cleanedUpRef.current) {
-        clearInterval(followTimer);
-        return;
-      }
-      // Pan toward the destination gradually
-      const progress = Math.min(1, turnsAdvanced / totalTurns);
-      const idx = Math.min(seaRoute.length - 1, Math.floor(progress * (seaRoute.length - 1)));
-      const target = seaRoute[idx];
-      map.panTo(target, { animate: true, duration: 1, noMoveStart: true });
-    }, 2000);
-
-    function waitForSailingResume(): Promise<void> {
-      return new Promise<void>((resolve) => {
-        const unsubscribe = window.api.subscribe('game:updated', (data: unknown) => {
-          const state = data as { type: string };
-          if (state.type === 'sailing') {
-            unsubscribe();
-            resolve();
-          }
-        });
-        const checkCleanup = setInterval(() => {
-          if (cleanedUpRef.current) {
-            clearInterval(checkCleanup);
-            unsubscribe();
-            resolve();
-          }
-        }, 200);
-      });
     }
 
+    motion.on('motion-ended', () => { void finishVoyage(); });
+
+    // Double-click to skip
+    function handleSkip() { void finishVoyage(); }
+    map.getContainer().addEventListener('dblclick', handleSkip);
+
     return () => {
-      cleanedUpRef.current = true;
-      clearInterval(turnTimer);
-      clearInterval(followTimer);
+      doneRef.current = true;
       map.getContainer().removeEventListener('dblclick', handleSkip);
-      if (motionLayerRef.current) {
-        motionLayerRef.current.motionStop();
-        map.removeLayer(motionLayerRef.current as unknown as L.Layer);
-        motionLayerRef.current = null;
-      }
-      if (routeLineRef.current) {
-        map.removeLayer(routeLineRef.current);
-        routeLineRef.current = null;
-      }
+      if (motionRef.current) { motionRef.current.motionStop(); map.removeLayer(motionRef.current as unknown as L.Layer); motionRef.current = null; }
+      if (routeRef.current) { map.removeLayer(routeRef.current); routeRef.current = null; }
     };
   }, [map, destination, departurePortId, portCoords]);
 
