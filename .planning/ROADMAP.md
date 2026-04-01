@@ -116,8 +116,11 @@ Plans:
   2. NPCs at ports give quests, share educational lore, and reveal previously unknown ports through conversation
   3. NPC dialogue branches based on quest state, reputation, and visited ports -- with at least 5 dialogue nodes per NPC
   4. Every NPC dialogue reference to a port, good, or quest is validated by the build-time validation script
-**Plans**: TBD
-**UI hint**: yes
+**Plans**: 2 plans
+
+Plans:
+- [ ] 17-01-PLAN.md -- 4 NPC dialogue trees, 4 NPC-initiated quests, talk_to_npc wiring, 5 SVG portraits
+- [ ] 17-02-PLAN.md -- Portrait display in DialogueModal, port_unlock effect implementation, human verification
 
 ### Phase 18: Reputation & Trade Integration
 **Goal**: Players build trade reputation that modifies their experience without ever gating required content
@@ -169,7 +172,7 @@ Note: Phase 15 and Phase 16 can proceed in parallel after Phase 14 completes. Ph
 | 14. Dialogue Engine & Content Pipeline | v2.0 | 2/2 | Complete    | 2026-04-01 |
 | 15. Quest System Foundation | v2.0 | 3/3 | Complete    | 2026-04-01 |
 | 16. Port Content & World Building | v2.0 | 3/3 | Complete    | 2026-04-01 |
-| 17. NPC Characters & Dialogue Content | v2.0 | 0/TBD | Not started | - |
+| 17. NPC Characters & Dialogue Content | v2.0 | 0/2 | Not started | - |
 | 18. Reputation & Trade Integration | v2.0 | 0/TBD | Not started | - |
 | 19. Progressive Port Unlocking | v2.0 | 0/TBD | Not started | - |
 | 20. Journal Integration & Game Polish | v2.0 | 0/TBD | Not started | - |
