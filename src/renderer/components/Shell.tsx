@@ -411,7 +411,12 @@ export default function Shell(): React.ReactElement {
 
   // Gate: show intro sequence after new game
   if (screen === 'intro') {
-    return <IntroSequence onComplete={() => setScreen('game')} />;
+    return <IntroSequence onComplete={() => {
+      // Auto-open Athens after intro — player starts at Piraeus
+      window.api?.game?.action?.({ type: 'START_TRADE', port: 'athens' }).catch(() => {});
+      setSelectedPort('athens');
+      setScreen('game');
+    }} />;
   }
 
   // Gate: show conclusion screen when merchants_odyssey completes
