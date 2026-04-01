@@ -9,8 +9,8 @@
  * Must be rendered inside a MapContainer (via MarkerClusterGroup in MapArea).
  */
 
-import React, { useCallback, useMemo } from 'react';
-import { Marker, Tooltip } from 'react-leaflet';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Marker, Tooltip, Circle } from 'react-leaflet';
 import L from 'leaflet';
 import type { Port, PortAccessLevel } from '../../shared/game-types';
 
@@ -48,6 +48,19 @@ export default function PortMarker({ port, accessLevel, isQuestTarget = false, o
     onPortClick(port.id);
   }, [port.id, onPortClick]);
 
+  /* VIS-04: Detect transition from unknown -> discovered/unlocked */
+  const prevAccessRef = useRef<PortAccessLevel>(accessLevel);
+  const [showFogDissolve, setShowFogDissolve] = useState(false);
+
+  useEffect(() => {
+    if (prevAccessRef.current === 'unknown' && accessLevel !== 'unknown') {
+      setShowFogDissolve(true);
+      const timer = setTimeout(() => setShowFogDissolve(false), 2000);
+      return () => clearTimeout(timer);
+    }
+    prevAccessRef.current = accessLevel;
+  }, [accessLevel]);
+
   const tooltipClass = isQuestTarget
     ? 'port-label port-label-quest'
     : accessLevel === 'unknown'
@@ -56,19 +69,34 @@ export default function PortMarker({ port, accessLevel, isQuestTarget = false, o
   const tooltipText = accessLevel === 'unknown' ? '?' : port.ancientName;
 
   return (
-    <Marker
-      position={[port.lat, port.lng]}
-      icon={icon}
-      eventHandlers={{ click: handleClick }}
-    >
-      <Tooltip
-        permanent
-        direction="top"
-        offset={[0, -10]}
-        className={tooltipClass}
+    <>
+      <Marker
+        position={[port.lat, port.lng]}
+        icon={icon}
+        eventHandlers={{ click: handleClick }}
       >
-        {tooltipText}
-      </Tooltip>
-    </Marker>
+        <Tooltip
+          permanent
+          direction="top"
+          offset={[0, -10]}
+          className={tooltipClass}
+        >
+          {tooltipText}
+        </Tooltip>
+      </Marker>
+      {/* VIS-04: Fog dissolve circle when port is newly discovered */}
+      {showFogDissolve && (
+        <Circle
+          center={[port.lat, port.lng]}
+          radius={30000}
+          pathOptions={{
+            fillColor: '#f8edd8',
+            fillOpacity: 0.5,
+            color: 'transparent',
+            className: 'fog-dissolve',
+          }}
+        />
+      )}
+    </>
   );
 }
