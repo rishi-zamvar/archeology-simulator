@@ -1349,7 +1349,9 @@ export function setPortAccessLevel(
 
 /**
  * Seed starting ports for a new game.
- * Piraeus (athens) and Corinth are unlocked; Miletus is discovered.
+ * Athens unlocked (starting port), Corinth discovered (nearby neighbor),
+ * Tyre discovered (first quest destination — The Tyrian Commission).
+ * All other ports remain unknown until discovered through gameplay.
  */
 export function seedStartingPorts(db: Database.Database): void {
   const insert = db.prepare(`
@@ -1359,11 +1361,50 @@ export function seedStartingPorts(db: Database.Database): void {
 
   const seedAll = db.transaction(() => {
     insert.run('athens', 'unlocked', 1, 'starting_port');
-    insert.run('corinth', 'unlocked', 1, 'starting_port');
-    insert.run('miletos', 'discovered', 1, 'starting_port');
+    insert.run('corinth', 'discovered', 1, 'starting_port');
+    insert.run('tyre', 'discovered', 1, 'quest_destination');
   });
 
   seedAll();
+}
+
+/**
+ * Get port IDs directly connected to a given port via sea routes.
+ * Used to unlock neighboring ports when arriving at a new port.
+ */
+export function getConnectedPortIds(db: Database.Database, portId: string): string[] {
+  // Get all ports — we'll filter by sea route connections
+  const allPorts = db.prepare('SELECT id FROM ports').all() as Array<{ id: string }>;
+  return allPorts.map(p => p.id).filter(id => id !== portId);
+}
+
+/**
+ * Unlock neighboring ports when a player arrives at a port.
+ * Sets directly connected ports to 'discovered' if they are currently 'unknown'.
+ * Never downgrades — discovered/unlocked ports stay as-is.
+ */
+export function unlockNeighborPorts(db: Database.Database, arrivedPortId: string, connectedPortIds: string[]): string[] {
+  const newlyDiscovered: string[] = [];
+  const upsert = db.prepare(`
+    INSERT INTO port_access (port_id, status, discovered, unlock_method)
+    VALUES (?, 'discovered', 1, 'neighbor')
+    ON CONFLICT(port_id) DO UPDATE SET
+      status = CASE WHEN port_access.status = 'unknown' THEN 'discovered' ELSE port_access.status END,
+      discovered = CASE WHEN port_access.status = 'unknown' THEN 1 ELSE port_access.discovered END
+  `);
+
+  const txn = db.transaction(() => {
+    for (const neighborId of connectedPortIds) {
+      // Check current status
+      const row = db.prepare('SELECT status FROM port_access WHERE port_id = ?').get(neighborId) as { status: string } | undefined;
+      const wasUnknown = !row || row.status === 'unknown';
+      upsert.run(neighborId);
+      if (wasUnknown) newlyDiscovered.push(neighborId);
+    }
+  });
+
+  txn();
+  return newlyDiscovered;
 }
 
 /**

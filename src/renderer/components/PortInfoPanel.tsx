@@ -35,6 +35,7 @@ export default function PortInfoPanel({
   const [lore, setLore] = useState<PortLore | null>(null);
   const [reputation, setReputation] = useState<{ tierName: string; tierLevel: number; score: number; region: string } | null>(null);
   const [accessLevel, setAccessLevel] = useState<PortAccessLevel>('unknown');
+  const [destAccessMap, setDestAccessMap] = useState<Map<string, string>>(new Map());
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
@@ -65,8 +66,18 @@ export default function PortInfoPanel({
         const sorted = [...reachableRes.data].sort(
           (a, b) => a.route.distanceKm - b.route.distanceKm
         );
-        setDestinations(sorted.slice(0, 5));
+        setDestinations(sorted.slice(0, 8));
         if (loreRes.success && loreRes.data) setLore(loreRes.data);
+        // Fetch access levels for all destination ports
+        window.api?.game?.getAllPortAccess?.().then(accessRes => {
+          if (accessRes?.success) {
+            const map = new Map<string, string>();
+            for (const info of accessRes.data) {
+              map.set(info.portId, info.status);
+            }
+            setDestAccessMap(map);
+          }
+        }).catch(() => {});
         if (repRes.success && repRes.data) setReputation(repRes.data);
         if (accessRes.success) setAccessLevel(accessRes.data);
         setIsLoading(false);
@@ -445,8 +456,17 @@ export default function PortInfoPanel({
         </div>
       )}
 
-      {/* Reachable destinations — always shown regardless of access level */}
-      {!isLoading && destinations.length > 0 && (
+      {/* Reachable destinations — only discovered/unlocked ports shown */}
+      {!isLoading && destinations.length > 0 && (() => {
+        // Filter to only show ports the player knows about
+        const knownDestinations = destinations.filter(({ port: dest }) => {
+          const destAccess = destAccessMap.get(dest.id);
+          return destAccess === 'discovered' || destAccess === 'unlocked';
+        });
+
+        if (knownDestinations.length === 0) return null;
+
+        return (
         <>
           <h3
             style={{
@@ -463,7 +483,11 @@ export default function PortInfoPanel({
           </h3>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-            {destinations.map(({ port: dest, route }) => (
+            {knownDestinations.map(({ port: dest, route }) => {
+              const destAccess = destAccessMap.get(dest.id);
+              const isNew = destAccess === 'discovered';
+
+              return (
               <div
                 key={dest.id}
                 style={{
@@ -471,8 +495,8 @@ export default function PortInfoPanel({
                   alignItems: 'center',
                   justifyContent: 'space-between',
                   padding: '0.4rem 0.5rem',
-                  backgroundColor: 'rgba(196, 149, 106, 0.08)',
-                  border: '1px solid rgba(196, 149, 106, 0.3)',
+                  backgroundColor: isNew ? 'rgba(212, 160, 23, 0.08)' : 'rgba(196, 149, 106, 0.08)',
+                  border: isNew ? '1px solid rgba(212, 160, 23, 0.4)' : '1px solid rgba(196, 149, 106, 0.3)',
                   borderRadius: 2,
                 }}
               >
@@ -488,9 +512,25 @@ export default function PortInfoPanel({
                       overflow: 'hidden',
                       textOverflow: 'ellipsis',
                       whiteSpace: 'nowrap',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.4rem',
                     }}
                   >
                     {dest.ancientName}
+                    {isNew && (
+                      <span style={{
+                        fontSize: '0.5rem',
+                        fontWeight: 700,
+                        color: '#d4a017',
+                        backgroundColor: 'rgba(212, 160, 23, 0.15)',
+                        padding: '1px 5px',
+                        borderRadius: 3,
+                        letterSpacing: '0.1em',
+                      }}>
+                        NEW
+                      </span>
+                    )}
                   </div>
                   <div
                     style={{
@@ -536,10 +576,12 @@ export default function PortInfoPanel({
                   Sail
                 </button>
               </div>
-            ))}
+              );
+            })}
           </div>
         </>
-      )}
+        );
+      })()}
 
       {/* No destinations fallback */}
       {!isLoading && !error && destinations.length === 0 && (port || accessLevel === 'unknown') && (

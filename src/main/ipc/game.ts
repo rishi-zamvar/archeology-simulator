@@ -42,7 +42,9 @@ import {
   getPortAccessLevel,
   getAllPortAccess,
   autoDiscoverPort,
+  unlockNeighborPorts,
 } from '../db/queries';
+import { getConnectedPorts } from '../../game/sea-routes';
 import { evaluateActiveQuests } from './quest';
 import { performAction } from '../../game/engine';
 import { getReachablePorts } from '../../game/voyage';
@@ -138,6 +140,16 @@ export function registerGameIPCHandlers(db: Database.Database): void {
               );
             }
           }
+
+          // Unlock neighboring ports on arrival — reveals connected ports as 'discovered'
+          const connectedIds = getConnectedPorts(arrPortId);
+          const newlyDiscovered = unlockNeighborPorts(db, arrPortId, connectedIds);
+          if (newlyDiscovered.length > 0) {
+            log.info('Neighbor ports discovered on arrival', { arrivedAt: arrPortId, discovered: newlyDiscovered });
+          }
+
+          // Upgrade this port to 'unlocked' on arrival (if it was only 'discovered')
+          autoDiscoverPort(db, arrPortId, result.state.currentTurn);
 
           // Phase 15: Evaluate quests on port arrival
           evaluateActiveQuests(db);

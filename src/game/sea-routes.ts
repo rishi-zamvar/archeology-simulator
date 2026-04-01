@@ -142,3 +142,19 @@ export function getSeaRoute(
   // Fallback: direct line (no known route)
   return [fromCoords, toCoords];
 }
+
+/**
+ * Get all port IDs directly connected to a given port via defined sea routes.
+ * A port is "connected" if there's a route definition in either direction.
+ */
+export function getConnectedPorts(portId: string): string[] {
+  const connected = new Set<string>();
+
+  for (const key of Object.keys(ROUTE_WAYPOINTS)) {
+    const [from, to] = key.split('->');
+    if (from === portId) connected.add(to);
+    if (to === portId) connected.add(from);
+  }
+
+  return [...connected];
+}
