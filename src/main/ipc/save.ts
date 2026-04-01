@@ -8,6 +8,7 @@
 
 import type Database from 'better-sqlite3';
 import { saveGameStateAtomic, loadGameState } from '../db/queries';
+import { PLAYER_DATA_TABLES } from '../db/schema';
 import type { GameState } from '../../game/types';
 import { wrapHandler } from '../lib/ipc-wrapper';
 import { createLogger } from '../lib/logger';
@@ -79,21 +80,33 @@ export function registerSaveIPCHandlers(db: Database.Database): void {
   );
 
   /**
-   * game:newGame — reset all game data and return fresh initial state.
+   * game:newGame — reset all player-data tables and return fresh initial state.
+   * Iterates PLAYER_DATA_TABLES so future phases adding new tables only need
+   * to update the array in schema.ts.
    */
   wrapHandler<GameState>(
     'game:newGame',
     async () => {
       const reset = db.transaction(() => {
-        db.prepare('DELETE FROM game_state').run();
-        db.prepare('DELETE FROM transaction_history').run();
-        db.prepare('DELETE FROM journal_entries').run();
-        db.prepare('DELETE FROM player_inventory').run();
+        for (const table of PLAYER_DATA_TABLES) {
+          db.prepare(`DELETE FROM ${table}`).run();
+        }
         // Re-insert fresh state
         saveGameStateAtomic(db, INITIAL_STATE);
       });
       reset();
       return INITIAL_STATE;
+    },
+  );
+
+  /**
+   * db:schemaVersion — return the current migration version for debugging.
+   */
+  wrapHandler<{ version: number }>(
+    'db:schemaVersion',
+    async () => {
+      const row = db.prepare('SELECT version FROM schema_version').get() as { version: number };
+      return row;
     },
   );
 }
