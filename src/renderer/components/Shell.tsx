@@ -31,6 +31,9 @@ import TutorialModal from './TutorialModal';
 import Logbook from './Logbook';
 import MareClausumModal from './MareClausumModal';
 import TitleScreen from './TitleScreen';
+import IntroSequence from './IntroSequence';
+import ConclusionScreen from './ConclusionScreen';
+import type { JourneyStats } from './ConclusionScreen';
 import { useTradeState } from '../hooks/useTradeState';
 import { useGeneratedAmbient } from '../hooks/useGeneratedAmbient';
 import { getWeatherModifiers, getSeasonalWeatherDescription } from '../../game/weather';
@@ -67,8 +70,9 @@ export default function Shell(): React.ReactElement {
   } = useUIStore();
 
   // Title screen gating — show title before gameplay
-  const [screen, setScreen] = useState<'title' | 'game'>('title');
+  const [screen, setScreen] = useState<'title' | 'intro' | 'game' | 'conclusion'>('title');
   const [hasSave, setHasSave] = useState(false);
+  const [conclusionStats, setConclusionStats] = useState<JourneyStats | null>(null);
 
   // Check for existing save on mount (lightweight IPC, no game state loading)
   useEffect(() => {
@@ -83,7 +87,7 @@ export default function Shell(): React.ReactElement {
 
   const handleNewGame = useCallback(() => {
     window.api?.game?.newGame?.().then(res => {
-      if (res.success) setScreen('game');
+      if (res.success) setScreen('intro');
     }).catch((err: unknown) => showError('Failed to start new game: ' + (err instanceof Error ? err.message : 'Unknown error')));
   }, [showError]);
 
@@ -355,6 +359,15 @@ export default function Shell(): React.ReactElement {
                     q.quest.id === prev.quest.id && q.progress.status === 'completed'
                 );
                 if (completed) {
+                  // Check if this is the merchants_odyssey meta-quest — trigger conclusion
+                  if (completed.quest.id === 'merchants_odyssey') {
+                    window.api.game.getJourneyStats().then((statsRes) => {
+                      if (statsRes.success) {
+                        setConclusionStats(statsRes.data);
+                        setScreen('conclusion');
+                      }
+                    }).catch(() => { /* non-fatal: just show the toast instead */ });
+                  }
                   setQuestToast({ name: completed.quest.name, historicalNote: completed.quest.historicalNote });
                   setTimeout(() => setQuestToast(null), 5000);
                 }
@@ -394,6 +407,24 @@ export default function Shell(): React.ReactElement {
   // Gate: show title screen before gameplay
   if (screen === 'title') {
     return <TitleScreen hasSave={hasSave} onContinue={handleContinue} onNewGame={handleNewGame} />;
+  }
+
+  // Gate: show intro sequence after new game
+  if (screen === 'intro') {
+    return <IntroSequence onComplete={() => setScreen('game')} />;
+  }
+
+  // Gate: show conclusion screen when merchants_odyssey completes
+  if (screen === 'conclusion' && conclusionStats) {
+    return (
+      <ConclusionScreen
+        stats={conclusionStats}
+        onContinue={() => {
+          setConclusionStats(null);
+          setScreen('game');
+        }}
+      />
+    );
   }
 
   return (

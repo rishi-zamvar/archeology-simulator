@@ -64,6 +64,9 @@ export interface IPCBridge {
     hasSave: () => Promise<IPCResponse<boolean>>;
     newGame: () => Promise<IPCResponse<import('../game/types').GameState>>;
 
+    // Phase 20: Journey stats for conclusion screen
+    getJourneyStats: () => Promise<IPCResponse<{ portsVisited: number; goodsTraded: number; turnsElapsed: number; questsCompleted: number; goldEarned: number }>>;
+
     // Phase 16: Port lore
     getPortLore: (portId: string) => Promise<IPCResponse<import('./game-types').PortLore | null>>;
 

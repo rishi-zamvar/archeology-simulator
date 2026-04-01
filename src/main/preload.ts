@@ -59,6 +59,8 @@ const api: IPCBridge = {
     // Phase 12: title screen
     hasSave: () => ipcRenderer!.invoke('game:hasSave'),
     newGame: () => ipcRenderer!.invoke('game:newGame'),
+    // Phase 20: Journey stats for conclusion screen
+    getJourneyStats: () => ipcRenderer!.invoke('game:getJourneyStats'),
     // Phase 16: Port lore
     getPortLore: (portId: string) => ipcRenderer!.invoke('game:getPortLore', portId),
     // Phase 18: Reputation

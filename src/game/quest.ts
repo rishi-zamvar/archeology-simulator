@@ -44,6 +44,11 @@ export function evaluateObjective(objective: QuestObjective, ctx: GameContext): 
       return npcState !== undefined && npcState.timesSpoken > 0;
     }
 
+    case 'complete_quest': {
+      const targetQuestStatus = ctx.questProgress.get(objective.questId!);
+      return targetQuestStatus === 'completed';
+    }
+
     default:
       return false;
   }
@@ -64,26 +69,35 @@ export function advanceQuest(
     return progress;
   }
 
-  const currentObj = quest.objectives[progress.currentObjective];
-  if (!currentObj || !evaluateObjective(currentObj, ctx)) {
-    return progress;
+  let current = progress;
+
+  // Loop to advance through multiple consecutively-satisfied objectives
+  // in a single call (important for meta-quests like merchants_odyssey
+  // where multiple complete_quest objectives may be satisfied at once).
+  while (current.status === 'active') {
+    const currentObj = quest.objectives[current.currentObjective];
+    if (!currentObj || !evaluateObjective(currentObj, ctx)) {
+      break;
+    }
+
+    const nextObjective = current.currentObjective + 1;
+
+    if (nextObjective >= quest.objectives.length) {
+      current = {
+        ...current,
+        currentObjective: nextObjective,
+        status: 'completed',
+        completedAt: new Date().toISOString(),
+      };
+    } else {
+      current = {
+        ...current,
+        currentObjective: nextObjective,
+      };
+    }
   }
 
-  const nextObjective = progress.currentObjective + 1;
-
-  if (nextObjective >= quest.objectives.length) {
-    return {
-      ...progress,
-      currentObjective: nextObjective,
-      status: 'completed',
-      completedAt: new Date().toISOString(),
-    };
-  }
-
-  return {
-    ...progress,
-    currentObjective: nextObjective,
-  };
+  return current === progress ? progress : current;
 }
 
 /**

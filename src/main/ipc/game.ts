@@ -600,6 +600,43 @@ export function registerGameIPCHandlers(db: Database.Database): void {
   );
 
   /**
+   * game:getJourneyStats — return aggregate journey statistics for conclusion screen.
+   */
+  wrapHandler<{ portsVisited: number; goodsTraded: number; turnsElapsed: number; questsCompleted: number; goldEarned: number }>(
+    'game:getJourneyStats',
+    async () => {
+      const state = loadGameState(db);
+      const turnsElapsed = state?.currentTurn ?? 0;
+
+      // Count unique ports visited (from journal arrival entries)
+      const portsRow = db.prepare(
+        "SELECT COUNT(DISTINCT json_extract(body, '$.portId')) as count FROM journal_entries WHERE entry_type = 'arrival'"
+      ).get() as { count: number };
+
+      // Count total trades (buy + sell from transaction_history)
+      const tradesRow = db.prepare(
+        'SELECT COUNT(*) as count FROM transaction_history'
+      ).get() as { count: number };
+
+      // Count completed quests
+      const questsRow = db.prepare(
+        "SELECT COUNT(*) as count FROM quest_progress WHERE status = 'completed'"
+      ).get() as { count: number };
+
+      // Current gold
+      const inv = getPlayerInventory(db);
+
+      return {
+        portsVisited: portsRow.count,
+        goodsTraded: tradesRow.count,
+        turnsElapsed,
+        questsCompleted: questsRow.count,
+        goldEarned: inv.gold,
+      };
+    },
+  );
+
+  /**
    * game:getPortLore — return lore data for a specific port.
    */
   wrapHandler<PortLore | null, [string]>(
