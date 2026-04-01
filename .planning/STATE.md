@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: The Merchant's Odyssey
-status: verifying
-stopped_at: Completed 19-02-PLAN.md
-last_updated: "2026-04-01T19:11:18.641Z"
-last_activity: 2026-04-01
+status: executing
+stopped_at: Completed 20-02-PLAN.md
+last_updated: "2026-03-31T14:42:16Z"
+last_activity: 2026-03-31 -- Plan 20-02 executed (expanded voyage events)
 progress:
   total_phases: 8
   completed_phases: 7
-  total_plans: 16
-  completed_plans: 16
-  percent: 93
+  total_plans: 19
+  completed_plans: 17
+  percent: 95
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-01)
 
 **Core value:** Students learn ancient Mediterranean history by making decisions as a merchant captain, not by reading about them.
-**Current focus:** Phase 19 — progressive-port-unlocking
+**Current focus:** Phase 20 — journal-integration-game-polish
 
 ## Current Position
 
-Phase: 20
-Plan: Not started
-Status: Phase complete — ready for verification
-Last activity: 2026-04-01
+Phase: 20 (journal-integration-game-polish) — EXECUTING
+Plan: 2 of 3
+Status: Executing Phase 20
+Last activity: 2026-03-31 -- Plan 20-02 executed (expanded voyage events)
 
-Progress: [▓▓▓▓▓▓▓▓▓░] 93% (v2.0 milestone)
+Progress: [▓▓▓▓▓▓▓▓▓░] 95% (v2.0 milestone)
 
 ## Accumulated Context
 
@@ -85,6 +85,6 @@ Progress: [▓▓▓▓▓▓▓▓▓░] 93% (v2.0 milestone)
 
 ## Session Continuity
 
-Last session: 2026-04-01T19:10:29.187Z
-Stopped at: Completed 19-02-PLAN.md
+Last session: 2026-03-31T14:42:16Z
+Stopped at: Completed 20-02-PLAN.md
 Resume file: None

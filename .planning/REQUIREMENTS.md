@@ -42,7 +42,7 @@
 ## Game Polish
 
 - [ ] **POLISH-01**: Intro sequence at Piraeus sets the scene and introduces the story
-- [ ] **POLISH-02**: Historically accurate voyage events expanded beyond current 24
+- [x] **POLISH-02**: Historically accurate voyage events expanded beyond current 24
 - [x] **POLISH-03**: Port-specific ambient descriptions (sights, sounds, smells a merchant would experience)
 
 ## Future Requirements (deferred)
@@ -87,5 +87,5 @@
 | JRNL-02 | Phase 20 | Planned |
 | JRNL-03 | Phase 20 | Planned |
 | POLISH-01 | Phase 20 | Planned |
-| POLISH-02 | Phase 20 | Planned |
+| POLISH-02 | Phase 20 | Complete |
 | POLISH-03 | Phase 16 | Planned |
