@@ -67,10 +67,10 @@ export default function MapArea({ children, onPortSelected }: MapAreaProps): Rea
         zoomControl={true}
         attributionControl={false}
       >
-        {/* OpenStreetMap tiles — sepia filter applied via .leaflet-tile in CSS */}
+        {/* Stamen Watercolor — painterly terrain with no modern roads or labels */}
         <TileLayer
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          attribution="&copy; OpenStreetMap contributors"
+          url="https://tiles.stadiamaps.com/tiles/stamen_watercolor/{z}/{x}/{y}.jpg"
+          attribution="&copy; Stamen Design &copy; OpenStreetMap contributors"
         />
 
         {/* Port markers — clustered for performance at low zoom levels */}

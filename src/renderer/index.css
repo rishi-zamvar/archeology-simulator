@@ -47,11 +47,11 @@ h1, h2, h3, h4, h5, h6 {
   font-family: 'Cinzel', 'Palatino Linotype', Georgia, serif;
 }
 
-/* ── Leaflet map: blue water with parchment land ──────────────────────── */
+/* ── Leaflet map: Stamen Watercolor — brown land, blue water ──────────── */
 
-/* Show real blue water with warm-tinted land masses */
+/* Warm the watercolor tiles slightly for parchment-brown land, water stays blue */
 .leaflet-tile {
-  filter: sepia(15%) saturate(120%) brightness(105%);
+  filter: sepia(25%) saturate(90%) brightness(105%);
   transition: filter 1.5s ease;
 }
 
