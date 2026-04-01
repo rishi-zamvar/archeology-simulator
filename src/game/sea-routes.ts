@@ -1,160 +1,254 @@
 /**
- * Sea routes — maritime waypoints that keep ship paths over water.
+ * Sea routes — graph-based maritime waypoints that keep ship paths over water.
  *
- * Ancient ships hugged coastlines and navigated through known sea lanes.
- * Straight-line routes often cut through land (e.g., Rome→Alexandria
- * would go through North Africa). This module provides waypoint-based
- * routes that curve around land masses.
+ * Each port connects to a nearby sea waypoint. Routes between ports are built
+ * by connecting: port → nearest waypoint → graph path → destination waypoint → port.
+ * This ensures ships always sail on water, curving around land masses.
  *
- * Key Mediterranean obstacles:
- * - Italian peninsula (between Rome and eastern ports)
- * - Sicily/Tunisia narrows (central Mediterranean chokepoint)
- * - Peloponnese (southern Greece)
- * - Crete (between Greece and Egypt)
- * - North African coast (between Carthage and Levant)
+ * The waypoint graph has edges between connected sea nodes. A simple BFS
+ * finds the shortest path through the graph for any port pair.
  */
 
-/** Waypoint: [lat, lng] */
 type Waypoint = [number, number];
 
 /**
- * Named sea waypoints used to construct routes.
- * These represent historically important navigation points.
+ * Sea waypoints — navigation nodes in open water.
  */
-const SEA_WAYPOINTS = {
-  // Southern Italy / Sicily strait
-  sicily_south:     [36.8, 15.2] as Waypoint,   // south of Sicily
-  sicily_north:     [38.5, 13.5] as Waypoint,   // north coast of Sicily
-  messina_strait:   [38.2, 15.6] as Waypoint,   // Strait of Messina
-  // Central Mediterranean
-  malta_channel:    [35.5, 14.5] as Waypoint,   // south of Malta
-  crete_west:       [35.2, 23.5] as Waypoint,   // west of Crete
-  crete_east:       [35.0, 26.5] as Waypoint,   // east of Crete
-  // Eastern Mediterranean
-  rhodes:           [36.2, 28.0] as Waypoint,   // near Rhodes
-  cyprus_south:     [34.5, 33.0] as Waypoint,   // south of Cyprus
-  // Southern approaches
-  libyan_sea:       [33.5, 20.0] as Waypoint,   // open Libyan Sea
-  egypt_coast:      [31.5, 28.0] as Waypoint,   // approaching Alexandria
+const WAYPOINTS: Record<string, Waypoint> = {
   // Western Mediterranean
-  sardinia_south:   [38.5, 9.5] as Waypoint,    // south of Sardinia
-  tyrrhenian:       [39.5, 13.0] as Waypoint,   // Tyrrhenian Sea (off Naples)
-  gibraltar:        [35.9, -5.5] as Waypoint,   // Strait of Gibraltar
-  // Greece / Aegean
-  peloponnese_south: [36.4, 22.5] as Waypoint,  // Cape Malea (south of Peloponnese)
-  ionian_sea:       [38.0, 19.0] as Waypoint,   // open Ionian Sea (between Italy and Greece)
-  aegean_south:     [36.5, 25.5] as Waypoint,   // southern Aegean
-  bosphorus_south:  [40.5, 29.0] as Waypoint,   // approaching Bosphorus
-} as const;
+  gibraltar:        [35.9, -5.5],
+  iberia_south:     [36.5, -2.0],
+  sardinia_west:    [39.5, 8.0],
+  sardinia_south:   [38.5, 9.5],
 
-const W = SEA_WAYPOINTS;
+  // Central Mediterranean
+  tyrrhenian:       [39.5, 13.0],
+  sicily_north:     [38.5, 13.5],
+  sicily_south:     [36.8, 15.2],
+  malta_channel:    [35.5, 14.5],
+  ionian_west:      [38.0, 17.0],
 
-/**
- * Pre-defined maritime routes between port pairs.
- * Each route is an array of waypoints (excluding start and end ports,
- * which are added automatically).
- *
- * Routes are defined for both directions — the reverse is auto-generated.
- */
-const ROUTE_WAYPOINTS: Record<string, Waypoint[]> = {
-  // Rome → Athens: down Italian coast, around toe of boot, across Ionian Sea
-  'rome->athens': [W.tyrrhenian, W.messina_strait, W.sicily_south],
+  // Greece
+  ionian_sea:       [38.0, 19.5],
+  peloponnese_s:    [36.4, 22.5],
+  saronic:          [37.6, 23.5],
+  aegean_west:      [37.5, 25.0],
+  aegean_south:     [36.5, 25.5],
+  aegean_east:      [37.5, 27.0],
 
-  // Rome → Alexandria: down coast, through Sicily strait, across to Egypt
-  'rome->alexandria': [W.tyrrhenian, W.messina_strait, W.sicily_south, W.malta_channel, W.libyan_sea, W.egypt_coast],
+  // Eastern Mediterranean
+  rhodes:           [36.2, 28.0],
+  crete_west:       [35.2, 23.5],
+  crete_east:       [35.0, 26.5],
+  cyprus_south:     [34.5, 33.0],
+  levant_coast:     [34.0, 35.0],
 
-  // Rome → Carthage: short hop across Tyrrhenian Sea
-  'rome->carthage': [W.tyrrhenian, W.sardinia_south],
+  // Southern Mediterranean
+  libyan_sea:       [33.5, 20.0],
+  egypt_coast:      [31.5, 28.0],
+  egypt_west:       [31.5, 25.0],
 
-  // Rome → Antioch: long route around Italy, through Greek islands
-  'rome->antioch': [W.tyrrhenian, W.messina_strait, W.sicily_south, W.crete_west, W.crete_east, W.rhodes, W.cyprus_south],
-
-  // Athens → Alexandria: south past Crete to Egyptian coast
-  'athens->alexandria': [W.crete_west, W.crete_east, W.egypt_coast],
-
-  // Athens → Antioch: island-hop through eastern Aegean
-  'athens->antioch': [W.rhodes, W.cyprus_south],
-
-  // Athens → Carthage: west past Peloponnese, across central Med
-  'athens->carthage': [W.crete_west, W.malta_channel],
-
-  // Carthage → Alexandria: east along North African coast
-  'carthage->alexandria': [W.malta_channel, W.libyan_sea, W.egypt_coast],
-
-  // Carthage → Antioch: across central Med, through eastern islands
-  'carthage->antioch': [W.malta_channel, W.crete_west, W.crete_east, W.rhodes, W.cyprus_south],
-
-  // Alexandria → Antioch: northeast along Levantine coast
-  'alexandria->antioch': [W.cyprus_south],
-
-  // ── Western Mediterranean hub routes (Phase 16) ──────────────────
-  // Gadir (Cadiz) routes — must go through Strait of Gibraltar
-  'gadir->carthage': [W.gibraltar, W.sardinia_south],
-  'gadir->massalia': [W.gibraltar, W.sardinia_south],
-  'gadir->emporion': [W.gibraltar],
-  // Massalia routes — avoid cutting through Corsica/Sardinia
-  'massalia->carthage': [W.sardinia_south],
-  'massalia->syracuse': [W.sardinia_south, W.sicily_south],
-
-  // ── Italy routes (Phase 16) ──────────────────────────────────────
-  'ostia->syracuse': [W.tyrrhenian, W.sicily_north],
-  'ostia->taras': [W.tyrrhenian, W.messina_strait, W.ionian_sea],
-  'ostia->athens': [W.tyrrhenian, W.messina_strait, W.sicily_south, W.ionian_sea],
-  'taras->athens': [W.ionian_sea, W.peloponnese_south],
-
-  // ── Greece internal routes (Phase 16) ────────────────────────────
-  // athens->corinth: no waypoints needed (very close, no land crossing)
-  'athens->sparta': [W.peloponnese_south],
-  'athens->miletos': [W.aegean_south],
-  'athens->byzantion': [W.bosphorus_south],
-
-  // ── Eastern routes (Phase 16) ────────────────────────────────────
-  'athens->tyre': [W.rhodes, W.cyprus_south],
-  'athens->memphis': [W.crete_west, W.crete_east, W.egypt_coast],
-  'tyre->memphis': [W.cyprus_south, W.egypt_coast],
-  'carthage->tyre': [W.malta_channel, W.crete_west, W.crete_east, W.rhodes, W.cyprus_south],
+  // Black Sea approach
+  marmara:          [40.5, 29.0],
 };
 
 /**
- * Get the sea route waypoints between two ports.
- * Returns an array of [lat, lng] points including start and end.
- * If no specific route is defined, returns a direct line (fallback).
+ * Waypoint graph edges — which waypoints connect to each other.
+ * Bidirectional (if A→B exists, B→A is implied).
+ */
+const EDGES: [string, string][] = [
+  // Western chain
+  ['gibraltar', 'iberia_south'],
+  ['iberia_south', 'sardinia_west'],
+  ['sardinia_west', 'sardinia_south'],
+  ['sardinia_south', 'malta_channel'],
+  ['sardinia_south', 'tyrrhenian'],
+
+  // Italian coast
+  ['tyrrhenian', 'sicily_north'],
+  ['sicily_north', 'sicily_south'],
+  ['sicily_south', 'malta_channel'],
+  ['sicily_south', 'ionian_west'],
+  ['tyrrhenian', 'ionian_west'],
+
+  // Ionian → Greece
+  ['ionian_west', 'ionian_sea'],
+  ['ionian_sea', 'peloponnese_s'],
+  ['ionian_sea', 'saronic'],
+
+  // Greece internal
+  ['saronic', 'peloponnese_s'],
+  ['saronic', 'aegean_west'],
+  ['aegean_west', 'aegean_east'],
+  ['aegean_west', 'aegean_south'],
+  ['aegean_south', 'aegean_east'],
+  ['saronic', 'marmara'],
+  ['aegean_east', 'marmara'],
+
+  // Crete passages
+  ['peloponnese_s', 'crete_west'],
+  ['aegean_south', 'crete_east'],
+  ['crete_west', 'crete_east'],
+  ['crete_west', 'libyan_sea'],
+
+  // Eastern Mediterranean
+  ['aegean_east', 'rhodes'],
+  ['crete_east', 'rhodes'],
+  ['rhodes', 'cyprus_south'],
+  ['cyprus_south', 'levant_coast'],
+  ['cyprus_south', 'egypt_coast'],
+
+  // Southern passages
+  ['malta_channel', 'libyan_sea'],
+  ['libyan_sea', 'egypt_west'],
+  ['egypt_west', 'egypt_coast'],
+  ['egypt_coast', 'levant_coast'],
+];
+
+/**
+ * Each port's nearest sea waypoint(s). The port connects to these
+ * to enter the waypoint graph.
+ */
+const PORT_WAYPOINTS: Record<string, string[]> = {
+  // Greece
+  athens:     ['saronic'],
+  corinth:    ['saronic'],
+  sparta:     ['peloponnese_s'],
+  miletos:    ['aegean_east'],
+  byzantion:  ['marmara'],
+  knossos:    ['crete_west', 'crete_east'],
+
+  // Italy
+  ostia:      ['tyrrhenian'],
+  taras:      ['ionian_west'],
+  syracuse:   ['sicily_south'],
+
+  // Western
+  massalia:   ['sardinia_west'],
+  emporion:   ['iberia_south'],
+  gadir:      ['gibraltar'],
+
+  // North Africa
+  carthage:   ['malta_channel'],
+  cyrene:     ['libyan_sea'],
+  leptis:     ['libyan_sea'],
+
+  // Egypt
+  alexandria: ['egypt_coast'],
+  memphis:    ['egypt_coast'],
+
+  // Levant
+  tyre:       ['levant_coast'],
+  sidon:      ['levant_coast'],
+  byblos:     ['levant_coast'],
+  antioch:    ['levant_coast', 'cyprus_south'],
+};
+
+// Build adjacency list from edges
+const ADJ = new Map<string, Set<string>>();
+for (const [a, b] of EDGES) {
+  if (!ADJ.has(a)) ADJ.set(a, new Set());
+  if (!ADJ.has(b)) ADJ.set(b, new Set());
+  ADJ.get(a)!.add(b);
+  ADJ.get(b)!.add(a);
+}
+
+/**
+ * BFS shortest path through waypoint graph.
+ */
+function bfsPath(startNodes: string[], endNodes: string[]): string[] | null {
+  const endSet = new Set(endNodes);
+  const queue: string[][] = startNodes.map(n => [n]);
+  const visited = new Set<string>(startNodes);
+
+  while (queue.length > 0) {
+    const path = queue.shift()!;
+    const current = path[path.length - 1];
+
+    if (endSet.has(current)) return path;
+
+    const neighbors = ADJ.get(current);
+    if (!neighbors) continue;
+
+    for (const next of neighbors) {
+      if (!visited.has(next)) {
+        visited.add(next);
+        queue.push([...path, next]);
+      }
+    }
+  }
+  return null;
+}
+
+/**
+ * Get the sea route between two ports as an array of [lat, lng] coordinates.
+ * Routes go: port → nearest waypoint → BFS through graph → destination waypoint → port.
  */
 export function getSeaRoute(
   fromPortId: string,
   toPortId: string,
-  fromCoords: [number, number],
-  toCoords: [number, number]
+  fromCoords: Waypoint,
+  toCoords: Waypoint
 ): Waypoint[] {
-  const forwardKey = `${fromPortId}->${toPortId}`;
-  const reverseKey = `${toPortId}->${fromPortId}`;
+  const fromWaypoints = PORT_WAYPOINTS[fromPortId];
+  const toWaypoints = PORT_WAYPOINTS[toPortId];
 
-  const waypoints = ROUTE_WAYPOINTS[forwardKey];
-  if (waypoints) {
-    return [fromCoords, ...waypoints, toCoords];
+  // If ports share a waypoint (very close), direct route
+  if (fromWaypoints && toWaypoints) {
+    for (const fw of fromWaypoints) {
+      if (toWaypoints.includes(fw)) {
+        return [fromCoords, WAYPOINTS[fw], toCoords];
+      }
+    }
   }
 
-  const reverseWaypoints = ROUTE_WAYPOINTS[reverseKey];
-  if (reverseWaypoints) {
-    return [fromCoords, ...reverseWaypoints.slice().reverse(), toCoords];
+  // BFS through waypoint graph
+  if (fromWaypoints && toWaypoints) {
+    const path = bfsPath(fromWaypoints, toWaypoints);
+    if (path) {
+      const coords: Waypoint[] = [fromCoords];
+      for (const nodeId of path) {
+        coords.push(WAYPOINTS[nodeId]);
+      }
+      coords.push(toCoords);
+      return coords;
+    }
   }
 
-  // Fallback: direct line (no known route)
+  // Fallback: direct line (unknown ports)
   return [fromCoords, toCoords];
 }
 
 /**
- * Get all port IDs directly connected to a given port via defined sea routes.
- * A port is "connected" if there's a route definition in either direction.
+ * Get all port IDs directly connected to a given port via the waypoint graph.
+ * Two ports are "connected" if they share at least one waypoint or
+ * are within 1 hop of each other in the graph.
  */
 export function getConnectedPorts(portId: string): string[] {
-  const connected = new Set<string>();
+  const myWaypoints = PORT_WAYPOINTS[portId];
+  if (!myWaypoints) return [];
 
-  for (const key of Object.keys(ROUTE_WAYPOINTS)) {
-    const [from, to] = key.split('->');
-    if (from === portId) connected.add(to);
-    if (to === portId) connected.add(from);
+  // Collect all waypoints within 2 hops
+  const reachable = new Set<string>();
+  for (const wp of myWaypoints) {
+    reachable.add(wp);
+    const neighbors = ADJ.get(wp);
+    if (neighbors) {
+      for (const n of neighbors) {
+        reachable.add(n);
+        const hop2 = ADJ.get(n);
+        if (hop2) { for (const n2 of hop2) reachable.add(n2); }
+      }
+    }
   }
 
-  return [...connected];
+  // Find ports whose waypoints overlap with reachable set
+  const connected: string[] = [];
+  for (const [pid, waypoints] of Object.entries(PORT_WAYPOINTS)) {
+    if (pid === portId) continue;
+    if (waypoints.some(wp => reachable.has(wp))) {
+      connected.push(pid);
+    }
+  }
+  return connected;
 }
