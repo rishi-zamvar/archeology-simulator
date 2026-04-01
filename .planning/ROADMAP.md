@@ -38,7 +38,7 @@ Seasonal weather with Athenian calendar, captain's journal with auto-logging, an
 - [x] **Phase 14: Dialogue Engine & Content Pipeline** - JSON-driven dialogue system with condition evaluation, content templates, and build-time validation (completed 2026-04-01)
 - [x] **Phase 15: Quest System Foundation** - Observer-pattern quest engine with separate persistence, quest FSM, and Piraeus starting quest (completed 2026-04-01)
 - [x] **Phase 16: Port Content & World Building** - Historically researched lore, trade specializations, and ambient descriptions for 25 ports (completed 2026-04-01)
-- [ ] **Phase 17: NPC Characters & Dialogue Content** - 5 key NPCs with portraits, historically grounded dialogue trees, and quest hooks at ports
+- [x] **Phase 17: NPC Characters & Dialogue Content** - 5 key NPCs with portraits, historically grounded dialogue trees, and quest hooks at ports (completed 2026-04-01)
 - [ ] **Phase 18: Reputation & Trade Integration** - Reputation tracking with qualitative descriptors, price modifiers, and recovery paths
 - [ ] **Phase 19: Progressive Port Unlocking** - Fog-of-knowledge discovery model with tiered port status and NPC-driven reveals
 - [ ] **Phase 20: Journal Integration & Game Polish** - Quest/NPC journal entries with priority taxonomy, intro sequence, expanded events, and win condition
@@ -120,7 +120,7 @@ Plans:
 
 Plans:
 - [x] 17-01-PLAN.md -- 4 NPC dialogue trees, 4 NPC-initiated quests, talk_to_npc wiring, 5 SVG portraits
-- [ ] 17-02-PLAN.md -- Portrait display in DialogueModal, port_unlock effect implementation, human verification
+- [x] 17-02-PLAN.md -- Portrait display in DialogueModal, port_unlock effect implementation, human verification
 
 ### Phase 18: Reputation & Trade Integration
 **Goal**: Players build trade reputation that modifies their experience without ever gating required content
@@ -172,7 +172,7 @@ Note: Phase 15 and Phase 16 can proceed in parallel after Phase 14 completes. Ph
 | 14. Dialogue Engine & Content Pipeline | v2.0 | 2/2 | Complete    | 2026-04-01 |
 | 15. Quest System Foundation | v2.0 | 3/3 | Complete    | 2026-04-01 |
 | 16. Port Content & World Building | v2.0 | 3/3 | Complete    | 2026-04-01 |
-| 17. NPC Characters & Dialogue Content | v2.0 | 1/2 | In Progress|  |
+| 17. NPC Characters & Dialogue Content | v2.0 | 2/2 | Complete    | 2026-04-01 |
 | 18. Reputation & Trade Integration | v2.0 | 0/TBD | Not started | - |
 | 19. Progressive Port Unlocking | v2.0 | 0/TBD | Not started | - |
 | 20. Journal Integration & Game Polish | v2.0 | 0/TBD | Not started | - |

@@ -73,10 +73,10 @@
 | QUEST-02 | Phase 15 | Planned |
 | QUEST-03 | Phase 15 | Planned |
 | QUEST-04 | Phase 20 | Planned |
-| NPC-01 | Phase 17 | Planned |
+| NPC-01 | Phase 17 | Complete |
 | NPC-02 | Phase 14 | Planned |
-| NPC-03 | Phase 17 | Planned |
-| NPC-04 | Phase 17 | Planned |
+| NPC-03 | Phase 17 | Complete |
+| NPC-04 | Phase 17 | Complete |
 | UNLOCK-01 | Phase 19 | Planned |
 | UNLOCK-02 | Phase 19 | Planned |
 | UNLOCK-03 | Phase 19 | Planned |

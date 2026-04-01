@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: The Merchant's Odyssey
 status: executing
-stopped_at: Completed 17-01-PLAN.md
-last_updated: "2026-04-01T18:18:04.865Z"
+stopped_at: Completed 17-02-PLAN.md
+last_updated: "2026-04-01T18:22:00Z"
 last_activity: 2026-04-01
 progress:
   total_phases: 8
-  completed_phases: 4
+  completed_phases: 5
   total_plans: 12
-  completed_plans: 11
-  percent: 6
+  completed_plans: 12
+  percent: 8
 ---
 
 # Project State
@@ -25,12 +25,12 @@ See: .planning/PROJECT.md (updated 2026-04-01)
 
 ## Current Position
 
-Phase: 17 (npc-characters-dialogue-content) — EXECUTING
+Phase: 17 (npc-characters-dialogue-content) — COMPLETE
 Plan: 2 of 2
-Status: Ready to execute
+Status: Phase complete
 Last activity: 2026-04-01
 
-Progress: [▓░░░░░░░░░] 6% (v2.0 milestone)
+Progress: [▓░░░░░░░░░] 8% (v2.0 milestone)
 
 ## Accumulated Context
 
@@ -67,6 +67,7 @@ Progress: [▓░░░░░░░░░] 6% (v2.0 milestone)
 - [Phase 17]: Adapted quest goods to use existing IDs (grain, wine, olive_oil) since silver/cedar not in goods.json
 - [Phase 17]: Fixed validator BFS to treat nodes with conditions as alternate entry points for dialogue state branching
 - [Phase 17]: talk_to_npc objective evaluates npcDialogueState.timesSpoken > 0 via GameContext
+- [Phase 17-02]: port_unlock uses ON CONFLICT with conditional UPDATE to only upgrade status, never downgrade
 
 ### Blockers/Concerns
 
@@ -75,6 +76,6 @@ Progress: [▓░░░░░░░░░] 6% (v2.0 milestone)
 
 ## Session Continuity
 
-Last session: 2026-04-01T18:18:04.862Z
-Stopped at: Completed 17-01-PLAN.md
+Last session: 2026-04-01T18:22:00Z
+Stopped at: Completed 17-02-PLAN.md
 Resume file: None
