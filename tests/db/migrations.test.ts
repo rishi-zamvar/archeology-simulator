@@ -24,7 +24,7 @@ describe('Migration system', () => {
     const row = db.prepare('SELECT version FROM schema_version').get() as {
       version: number;
     };
-    expect(row.version).toBe(7);
+    expect(row.version).toBe(8);
   });
 
   it('schema_version table has version and migrated_at columns', () => {
@@ -65,7 +65,7 @@ describe('Migration system', () => {
     const row = legacyDb.prepare('SELECT version FROM schema_version').get() as {
       version: number;
     };
-    expect(row.version).toBe(7);
+    expect(row.version).toBe(8);
 
     // Verify new tables exist
     const tables = legacyDb
@@ -90,11 +90,11 @@ describe('Migration system', () => {
     const { runMigrations } = await import('../../src/main/db/schema');
     runMigrations(testDb);
 
-    // Verify we're at version 7
+    // Verify we're at version 8
     let row = testDb.prepare('SELECT version FROM schema_version').get() as {
       version: number;
     };
-    expect(row.version).toBe(7);
+    expect(row.version).toBe(8);
 
     // Now simulate a future migration that fails by manually setting version
     // back and creating a table that would conflict with migration v3 (quest_progress)
