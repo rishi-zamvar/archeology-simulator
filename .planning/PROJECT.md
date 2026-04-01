@@ -53,12 +53,26 @@ Students learn ancient Mediterranean history — trade networks, cultures, geogr
 - Mobile/tablet versions — desktop Electron only
 - Real-time gameplay — strictly turn-based
 
-## Shipped Milestones
+## Current Milestone: v2.0 The Merchant's Odyssey
 
-- **v1.0 MVP** — Playable trade simulator with 25 ports, events, audio, tutorial (2026-03-16)
-- **v1.1 Integration** — 57 curated images (ports + trade goods), fully offline, attribution displays (2026-03-31)
-- **v1.2 Coding Hygiene** — IPCResponse<T>, structured logging, zero tsc errors, error toast (2026-03-31)
-- **v1.3 Gameplay Depth & Polish** — Seasonal weather, captain's journal, sailing animation, trade P&L, title screen (2026-04-01)
+**Goal:** Transform the framework into a complete educational game where players live the life of a 6th century BCE merchant captain — learning ancient Mediterranean history, culture, trade, and geography through a narrative quest that spans the entire sea.
+
+**Target features:**
+- Rich port experiences with deep historical content (culture, customs, regional trade specializations)
+- Narrative quest system starting at Piraeus with branching historically-grounded objectives
+- Progressive port unlocking through trade reputation and NPC introductions
+- 15-25 historically important ports with unique goods, lore, and economic systems
+- NPCs at ports who share historical knowledge, give quests, reveal trade routes
+- Captain's journal as narrative device recording discoveries and quest progress
+- Reputation/standing system affecting trade prices and NPC access
+- Expanded historically accurate voyage events
+- Polished game flow: title → intro → tutorial at Piraeus → open world → odyssey complete
+
+**Previously shipped:**
+- v1.0 MVP — Playable trade simulator with 25 ports, events, audio, tutorial
+- v1.1 Integration — 57 curated images (ports + trade goods), fully offline, attribution displays
+- v1.2 Coding Hygiene — IPCResponse<T>, structured logging, zero tsc errors, error toast
+- v1.3 Gameplay Depth & Polish — Seasonal weather, captain's journal, sailing animation, trade P&L, title screen
 
 ## Context
 
@@ -113,4 +127,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-01 after v1.3 milestone*
+*Last updated: 2026-04-01 — v2.0 milestone started*
