@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: The Merchant's Odyssey
-status: executing
-stopped_at: Completed 14-01-PLAN.md
-last_updated: "2026-04-01T11:43:31.697Z"
+status: verifying
+stopped_at: Completed 14-02-PLAN.md
+last_updated: "2026-04-01T11:50:46.240Z"
 last_activity: 2026-04-01
 progress:
   total_phases: 8
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 4
-  completed_plans: 3
+  completed_plans: 4
   percent: 6
 ---
 
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-04-01)
 
 Phase: 14 (dialogue-engine-content-pipeline) — EXECUTING
 Plan: 2 of 2
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-04-01
 
 Progress: [▓░░░░░░░░░] 6% (v2.0 milestone)
@@ -52,6 +52,8 @@ Progress: [▓░░░░░░░░░] 6% (v2.0 milestone)
 - [Phase 13-02]: PLAYER_DATA_TABLES loop replaces hardcoded DELETE statements in new-game reset
 - [Phase 14]: Composite conditions use $and/$or/$not JSON DSL for dialogue branching logic
 - [Phase 14]: Validation function exported for unit testing; CLI guarded by argv check
+- [Phase 14]: Dialogue files cached in module-level Map for performance
+- [Phase 14]: NPC availability re-checked on dialogue dismiss (effects may change conditions)
 
 ### Blockers/Concerns
 
@@ -60,6 +62,6 @@ Progress: [▓░░░░░░░░░] 6% (v2.0 milestone)
 
 ## Session Continuity
 
-Last session: 2026-04-01T11:43:31.694Z
-Stopped at: Completed 14-01-PLAN.md
+Last session: 2026-04-01T11:50:46.238Z
+Stopped at: Completed 14-02-PLAN.md
 Resume file: None
