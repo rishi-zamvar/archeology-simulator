@@ -248,6 +248,31 @@ h1, h2, h3, h4, h5, h6 {
   box-shadow: 0 0 6px rgba(212, 160, 23, 0.6);
 }
 
+/* Quest target port: red pulsing marker */
+.port-icon-inner-quest {
+  background-color: #c0392b !important;
+  border: 2px solid #922b21 !important;
+  box-shadow: 0 0 8px rgba(192, 57, 43, 0.6);
+  animation: quest-pulse 2s ease-in-out infinite;
+}
+.port-icon-inner-quest:hover {
+  background-color: #e74c3c !important;
+  box-shadow: 0 0 12px rgba(231, 76, 60, 0.8);
+}
+
+@keyframes quest-pulse {
+  0%, 100% { box-shadow: 0 0 6px rgba(192, 57, 43, 0.4); }
+  50%      { box-shadow: 0 0 14px rgba(192, 57, 43, 0.8); }
+}
+
+/* Quest target label — red-tinted */
+.port-label-quest {
+  background-color: rgba(192, 57, 43, 0.12) !important;
+  border: 1px solid rgba(192, 57, 43, 0.5) !important;
+  color: #922b21 !important;
+  font-weight: 700 !important;
+}
+
 /* Unknown port label — faded */
 .port-label-unknown {
   background-color: rgba(200, 200, 200, 0.7) !important;

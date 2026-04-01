@@ -17,13 +17,16 @@ import type { Port, PortAccessLevel } from '../../shared/game-types';
 interface PortMarkerProps {
   port: Port;
   accessLevel: PortAccessLevel;
+  isQuestTarget?: boolean;
   onPortClick: (portId: string) => void;
 }
 
-// Tiered divIcon based on access level
-function createPortIcon(accessLevel: PortAccessLevel): L.DivIcon {
+// Tiered divIcon based on access level + quest target highlight
+function createPortIcon(accessLevel: PortAccessLevel, isQuestTarget: boolean): L.DivIcon {
   let innerClass = 'port-icon-inner';
-  if (accessLevel === 'unknown') {
+  if (isQuestTarget) {
+    innerClass = 'port-icon-inner port-icon-inner-quest';
+  } else if (accessLevel === 'unknown') {
     innerClass = 'port-icon-inner port-icon-inner-unknown';
   } else if (accessLevel === 'unlocked') {
     innerClass = 'port-icon-inner port-icon-inner-unlocked';
@@ -32,20 +35,24 @@ function createPortIcon(accessLevel: PortAccessLevel): L.DivIcon {
   return L.divIcon({
     className: 'port-icon',
     html: `<div class="${innerClass}"></div>`,
-    iconSize: [14, 14],
-    iconAnchor: [7, 7],
+    iconSize: isQuestTarget ? [18, 18] : [14, 14],
+    iconAnchor: isQuestTarget ? [9, 9] : [7, 7],
     tooltipAnchor: [8, -4],
   });
 }
 
-export default function PortMarker({ port, accessLevel, onPortClick }: PortMarkerProps): React.ReactElement {
-  const icon = useMemo(() => createPortIcon(accessLevel), [accessLevel]);
+export default function PortMarker({ port, accessLevel, isQuestTarget = false, onPortClick }: PortMarkerProps): React.ReactElement {
+  const icon = useMemo(() => createPortIcon(accessLevel, isQuestTarget), [accessLevel, isQuestTarget]);
 
   const handleClick = useCallback(() => {
     onPortClick(port.id);
   }, [port.id, onPortClick]);
 
-  const tooltipClass = accessLevel === 'unknown' ? 'port-label port-label-unknown' : 'port-label';
+  const tooltipClass = isQuestTarget
+    ? 'port-label port-label-quest'
+    : accessLevel === 'unknown'
+      ? 'port-label port-label-unknown'
+      : 'port-label';
   const tooltipText = accessLevel === 'unknown' ? '?' : port.ancientName;
 
   return (

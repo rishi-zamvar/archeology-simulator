@@ -21,9 +21,10 @@ interface MapAreaProps {
   children?: React.ReactNode;
   onPortSelected?: () => void;
   onRefreshAccessReady?: (refreshAccess: () => void) => void;
+  questTargetPorts?: Set<string>;
 }
 
-export default function MapArea({ children, onPortSelected, onRefreshAccessReady }: MapAreaProps): React.ReactElement {
+export default function MapArea({ children, onPortSelected, onRefreshAccessReady, questTargetPorts }: MapAreaProps): React.ReactElement {
   const { ports, portAccessMap, isLoading, error, refreshAccess } = useMapPorts();
   const { setSelectedPort } = useUIStore();
 
@@ -92,6 +93,7 @@ export default function MapArea({ children, onPortSelected, onRefreshAccessReady
                 key={port.id}
                 port={port}
                 accessLevel={portAccessMap.get(port.id) ?? 'unknown'}
+                isQuestTarget={questTargetPorts?.has(port.id) ?? false}
                 onPortClick={handlePortClick}
               />
             ))}

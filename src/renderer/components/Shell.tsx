@@ -108,6 +108,7 @@ export default function Shell(): React.ReactElement {
   // Phase 15: Active quest indicator and completion toast
   const [activeQuest, setActiveQuest] = useState<{ quest: QuestDefinition; progress: QuestProgress } | null>(null);
   const [questToast, setQuestToast] = useState<{ name: string; historicalNote: string } | null>(null);
+  const [showQuestDetails, setShowQuestDetails] = useState(false);
   const prevQuestRef = useRef<Array<{ quest: QuestDefinition; progress: QuestProgress }>>([]);
 
   // Phase 19: Port access level for NPC gating + auto-discover
@@ -445,7 +446,18 @@ export default function Shell(): React.ReactElement {
     >
       {/* ── Full-screen map (background layer) ──────────────────────── */}
       <div style={{ position: 'absolute', inset: 0, zIndex: 0 }}>
-        <MapArea onPortSelected={() => setShowFullMap(false)} onRefreshAccessReady={handleRefreshAccessReady}>
+        <MapArea
+          onPortSelected={() => setShowFullMap(false)}
+          onRefreshAccessReady={handleRefreshAccessReady}
+          questTargetPorts={(() => {
+            const targets = new Set<string>();
+            if (activeQuest) {
+              const obj = activeQuest.quest.objectives[activeQuest.progress.currentObjective];
+              if (obj?.portId) targets.add(obj.portId);
+            }
+            return targets;
+          })()}
+        >
           {sailingState && portCoords.size > 0 && (
             <ShipMarker
               sailingState={sailingState}
@@ -716,42 +728,159 @@ export default function Shell(): React.ReactElement {
         seasonTint={SEASON_TINTS[weatherMods.season]}
       />
 
-      {/* ── Active quest indicator (below Logbook) ──────────────── */}
+      {/* ── Active quest indicator (below Logbook) — clickable ──── */}
       {activeQuest && (
-        <div
-          style={{
-            position: 'absolute',
-            top: 56,
-            left: '50%',
-            transform: 'translateX(-50%)',
-            zIndex: 1150,
-            backgroundColor: 'rgba(253, 248, 240, 0.9)',
-            border: '1px solid rgba(196, 149, 106, 0.5)',
-            borderRadius: 4,
-            padding: '0.25rem 0.75rem',
-            maxWidth: 400,
-            textAlign: 'center',
-            pointerEvents: 'none',
-          }}
-        >
-          <span style={{
-            fontFamily: "'Cinzel', Georgia, serif",
-            fontSize: '0.5rem',
-            fontWeight: 700,
-            color: '#5a3e2b',
-            letterSpacing: '0.06em',
-          }}>
-            {activeQuest.quest.name}
-          </span>
-          <span style={{
-            fontFamily: "'Lora', Georgia, serif",
-            fontSize: '0.48rem',
-            color: '#7a5c45',
-            marginLeft: '0.4rem',
-          }}>
-            {activeQuest.quest.objectives[activeQuest.progress.currentObjective]?.description ?? ''}
-          </span>
-        </div>
+        <>
+          <button
+            type="button"
+            onClick={() => setShowQuestDetails(prev => !prev)}
+            style={{
+              position: 'absolute',
+              top: 56,
+              left: '50%',
+              transform: 'translateX(-50%)',
+              zIndex: 1150,
+              backgroundColor: 'rgba(253, 248, 240, 0.9)',
+              border: '1px solid rgba(196, 149, 106, 0.5)',
+              borderRadius: 4,
+              padding: '0.25rem 0.75rem',
+              maxWidth: 400,
+              textAlign: 'center',
+              cursor: 'pointer',
+              transition: 'background-color 0.15s',
+            }}
+          >
+            <span style={{
+              fontFamily: "'Cinzel', Georgia, serif",
+              fontSize: '0.5rem',
+              fontWeight: 700,
+              color: '#5a3e2b',
+              letterSpacing: '0.06em',
+            }}>
+              {activeQuest.quest.name}
+            </span>
+            <span style={{
+              fontFamily: "'Lora', Georgia, serif",
+              fontSize: '0.48rem',
+              color: '#7a5c45',
+              marginLeft: '0.4rem',
+            }}>
+              {activeQuest.quest.objectives[activeQuest.progress.currentObjective]?.description ?? ''}
+            </span>
+          </button>
+
+          {/* Quest details panel — shown on click */}
+          {showQuestDetails && (
+            <div
+              style={{
+                position: 'absolute',
+                top: 88,
+                left: '50%',
+                transform: 'translateX(-50%)',
+                zIndex: 1200,
+                backgroundColor: 'rgba(253, 248, 240, 0.96)',
+                border: '1px solid #c4956a',
+                borderRadius: 8,
+                padding: '1rem 1.25rem',
+                width: 360,
+                maxHeight: 400,
+                overflowY: 'auto',
+                boxShadow: '0 4px 20px rgba(61, 43, 31, 0.2)',
+              }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+                <h3 style={{
+                  fontFamily: "'Cinzel', Georgia, serif",
+                  fontSize: '0.85rem',
+                  fontWeight: 700,
+                  color: '#5a3e2b',
+                  margin: 0,
+                  letterSpacing: '0.04em',
+                }}>
+                  {activeQuest.quest.name}
+                </h3>
+                <button
+                  type="button"
+                  onClick={() => setShowQuestDetails(false)}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontSize: '1rem',
+                    color: '#7a5c45',
+                    padding: '0 4px',
+                  }}
+                >
+                  x
+                </button>
+              </div>
+
+              <p style={{
+                fontFamily: "'Lora', Georgia, serif",
+                fontSize: '0.8rem',
+                color: '#5a3e2b',
+                lineHeight: 1.6,
+                margin: '0 0 0.75rem',
+              }}>
+                {activeQuest.quest.description}
+              </p>
+
+              <h4 style={{
+                fontFamily: "'Cinzel', Georgia, serif",
+                fontSize: '0.65rem',
+                fontWeight: 700,
+                color: '#7a5c45',
+                textTransform: 'uppercase',
+                letterSpacing: '0.08em',
+                margin: '0 0 0.4rem',
+              }}>
+                Objectives
+              </h4>
+
+              {activeQuest.quest.objectives.map((obj, i) => {
+                const isComplete = i < activeQuest.progress.currentObjective;
+                const isCurrent = i === activeQuest.progress.currentObjective;
+                return (
+                  <div key={obj.id} style={{
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    gap: '0.4rem',
+                    marginBottom: '0.4rem',
+                    opacity: isComplete ? 0.5 : 1,
+                  }}>
+                    <span style={{ fontSize: '0.7rem', flexShrink: 0 }}>
+                      {isComplete ? '\u2713' : isCurrent ? '\u25B6' : '\u25CB'}
+                    </span>
+                    <span style={{
+                      fontFamily: "'Lora', Georgia, serif",
+                      fontSize: '0.75rem',
+                      color: isCurrent ? '#5a3e2b' : '#7a5c45',
+                      fontWeight: isCurrent ? 600 : 400,
+                      textDecoration: isComplete ? 'line-through' : 'none',
+                    }}>
+                      {obj.description}
+                    </span>
+                  </div>
+                );
+              })}
+
+              {activeQuest.quest.historicalNote && (
+                <p style={{
+                  fontFamily: "'Lora', Georgia, serif",
+                  fontSize: '0.7rem',
+                  fontStyle: 'italic',
+                  color: '#9a8570',
+                  lineHeight: 1.5,
+                  marginTop: '0.75rem',
+                  borderTop: '1px solid #e8d5b8',
+                  paddingTop: '0.5rem',
+                }}>
+                  {activeQuest.quest.historicalNote}
+                </p>
+              )}
+            </div>
+          )}
+        </>
       )}
 
       {/* ── Quest completion toast ──────────────────────────────── */}
