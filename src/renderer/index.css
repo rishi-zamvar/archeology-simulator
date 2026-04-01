@@ -71,6 +71,18 @@
 .animate-stagger > *:nth-child(5) { animation-delay: 0.5s; }
 .animate-stagger > *:nth-child(6) { animation-delay: 0.6s; }
 
+/* ── Gold coin float animation (FX-04) ──────────────────────────────── */
+
+@keyframes goldFloat {
+  0%   { opacity: 1; transform: translateY(0); }
+  70%  { opacity: 1; }
+  100% { opacity: 0; transform: translateY(-28px); }
+}
+
+.gold-float-anim {
+  animation: goldFloat 1.4s ease-out both;
+}
+
 /* ── Parchment unfurl animation (FX-03) ─────────────────────────────── */
 
 @keyframes parchmentUnfurl {

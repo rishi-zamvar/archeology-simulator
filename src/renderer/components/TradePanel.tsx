@@ -11,7 +11,7 @@
  * Parchment aesthetic: Cinzel headings, Lora body, sepia palette.
  */
 
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import type { MarketGood, PlayerInventory } from '../../shared/ipc-types';
 import TradeGoodIcon from './TradeGoodIcon';
 import { useResourceImages } from '../hooks/useResourceImages';
@@ -58,6 +58,9 @@ export default function TradePanel({
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const [feedback, setFeedback] = useState<Record<string, { msg: string; ok: boolean }>>({});
   const [busy, setBusy] = useState<string | null>(null);
+  // FX-04: Floating gold animation state
+  const [goldFloat, setGoldFloat] = useState<{ amount: number; positive: boolean; key: number } | null>(null);
+  const goldFloatKey = useRef(0);
   const [reputation, setReputation] = useState<{ tierName: string; tierLevel: number; score: number; region: string } | null>(null);
 
   useEffect(() => {
@@ -90,13 +93,22 @@ export default function TradePanel({
     }, 3000);
   };
 
+  // FX-04: Show floating gold delta near the gold display
+  const showGoldFloat = useCallback((amount: number, positive: boolean) => {
+    goldFloatKey.current += 1;
+    setGoldFloat({ amount, positive, key: goldFloatKey.current });
+    setTimeout(() => setGoldFloat(null), 1500);
+  }, []);
+
   const handleBuy = useCallback(
     async (goodId: string) => {
       const qty = getQty(goodId);
+      const price = marketGoods.find((g) => g.id === goodId)?.currentPrice ?? 0;
       setBusy(goodId + ':buy');
       try {
         await onBuy(goodId, qty);
         setMsg(goodId, `Bought ${qty} unit${qty > 1 ? 's' : ''}.`, true);
+        showGoldFloat(price * qty, false);
       } catch (err) {
         setMsg(goodId, err instanceof Error ? err.message : 'Buy failed.', false);
       } finally {
@@ -105,16 +117,18 @@ export default function TradePanel({
     },
     // Justification: getQty captures current inventory snapshot intentionally; adding it to deps would cause infinite re-renders as the callback reference changes on each render
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [onBuy, quantities]
+    [onBuy, quantities, marketGoods, showGoldFloat]
   );
 
   const handleSell = useCallback(
     async (goodId: string) => {
       const qty = getQty(goodId);
+      const price = marketGoods.find((g) => g.id === goodId)?.currentPrice ?? 0;
       setBusy(goodId + ':sell');
       try {
         await onSell(goodId, qty);
         setMsg(goodId, `Sold ${qty} unit${qty > 1 ? 's' : ''}.`, true);
+        showGoldFloat(price * qty, true);
       } catch (err) {
         setMsg(goodId, err instanceof Error ? err.message : 'Sell failed.', false);
       } finally {
@@ -123,7 +137,7 @@ export default function TradePanel({
     },
     // Justification: setMsg captures current state setter intentionally; same pattern as handleBuy -- deps would cause infinite loop
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [onSell, quantities]
+    [onSell, quantities, marketGoods, showGoldFloat]
   );
 
   const getCarried = (goodId: string) =>
@@ -143,7 +157,7 @@ export default function TradePanel({
       }}
     >
       {/* Header */}
-      <div style={{ marginBottom: '1rem' }}>
+      <div style={{ marginBottom: '1rem', position: 'relative' }}>
         <h2
           style={{
             ...HEADING,
@@ -157,6 +171,26 @@ export default function TradePanel({
           <span style={{ color: '#a07840', fontWeight: 600 }}>{inventory.gold}</span>
           {' '}gold · {inventory.currentCargo}/{inventory.cargoCapacity} cargo
         </div>
+        {/* FX-04: Floating gold delta */}
+        {goldFloat && (
+          <span
+            key={goldFloat.key}
+            className="gold-float-anim"
+            style={{
+              position: 'absolute',
+              left: 0,
+              top: '100%',
+              fontFamily: "'Cinzel', Georgia, serif",
+              fontSize: '0.85rem',
+              fontWeight: 700,
+              color: goldFloat.positive ? '#2b5c4a' : '#8b2e2e',
+              pointerEvents: 'none',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {goldFloat.positive ? '+' : '-'}{goldFloat.amount}g
+          </span>
+        )}
         {reputation && reputation.tierLevel > 0 && (
           <div style={{
             fontFamily: "'Lora', Georgia, serif",
