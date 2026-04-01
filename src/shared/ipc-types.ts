@@ -93,6 +93,15 @@ export interface IPCBridge {
       ports: Record<string, string>;
       goods: Record<string, string[]>;
     }>>;
+
+    // Phase 27: Ship & Crew
+    getShipCrewStatus: () => Promise<IPCResponse<import('./game-types').ShipCrewStatus>>;
+    repairHull: () => Promise<IPCResponse<import('./game-types').PlayerInventory>>;
+
+    // Phase 28: World Events & Collectibles
+    getRumors: (portId: string, currentTurn: number) => Promise<IPCResponse<Array<{ text: string; hintPort: string; hintGood: string; hintDirection: string }>>>;
+    getActiveFestival: (portId: string, currentTurn: number) => Promise<IPCResponse<{ id: string; portId: string; name: string; description: string; season: string; monthIndex: number; priceEffects: Array<{ goodId: string; modifier: number }> } | null>>;
+    getPostcards: () => Promise<IPCResponse<{ postcards: Array<{ portId: string; portName: string; description: string; discoveredAtTurn: number }>; totalPorts: number }>>;
   };
   /** Phase 14: Dialogue Engine */
   dialogue: {

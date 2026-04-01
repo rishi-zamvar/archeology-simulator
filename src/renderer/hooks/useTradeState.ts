@@ -24,6 +24,8 @@ export function useTradeState(portId: string | null): TradeStateData {
     cargoItems: [],
     cargoCapacity: 50,
     currentCargo: 0,
+    hullCondition: 100,
+    crewMorale: 70,
   });
   const [transactions, setTransactions] = useState<TransactionRecord[]>([]);
   const [isLoading, setIsLoading] = useState(false);

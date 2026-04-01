@@ -278,6 +278,12 @@ const MIGRATIONS: Migration[] = [
     // Recreate index
     db.prepare('CREATE INDEX IF NOT EXISTS idx_journal_entries_turn ON journal_entries (turn)').run();
   },
+
+  // v11 (index 10): Ship hull condition and crew morale (Phase 27)
+  (db) => {
+    db.prepare("ALTER TABLE player_inventory ADD COLUMN hull_condition INTEGER NOT NULL DEFAULT 100").run();
+    db.prepare("ALTER TABLE player_inventory ADD COLUMN crew_morale INTEGER NOT NULL DEFAULT 70").run();
+  },
 ];
 
 /**

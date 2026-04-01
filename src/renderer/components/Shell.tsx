@@ -21,6 +21,7 @@ import PortInfoPanel from './PortInfoPanel';
 import PortScene from './PortScene';
 import TradePanel from './TradePanel';
 import CargoHold from './CargoHold';
+import ShipStatus from './ShipStatus';
 import ProfitDisplay from './ProfitDisplay';
 import ShipMarker from './ShipMarker';
 import SailingOverlay from './SailingOverlay';
@@ -232,11 +233,18 @@ export default function Shell(): React.ReactElement {
       setMareClausumDest(destinationPortId);
       return;
     }
+    // Phase 27: Block sailing if hull < 10
+    if (inventory.hullCondition < 10) {
+      showError('Hull too damaged to sail. Repair at port first.');
+      return;
+    }
+    // Phase 27: Apply crew morale speed modifier
+    const moraleSpeedMod = inventory.crewMorale > 80 ? 0.95 : inventory.crewMorale < 40 ? 1.1 : 1.0;
     window.api.game.action({
       type: 'SET_SAIL',
       destination: destinationPortId,
       eta: 0,
-      voyageTurnsTotal: Math.max(1, Math.ceil(durationTurns * mods.durationMultiplier)),
+      voyageTurnsTotal: Math.max(1, Math.ceil(durationTurns * mods.durationMultiplier * moraleSpeedMod)),
     }).catch((err: unknown) => showError('Failed to set sail: ' + (err instanceof Error ? err.message : 'Unknown error')));
   }
 
@@ -1131,7 +1139,7 @@ export default function Shell(): React.ReactElement {
       )}
 
       {/* ── Cargo + Ledger drop-up (bottom-left) ────────────────── */}
-      <CargoDropUp inventory={inventory} transactions={transactions} />
+      <CargoDropUp inventory={inventory} transactions={transactions} atPort={gameState?.type === 'idle' || gameState?.type === 'trading'} />
 
       {/* ── Voyage event modal ──────────────────────────────────────── */}
       {pendingEvent && (
@@ -1260,9 +1268,11 @@ import type { PlayerInventory, TransactionRecord } from '../../shared/ipc-types'
 function CargoDropUp({
   inventory,
   transactions,
+  atPort,
 }: {
   inventory: PlayerInventory;
   transactions: TransactionRecord[];
+  atPort: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const profit = inventory.gold - 500;
@@ -1278,10 +1288,11 @@ function CargoDropUp({
             bottom: 48,
             left: 0,
             width: 280,
-            maxHeight: 400,
+            maxHeight: 500,
             marginBottom: 4,
           }}
         >
+          <ShipStatus atPort={atPort} />
           <CargoHold inventory={inventory} />
           <ProfitDisplay inventory={inventory} transactions={transactions} />
         </div>
@@ -1313,6 +1324,10 @@ function CargoDropUp({
         <span>{inventory.gold}g</span>
         <span style={{ color: '#7a5c45', fontWeight: 400 }}>·</span>
         <span>{inventory.currentCargo}/{inventory.cargoCapacity} cargo</span>
+        <span style={{ color: '#7a5c45', fontWeight: 400 }}>·</span>
+        <span style={{ color: inventory.hullCondition < 30 ? '#8b2e2e' : '#7a5c45' }}>
+          Hull {inventory.hullCondition}%
+        </span>
         {profit !== 0 && (
           <span style={{ color: profit >= 0 ? '#2b5c4a' : '#8b2e2e', fontWeight: 600 }}>
             {profit >= 0 ? '+' : ''}{profit}g

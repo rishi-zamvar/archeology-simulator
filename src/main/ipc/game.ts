@@ -169,6 +169,9 @@ export function registerGameIPCHandlers(db: Database.Database): void {
             }
           }
 
+          // Phase 28: Record postcard discovery on first visit
+          markPostcardDiscovery(db, arrPortId, result.state.currentTurn);
+
           // Unlock neighboring ports on arrival — reveals connected ports as 'discovered'
           const connectedIds = getConnectedPorts(arrPortId);
           const newlyDiscovered = unlockNeighborPorts(db, arrPortId, connectedIds);
@@ -217,10 +220,22 @@ export function registerGameIPCHandlers(db: Database.Database): void {
 
   /**
    * game:getMarketPrices — return MarketGood[] for a given port.
+   * Phase 28: Applies festival price modifiers when a festival is active.
    */
   wrapHandler<ReturnType<typeof getMarketPrices>, [string]>(
     'game:getMarketPrices',
-    async (portId) => getMarketPrices(db, portId),
+    async (portId) => {
+      let goods = getMarketPrices(db, portId);
+      // Apply festival price effects if a festival is active at this port
+      const state = loadGameState(db);
+      if (state) {
+        const festival = getActiveFestival(portId, state.currentTurn);
+        if (festival) {
+          goods = applyFestivalPriceEffects(goods, festival);
+        }
+      }
+      return goods;
+    },
     (portId) => (!portId || typeof portId !== 'string' ? 'portId required' : null),
   );
 
@@ -778,6 +793,59 @@ export function registerGameIPCHandlers(db: Database.Database): void {
       if (typeof turn !== 'number') return 'turn required';
       return null;
     },
+  );
+
+  /**
+   * game:getShipCrewStatus — return combined ship hull and crew morale status.
+   */
+  wrapHandler('game:getShipCrewStatus', async () => {
+    return getShipCrewStatus(db);
+  });
+
+  /**
+   * game:repairHull — repair ship hull to 100 at port (costs 10g per damage point).
+   */
+  wrapHandler('game:repairHull', async () => {
+    const result = repairHull(db);
+    broadcastGameUpdated(db);
+    return result;
+  });
+
+  /**
+   * game:getRumors — return trade rumors for the current port and turn.
+   */
+  wrapHandler<Array<{ text: string; hintPort: string; hintGood: string; hintDirection: string }>, [string, number]>(
+    'game:getRumors',
+    async (portId, currentTurn) => getRumorsForPort(db, portId, currentTurn),
+    (portId, currentTurn) => {
+      if (!portId || typeof portId !== 'string') return 'portId required';
+      if (typeof currentTurn !== 'number') return 'currentTurn required';
+      return null;
+    },
+  );
+
+  /**
+   * game:getActiveFestival — return the active festival at a port for the current turn.
+   */
+  wrapHandler<Festival | null, [string, number]>(
+    'game:getActiveFestival',
+    async (portId, currentTurn) => getActiveFestival(portId, currentTurn),
+    (portId, currentTurn) => {
+      if (!portId || typeof portId !== 'string') return 'portId required';
+      if (typeof currentTurn !== 'number') return 'currentTurn required';
+      return null;
+    },
+  );
+
+  /**
+   * game:getPostcards — return all collected postcards and the total port count.
+   */
+  wrapHandler<{ postcards: Postcard[]; totalPorts: number }>(
+    'game:getPostcards',
+    async () => ({
+      postcards: getCollectedPostcards(db),
+      totalPorts: getTotalPortCount(db),
+    }),
   );
 }
 

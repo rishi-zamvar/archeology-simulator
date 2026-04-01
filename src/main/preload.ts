@@ -72,6 +72,13 @@ const api: IPCBridge = {
     // Scan resources/images/ for available image files
     scanResourceImages: () =>
       ipcRenderer!.invoke('game:scan-resource-images'),
+    // Phase 27: Ship & Crew
+    getShipCrewStatus: () => ipcRenderer!.invoke('game:getShipCrewStatus'),
+    repairHull: () => ipcRenderer!.invoke('game:repairHull'),
+    // Phase 28: World Events & Collectibles
+    getRumors: (portId: string, currentTurn: number) => ipcRenderer!.invoke('game:getRumors', portId, currentTurn),
+    getActiveFestival: (portId: string, currentTurn: number) => ipcRenderer!.invoke('game:getActiveFestival', portId, currentTurn),
+    getPostcards: () => ipcRenderer!.invoke('game:getPostcards'),
   },
   // Phase 14: Dialogue Engine
   dialogue: {

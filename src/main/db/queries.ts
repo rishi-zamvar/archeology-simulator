@@ -472,10 +472,12 @@ export function getPlayerInventory(db: Database.Database): PlayerInventory {
     gold: number;
     cargo_capacity: number;
     cargo_json: string;
+    hull_condition?: number;
+    crew_morale?: number;
   } | undefined;
 
   if (!row) {
-    return { gold: 500, cargoItems: [], cargoCapacity: 50, currentCargo: 0 };
+    return { gold: 500, cargoItems: [], cargoCapacity: 50, currentCargo: 0, hullCondition: 100, crewMorale: 70 };
   }
 
   const cargoItems = JSON.parse(row.cargo_json) as CargoItem[];
@@ -486,6 +488,8 @@ export function getPlayerInventory(db: Database.Database): PlayerInventory {
     cargoItems,
     cargoCapacity: row.cargo_capacity,
     currentCargo,
+    hullCondition: row.hull_condition ?? 100,
+    crewMorale: row.crew_morale ?? 70,
   };
 }
 
@@ -495,13 +499,15 @@ export function getPlayerInventory(db: Database.Database): PlayerInventory {
 export function updatePlayerInventory(db: Database.Database, inventory: PlayerInventory): void {
   const cargoJson = JSON.stringify(inventory.cargoItems);
   db.prepare(`
-    INSERT INTO player_inventory (id, gold, cargo_capacity, cargo_json)
-    VALUES (1, ?, ?, ?)
+    INSERT INTO player_inventory (id, gold, cargo_capacity, cargo_json, hull_condition, crew_morale)
+    VALUES (1, ?, ?, ?, ?, ?)
     ON CONFLICT(id) DO UPDATE SET
       gold           = excluded.gold,
       cargo_capacity = excluded.cargo_capacity,
-      cargo_json     = excluded.cargo_json
-  `).run(inventory.gold, inventory.cargoCapacity, cargoJson);
+      cargo_json     = excluded.cargo_json,
+      hull_condition = excluded.hull_condition,
+      crew_morale    = excluded.crew_morale
+  `).run(inventory.gold, inventory.cargoCapacity, cargoJson, inventory.hullCondition, inventory.crewMorale);
 }
 
 // ─── Trade Transactions ───────────────────────────────────────────────────────
@@ -563,8 +569,7 @@ export function buyGood(
     const tier = getReputationTier(repRow?.score ?? 0);
     const repMod = getReputationPriceModifier(tier.level);
 
-    const pricePerUnit = calcCurrentPrice(goodRow.base_price, piRow.supply, piRow.demand, repMod, 'buy');
-    const totalCost = pricePerUnit * qty;
+    let pricePerUnit = calcCurrentPrice(goodRow.base_price, piRow.supply, piRow.demand, repMod, 'buy');
 
     // Load player inventory
     const invRow = db.prepare('SELECT * FROM player_inventory WHERE id = 1').get() as {
@@ -572,12 +577,22 @@ export function buyGood(
       gold: number;
       cargo_capacity: number;
       cargo_json: string;
+      hull_condition?: number;
+      crew_morale?: number;
     } | undefined;
 
     const gold = invRow?.gold ?? 500;
     const cargoCapacity = invRow?.cargo_capacity ?? 50;
     const cargoItems = invRow ? (JSON.parse(invRow.cargo_json) as CargoItem[]) : [];
     const currentCargo = cargoItems.reduce((s, i) => s + i.quantity, 0);
+    const hullCondition = invRow?.hull_condition ?? 100;
+    const crewMorale = invRow?.crew_morale ?? 70;
+
+    // Phase 27: Disgruntled crew makes trades cost 5% more
+    if (crewMorale < 40) {
+      pricePerUnit = Math.ceil(pricePerUnit * 1.05);
+    }
+    const totalCost = pricePerUnit * qty;
 
     // Validate funds
     if (gold < totalCost) {
@@ -606,14 +621,14 @@ export function buyGood(
     const newGold = gold - totalCost;
     const newCargoJson = JSON.stringify(cargoItems);
 
-    // Update player inventory
+    // Phase 27: Boost crew morale on successful trade (+5, cap 100)
+    // Also boost morale for port trading activity (+10 per trade while at port)
+    const newMorale = Math.min(100, crewMorale + 5);
+
+    // Update player inventory (preserve hull_condition)
     db.prepare(`
-      INSERT INTO player_inventory (id, gold, cargo_capacity, cargo_json)
-      VALUES (1, ?, ?, ?)
-      ON CONFLICT(id) DO UPDATE SET
-        gold       = excluded.gold,
-        cargo_json = excluded.cargo_json
-    `).run(newGold, cargoCapacity, newCargoJson);
+      UPDATE player_inventory SET gold = ?, cargo_json = ?, crew_morale = ? WHERE id = 1
+    `).run(newGold, newCargoJson, newMorale);
 
     // Record transaction
     db.prepare(`
@@ -643,7 +658,7 @@ export function buyGood(
     db.prepare('INSERT INTO reputation (region, score) VALUES (?, ?) ON CONFLICT(region) DO UPDATE SET score = score + excluded.score').run(portRegionRow?.region ?? '', repGain);
 
     const newCurrentCargo = cargoItems.reduce((s, i) => s + i.quantity, 0);
-    result = { gold: newGold, cargoItems, cargoCapacity, currentCargo: newCurrentCargo };
+    result = { gold: newGold, cargoItems, cargoCapacity, currentCargo: newCurrentCargo, hullCondition, crewMorale: newMorale };
   });
 
   tx();
@@ -691,8 +706,7 @@ export function sellGood(
     const tier = getReputationTier(repRow?.score ?? 0);
     const repMod = getReputationPriceModifier(tier.level);
 
-    const pricePerUnit = calcCurrentPrice(goodRow.base_price, piRow.supply, piRow.demand, repMod, 'sell');
-    const totalRevenue = pricePerUnit * qty;
+    let pricePerUnit = calcCurrentPrice(goodRow.base_price, piRow.supply, piRow.demand, repMod, 'sell');
 
     // Load player inventory
     const invRow = db.prepare('SELECT * FROM player_inventory WHERE id = 1').get() as {
@@ -700,11 +714,22 @@ export function sellGood(
       gold: number;
       cargo_capacity: number;
       cargo_json: string;
+      hull_condition?: number;
+      crew_morale?: number;
     } | undefined;
 
     const gold = invRow?.gold ?? 500;
     const cargoCapacity = invRow?.cargo_capacity ?? 50;
     const cargoItems = invRow ? (JSON.parse(invRow.cargo_json) as CargoItem[]) : [];
+
+    // Phase 27: Disgruntled crew sells at 5% lower prices
+    const crewMoraleSell = invRow?.crew_morale ?? 70;
+    if (crewMoraleSell < 40) {
+      pricePerUnit = Math.floor(pricePerUnit * 0.95);
+    }
+    const totalRevenue = pricePerUnit * qty;
+    const hullCondition = invRow?.hull_condition ?? 100;
+    const crewMorale = invRow?.crew_morale ?? 70;
 
     // Validate cargo has enough of this good
     const totalOwned = cargoItems
@@ -735,14 +760,13 @@ export function sellGood(
     const newGold = gold + totalRevenue;
     const newCargoJson = JSON.stringify(newCargoItems);
 
-    // Update player inventory
+    // Phase 27: Boost crew morale on successful trade (+5, cap 100)
+    const newMorale = Math.min(100, crewMorale + 5);
+
+    // Update player inventory (preserve hull_condition)
     db.prepare(`
-      INSERT INTO player_inventory (id, gold, cargo_capacity, cargo_json)
-      VALUES (1, ?, ?, ?)
-      ON CONFLICT(id) DO UPDATE SET
-        gold       = excluded.gold,
-        cargo_json = excluded.cargo_json
-    `).run(newGold, cargoCapacity, newCargoJson);
+      UPDATE player_inventory SET gold = ?, cargo_json = ?, crew_morale = ? WHERE id = 1
+    `).run(newGold, newCargoJson, newMorale);
 
     // Record transaction
     db.prepare(`
@@ -772,11 +796,78 @@ export function sellGood(
     db.prepare('INSERT INTO reputation (region, score) VALUES (?, ?) ON CONFLICT(region) DO UPDATE SET score = score + excluded.score').run(portRegionRow?.region ?? '', repGain);
 
     const newCurrentCargo = newCargoItems.reduce((s, i) => s + i.quantity, 0);
-    result = { gold: newGold, cargoItems: newCargoItems, cargoCapacity, currentCargo: newCurrentCargo };
+    result = { gold: newGold, cargoItems: newCargoItems, cargoCapacity, currentCargo: newCurrentCargo, hullCondition, crewMorale: newMorale };
   });
 
   tx();
   return result;
+}
+
+// ─── Ship & Crew (Phase 27) ──────────────────────────────────────────────────
+
+/**
+ * Repair the ship's hull to 100. Costs 10g per point of damage.
+ * Returns the updated PlayerInventory. Throws if not enough gold.
+ */
+export function repairHull(db: Database.Database): PlayerInventory {
+  const inv = getPlayerInventory(db);
+  const damage = 100 - inv.hullCondition;
+  if (damage <= 0) {
+    return inv; // already at 100
+  }
+  const cost = damage * 10;
+  if (inv.gold < cost) {
+    throw new Error(`Not enough gold to repair hull. Need ${cost}g, have ${inv.gold}g.`);
+  }
+  db.prepare('UPDATE player_inventory SET gold = gold - ?, hull_condition = 100 WHERE id = 1').run(cost);
+  return { ...inv, gold: inv.gold - cost, hullCondition: 100 };
+}
+
+/**
+ * Degrade hull condition during a voyage turn.
+ * Base degradation: 5-15 per voyage (applied once at voyage start).
+ * Storm events cause additional -10 hull damage.
+ */
+export function degradeHull(db: Database.Database, amount: number): void {
+  db.prepare('UPDATE player_inventory SET hull_condition = MAX(0, hull_condition - ?) WHERE id = 1').run(amount);
+}
+
+/**
+ * Adjust crew morale by a delta (positive or negative). Clamps to 0-100.
+ */
+export function adjustCrewMorale(db: Database.Database, delta: number): void {
+  if (delta >= 0) {
+    db.prepare('UPDATE player_inventory SET crew_morale = MIN(100, crew_morale + ?) WHERE id = 1').run(delta);
+  } else {
+    db.prepare('UPDATE player_inventory SET crew_morale = MAX(0, crew_morale + ?) WHERE id = 1').run(delta);
+  }
+}
+
+/**
+ * Get the morale level tier from a morale score.
+ */
+export function getMoraleLevel(morale: number): import('../../shared/game-types').MoraleLevel {
+  if (morale > 80) return 'enthusiastic';
+  if (morale >= 40) return 'steady';
+  return 'disgruntled';
+}
+
+/**
+ * Get the full ship and crew status for UI display.
+ */
+export function getShipCrewStatus(db: Database.Database): import('../../shared/game-types').ShipCrewStatus {
+  const inv = getPlayerInventory(db);
+  const moraleLevel = getMoraleLevel(inv.crewMorale);
+  return {
+    hullCondition: inv.hullCondition,
+    crewMorale: inv.crewMorale,
+    moraleLevel,
+    hullWarning: inv.hullCondition < 30,
+    canSail: inv.hullCondition >= 10,
+    speedModifier: moraleLevel === 'enthusiastic' ? 1.05 : moraleLevel === 'disgruntled' ? 0.9 : 1.0,
+    tradeCostModifier: moraleLevel === 'disgruntled' ? 1.05 : 1.0,
+    repairCost: (100 - inv.hullCondition) * 10,
+  };
 }
 
 // ─── Curated Images ───────────────────────────────────────────────────────────
@@ -1370,6 +1461,164 @@ export function seedStartingPorts(db: Database.Database): void {
   });
 
   seedAll();
+}
+
+// ─── Rumors ─────────────────────────────────────────────────────────────────
+
+/**
+ * Get rumors for a port based on its region and the current turn.
+ * Returns 2-3 rotating rumors that give trade hints about other ports.
+ */
+export function getRumorsForPort(db: Database.Database, portId: string, currentTurn: number): Array<{ text: string; hintPort: string; hintGood: string; hintDirection: string }> {
+  const port = getPortById(db, portId);
+  if (!port) return [];
+
+  const rumorsData = getRumorsData();
+  const regionRumors = rumorsData[port.region];
+  if (!regionRumors || regionRumors.length === 0) return [];
+
+  // Rotate based on currentTurn — pick 2-3 rumors deterministically
+  const count = 2 + (currentTurn % 2); // alternates between 2 and 3
+  const offset = Math.floor(currentTurn / 2) % regionRumors.length;
+  const selected: typeof regionRumors = [];
+  for (let i = 0; i < count; i++) {
+    selected.push(regionRumors[(offset + i) % regionRumors.length]);
+  }
+
+  return selected;
+}
+
+// In-memory cache for rumors JSON
+let _rumorsCache: Record<string, Array<{ text: string; hintPort: string; hintGood: string; hintDirection: string }>> | null = null;
+
+function getRumorsData(): Record<string, Array<{ text: string; hintPort: string; hintGood: string; hintDirection: string }>> {
+  if (_rumorsCache) return _rumorsCache;
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const fs = require('fs');
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const pathMod = require('path');
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { getResourcesBase } = require('../lib/paths');
+  const filePath = pathMod.join(getResourcesBase(), 'data', 'rumors.json');
+  try {
+    _rumorsCache = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+    return _rumorsCache!;
+  } catch {
+    return {};
+  }
+}
+
+// ─── Festivals ──────────────────────────────────────────────────────────────
+
+export interface Festival {
+  id: string;
+  portId: string;
+  name: string;
+  description: string;
+  season: string;
+  monthIndex: number;
+  priceEffects: Array<{ goodId: string; modifier: number }>;
+}
+
+/**
+ * Get the active festival at a port for the current turn, if any.
+ * A festival is active when currentTurn % 12 matches the festival's monthIndex.
+ */
+export function getActiveFestival(portId: string, currentTurn: number): Festival | null {
+  const festivals = getFestivalsData();
+  const monthIndex = currentTurn % 12;
+  return festivals.find(f => f.portId === portId && f.monthIndex === monthIndex) ?? null;
+}
+
+/**
+ * Apply festival price modifiers to market goods at a port.
+ * Returns the modified goods array (non-mutating).
+ */
+export function applyFestivalPriceEffects(goods: MarketGood[], festival: Festival): MarketGood[] {
+  const effectMap = new Map(festival.priceEffects.map(e => [e.goodId, e.modifier]));
+  return goods.map(g => {
+    const modifier = effectMap.get(g.id);
+    if (!modifier) return g;
+    return {
+      ...g,
+      currentPrice: Math.round(g.currentPrice * modifier),
+    };
+  });
+}
+
+// In-memory cache for festivals JSON
+let _festivalsCache: Festival[] | null = null;
+
+function getFestivalsData(): Festival[] {
+  if (_festivalsCache) return _festivalsCache;
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const fs = require('fs');
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const pathMod = require('path');
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { getResourcesBase } = require('../lib/paths');
+  const filePath = pathMod.join(getResourcesBase(), 'data', 'festivals.json');
+  try {
+    _festivalsCache = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+    return _festivalsCache!;
+  } catch {
+    return [];
+  }
+}
+
+// ─── Postcards ──────────────────────────────────────────────────────────────
+
+export interface Postcard {
+  portId: string;
+  portName: string;
+  description: string;
+  discoveredAtTurn: number;
+}
+
+/**
+ * Get all collected postcards — ports visited for the first time.
+ * Uses the discoveries table with category='postcard'.
+ */
+export function getCollectedPostcards(db: Database.Database): Postcard[] {
+  const rows = db.prepare(`
+    SELECT d.subject, d.discovered_at_turn, p.ancient_name, p.ambient_description, p.description
+    FROM discoveries d
+    JOIN ports p ON p.id = d.subject
+    WHERE d.category = 'postcard'
+    ORDER BY d.discovered_at_turn ASC
+  `).all() as Array<{
+    subject: string;
+    discovered_at_turn: number;
+    ancient_name: string;
+    ambient_description: string | null;
+    description: string;
+  }>;
+
+  return rows.map(r => ({
+    portId: r.subject,
+    portName: r.ancient_name,
+    description: r.ambient_description || r.description,
+    discoveredAtTurn: r.discovered_at_turn,
+  }));
+}
+
+/**
+ * Get total number of ports (for postcard collection count).
+ */
+export function getTotalPortCount(db: Database.Database): number {
+  const row = db.prepare('SELECT COUNT(*) as count FROM ports').get() as { count: number };
+  return row.count;
+}
+
+/**
+ * Record a postcard discovery for a port. Returns true if newly recorded.
+ */
+export function markPostcardDiscovery(db: Database.Database, portId: string, turn: number): boolean {
+  const result = db.prepare(`
+    INSERT OR IGNORE INTO discoveries (category, subject, discovered_at_turn)
+    VALUES ('postcard', ?, ?)
+  `).run(portId, turn);
+  return result.changes > 0;
 }
 
 /**
