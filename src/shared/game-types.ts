@@ -118,13 +118,16 @@ export interface VoyageEventChoice {
 
 // ─── Journal ─────────────────────────────────────────────────────────────────
 
-export type JournalEntryType = 'trade' | 'voyage_event' | 'arrival' | 'departure' | 'note';
+export type JournalEntryType = 'trade' | 'voyage_event' | 'arrival' | 'departure' | 'note' | 'quest' | 'dialogue' | 'discovery';
 
 export type TradeBody = { goodId: string; goodName: string; qty: number; pricePerUnit: number; totalValue: number; portId: string; portName: string; action: 'buy' | 'sell' };
 export type EventBody = { eventType: string; choiceId: string; outcome: string; goldDelta: number };
 export type ArrivalBody = { portId: string; portName: string };
 export type DepartureBody = { portId: string; portName: string; destination: string };
 export type NoteBody = { text: string };
+export type QuestBody = { questId: string; questName: string; milestone: string };
+export type DialogueBody = { npcId: string; npcName: string; summary: string };
+export type DiscoveryBody = { category: 'port_culture' | 'trade_good' | 'historical_fact'; subject: string; text: string };
 
 export type JournalBodyMap = {
   trade: TradeBody;
@@ -132,7 +135,12 @@ export type JournalBodyMap = {
   arrival: ArrivalBody;
   departure: DepartureBody;
   note: NoteBody;
+  quest: QuestBody;
+  dialogue: DialogueBody;
+  discovery: DiscoveryBody;
 };
+
+export type JournalPriority = 'narrative' | 'quest' | 'mechanical';
 
 export interface JournalEntry {
   id: number;
@@ -140,6 +148,7 @@ export interface JournalEntry {
   entryType: JournalEntryType;
   title: string;
   body: JournalBodyMap[JournalEntryType];
+  priority?: JournalPriority;
   createdAt: string;
 }
 

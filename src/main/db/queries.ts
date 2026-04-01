@@ -13,7 +13,7 @@
 
 import type Database from 'better-sqlite3';
 import type { GameState } from '../../game/types';
-import type { Port, Good, MarketGood, PlayerInventory, CargoItem, JournalEntry, JournalEntryType, PortLore, PortAccessLevel, PortAccessInfo } from '../../shared/game-types';
+import type { Port, Good, MarketGood, PlayerInventory, CargoItem, JournalEntry, JournalEntryType, JournalPriority, PortLore, PortAccessLevel, PortAccessInfo } from '../../shared/game-types';
 import { getReputationTier, getReputationPriceModifier, getTradeReputationGain, applyReputationToPrice } from '../../game/reputation';
 
 // ─── Game State ──────────────────────────────────────────────────────────────
@@ -916,12 +916,66 @@ export function insertJournalEntry(
   turn: number,
   entryType: JournalEntryType,
   title: string,
-  bodyJson: Record<string, unknown>
+  bodyJson: Record<string, unknown>,
+  priority: JournalPriority = 'mechanical'
 ): void {
   db.prepare(`
-    INSERT INTO journal_entries (turn, entry_type, title, body_json, created_at)
-    VALUES (?, ?, ?, ?, datetime('now'))
-  `).run(turn, entryType, title, JSON.stringify(bodyJson));
+    INSERT INTO journal_entries (turn, entry_type, title, body_json, priority, created_at)
+    VALUES (?, ?, ?, ?, ?, datetime('now'))
+  `).run(turn, entryType, title, JSON.stringify(bodyJson), priority);
+}
+
+/**
+ * Count journal entries for a given turn — used for 3-entry cap enforcement.
+ */
+export function countJournalEntriesForTurn(db: Database.Database, turn: number): number {
+  const row = db.prepare('SELECT COUNT(*) as cnt FROM journal_entries WHERE turn = ?').get(turn) as { cnt: number };
+  return row.cnt;
+}
+
+/**
+ * Insert a journal entry only if the per-turn cap has not been reached.
+ * Returns true if the entry was inserted, false if cap was hit.
+ * Default cap is 3 entries per turn.
+ */
+export function insertJournalEntryIfUnderCap(
+  db: Database.Database,
+  turn: number,
+  entryType: JournalEntryType,
+  title: string,
+  bodyJson: Record<string, unknown>,
+  priority: JournalPriority = 'mechanical',
+  cap = 3
+): boolean {
+  const count = countJournalEntriesForTurn(db, turn);
+  if (count >= cap) return false;
+  insertJournalEntry(db, turn, entryType, title, bodyJson, priority);
+  return true;
+}
+
+/**
+ * Check if a discovery has already been recorded for a given subject.
+ */
+export function hasDiscovery(db: Database.Database, subject: string): boolean {
+  const row = db.prepare('SELECT 1 FROM discoveries WHERE subject = ?').get(subject);
+  return row !== undefined;
+}
+
+/**
+ * Record a first-time educational discovery.
+ * Returns true if newly discovered, false if already known (idempotent).
+ */
+export function markDiscovery(
+  db: Database.Database,
+  category: string,
+  subject: string,
+  turn: number
+): boolean {
+  const result = db.prepare(`
+    INSERT OR IGNORE INTO discoveries (category, subject, discovered_at_turn)
+    VALUES (?, ?, ?)
+  `).run(category, subject, turn);
+  return result.changes > 0;
 }
 
 /**
@@ -933,14 +987,15 @@ export function getJournalEntries(db: Database.Database, limit?: number): Journa
     ? 'SELECT * FROM journal_entries ORDER BY turn DESC, id DESC LIMIT ?'
     : 'SELECT * FROM journal_entries ORDER BY turn DESC, id DESC';
   const rows = limit
-    ? db.prepare(sql).all(limit) as Array<{ id: number; turn: number; entry_type: string; title: string; body_json: string; created_at: string }>
-    : db.prepare(sql).all() as Array<{ id: number; turn: number; entry_type: string; title: string; body_json: string; created_at: string }>;
+    ? db.prepare(sql).all(limit) as Array<{ id: number; turn: number; entry_type: string; title: string; body_json: string; priority: string | null; created_at: string }>
+    : db.prepare(sql).all() as Array<{ id: number; turn: number; entry_type: string; title: string; body_json: string; priority: string | null; created_at: string }>;
   return rows.map(r => ({
     id: r.id,
     turn: r.turn,
     entryType: r.entry_type as JournalEntryType,
     title: r.title,
     body: JSON.parse(r.body_json),
+    priority: (r.priority as JournalPriority) ?? 'mechanical',
     createdAt: r.created_at,
   }));
 }

@@ -234,6 +234,50 @@ const MIGRATIONS: Migration[] = [
     // Backfill: any row with discovered=1 gets status='unlocked' (v1.3 upgrade path — all existing ports are fully unlocked)
     db.prepare("UPDATE port_access SET status = 'unlocked' WHERE discovered = 1").run();
   },
+
+  // v10 (index 9): Journal integration — discoveries table, priority column,
+  // and widen entry_type CHECK to include quest/dialogue/discovery.
+  (db) => {
+    // 1. Discoveries table — tracks first-time educational discoveries (idempotent inserts)
+    db.prepare(`
+      CREATE TABLE IF NOT EXISTS discoveries (
+        id               INTEGER PRIMARY KEY,
+        category         TEXT NOT NULL,
+        subject          TEXT NOT NULL UNIQUE,
+        discovered_at_turn INTEGER NOT NULL,
+        created_at       TEXT DEFAULT (datetime('now'))
+      )
+    `).run();
+
+    // 2. Add priority column to journal_entries
+    db.prepare("ALTER TABLE journal_entries ADD COLUMN priority TEXT DEFAULT 'mechanical'").run();
+
+    // 3. Recreate journal_entries with widened CHECK constraint.
+    //    SQLite does not support ALTER TABLE ... MODIFY CONSTRAINT, so we
+    //    copy data through a temp table.
+    db.prepare(`
+      CREATE TABLE journal_entries_new (
+        id          INTEGER PRIMARY KEY AUTOINCREMENT,
+        turn        INTEGER NOT NULL,
+        entry_type  TEXT NOT NULL CHECK(entry_type IN ('trade','voyage_event','arrival','departure','note','quest','dialogue','discovery')),
+        title       TEXT NOT NULL,
+        body_json   TEXT NOT NULL DEFAULT '{}',
+        priority    TEXT DEFAULT 'mechanical',
+        created_at  TEXT NOT NULL DEFAULT (datetime('now'))
+      )
+    `).run();
+
+    db.prepare(`
+      INSERT INTO journal_entries_new (id, turn, entry_type, title, body_json, priority, created_at)
+      SELECT id, turn, entry_type, title, body_json, priority, created_at FROM journal_entries
+    `).run();
+
+    db.prepare('DROP TABLE journal_entries').run();
+    db.prepare('ALTER TABLE journal_entries_new RENAME TO journal_entries').run();
+
+    // Recreate index
+    db.prepare('CREATE INDEX IF NOT EXISTS idx_journal_entries_turn ON journal_entries (turn)').run();
+  },
 ];
 
 /**
@@ -251,6 +295,7 @@ export const PLAYER_DATA_TABLES = [
   'npc_dialogue_state',
   'reputation',
   'port_access',
+  'discoveries',
 ] as const;
 
 /**
