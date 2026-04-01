@@ -616,7 +616,7 @@ export default function Shell(): React.ReactElement {
               display: 'flex',
               gap: '1.5rem',
               padding: '1.25rem',
-              animation: 'fadeSlideIn 0.3s ease-out',
+              animation: 'parchmentUnfurl 0.45s ease-out both',
             }}
           >
             {/* Left: Harbor info */}
