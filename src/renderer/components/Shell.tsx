@@ -195,14 +195,20 @@ export default function Shell(): React.ReactElement {
     }).catch((err: unknown) => { /* non-fatal: ship marker just won't animate */ console.warn('Ship animation failed:', err); });
   }, []);
 
-  // Sync trading port into uiStore so panels know which port to display
+  // Sync trading port into uiStore and auto-open Harbor panel on arrival
   const tradingState = gameState?.type === 'trading' ? (gameState as TradingState) : null;
+  const prevWasSailing = useRef(false);
   useEffect(() => {
     if (tradingState) {
       setSelectedPort(tradingState.selectedPort);
+      // Auto-open Harbor panel when arriving at a new port (was sailing → now trading)
+      if (prevWasSailing.current) {
+        openLeftPanel();
+      }
     }
+    prevWasSailing.current = gameState?.type === 'sailing';
   // Justification: intentionally depends only on tradingState?.selectedPort, not the full tradingState object, to avoid infinite re-render loop when tradingState reference changes
-  }, [tradingState?.selectedPort, setSelectedPort]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [tradingState?.selectedPort, setSelectedPort, gameState?.type]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Watch for EncounteredState transitions and fetch the pending event
   useEffect(() => {
@@ -579,65 +585,92 @@ export default function Shell(): React.ReactElement {
         </div>
       )}
 
-      {/* ── Floating Port Info Panel (top-left) — only on port scene ── */}
-      {selectedPortId && leftPanelOpen && isTrading && !showFullMap && (
-        <div
-          style={{
-            ...FLOAT_PANEL,
-            top: 16,
-            left: 16,
-            width: 320,
-            maxHeight: 'calc(100vh - 120px)',
-          }}
-        >
-          <PortInfoPanel
-            portId={selectedPortId}
-            currentTurn={gameState?.currentTurn ?? 0}
-            onClose={() => { setSelectedPort(null); toggleLeftPanel(); }}
-            onNavigate={handleNavigate}
-          />
-        </div>
-      )}
-
-      {/* ── Floating Trade Panel (top-right) — only on port scene ──── */}
-      {selectedPortId && rightPanelOpen && isTrading && !showFullMap && (
+      {/* ── Side Panel with Harbor/Market tabs — only on port scene ── */}
+      {selectedPortId && isTrading && !showFullMap && (leftPanelOpen || rightPanelOpen) && (
         <div
           style={{
             ...FLOAT_PANEL,
             top: 16,
             right: 16,
-            width: 340,
-            maxHeight: 'calc(100vh - 120px)',
+            width: 380,
+            maxHeight: 'calc(100vh - 100px)',
+            display: 'flex',
+            flexDirection: 'column',
           }}
         >
-          {/* Close button */}
-          <button
-            type="button"
-            onClick={toggleRightPanel}
-            aria-label="Close trade panel"
-            style={{
-              position: 'absolute',
-              top: 8,
-              right: 10,
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              color: '#7a5c45',
-              fontSize: '1rem',
-              zIndex: 2,
-              padding: '2px 6px',
-            }}
-          >
-            ×
-          </button>
-          <TradePanel
-            portId={selectedPortId}
-            portName={portDisplayName}
-            marketGoods={marketGoods}
-            inventory={inventory}
-            onBuy={handleBuy}
-            onSell={handleSell}
-          />
+          {/* Tab bar */}
+          <div style={{
+            display: 'flex',
+            borderBottom: '1px solid #e8d5b8',
+            marginBottom: '0.5rem',
+          }}>
+            {['Harbor', 'Market'].map(tab => {
+              const isActive = tab === 'Harbor' ? leftPanelOpen && !rightPanelOpen : rightPanelOpen;
+              return (
+                <button
+                  key={tab}
+                  type="button"
+                  onClick={() => {
+                    if (tab === 'Harbor') { openLeftPanel(); }
+                    else { openRightPanel(); }
+                  }}
+                  style={{
+                    flex: 1,
+                    padding: '0.5rem',
+                    border: 'none',
+                    borderBottom: isActive ? '2px solid #c4956a' : '2px solid transparent',
+                    background: 'none',
+                    fontFamily: "'Cinzel', Georgia, serif",
+                    fontSize: '0.7rem',
+                    fontWeight: 700,
+                    color: isActive ? '#5a3e2b' : '#9a8570',
+                    cursor: 'pointer',
+                    letterSpacing: '0.06em',
+                    textTransform: 'uppercase',
+                    transition: 'color 0.2s, border-color 0.2s',
+                  }}
+                >
+                  {tab}
+                </button>
+              );
+            })}
+            <button
+              type="button"
+              onClick={() => { toggleLeftPanel(); toggleRightPanel(); }}
+              style={{
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                fontSize: '0.9rem',
+                color: '#9a8570',
+                padding: '0 8px',
+              }}
+            >
+              x
+            </button>
+          </div>
+
+          {/* Tab content */}
+          <div style={{ flex: 1, overflowY: 'auto', minHeight: 0 }}>
+            {leftPanelOpen && !rightPanelOpen && (
+              <PortInfoPanel
+                portId={selectedPortId}
+                currentTurn={gameState?.currentTurn ?? 0}
+                onClose={() => { setSelectedPort(null); toggleLeftPanel(); }}
+                onNavigate={handleNavigate}
+              />
+            )}
+            {rightPanelOpen && (
+              <TradePanel
+                portId={selectedPortId}
+                portName={portDisplayName}
+                marketGoods={marketGoods}
+                inventory={inventory}
+                onBuy={handleBuy}
+                onSell={handleSell}
+              />
+            )}
+          </div>
         </div>
       )}
 
