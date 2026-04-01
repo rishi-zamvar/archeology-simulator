@@ -4,7 +4,7 @@ milestone: v2.0
 milestone_name: The Merchant's Odyssey
 status: verifying
 stopped_at: Completed 16-03-PLAN.md
-last_updated: "2026-04-01T17:58:43.995Z"
+last_updated: "2026-04-01T17:59:25.699Z"
 last_activity: 2026-04-01
 progress:
   total_phases: 8
@@ -25,8 +25,8 @@ See: .planning/PROJECT.md (updated 2026-04-01)
 
 ## Current Position
 
-Phase: 16 (port-content-world-building) — EXECUTING
-Plan: 3 of 3
+Phase: 17
+Plan: Not started
 Status: Phase complete — ready for verification
 Last activity: 2026-04-01
 
