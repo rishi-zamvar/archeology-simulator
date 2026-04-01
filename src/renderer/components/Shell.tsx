@@ -45,13 +45,14 @@ import type { VoyageEvent, PortRegion, DialogueNode, DialogueChoice, QuestDefini
 /* ── Shared floating panel style ─────────────────────────────────────── */
 const FLOAT_PANEL: React.CSSProperties = {
   position: 'absolute',
-  backgroundColor: 'rgba(253, 248, 240, 0.95)',
+  backgroundColor: 'rgba(253, 248, 240, 0.96)',
   border: '1px solid #c4956a',
-  borderRadius: 8,
-  boxShadow: '0 4px 20px rgba(61, 43, 31, 0.18)',
+  borderRadius: 10,
+  boxShadow: '0 6px 24px rgba(61, 43, 31, 0.2)',
   overflowY: 'auto',
   overflowX: 'hidden',
   zIndex: 1000,
+  backdropFilter: 'blur(4px)',
 };
 
 export default function Shell(): React.ReactElement {
@@ -423,29 +424,39 @@ export default function Shell(): React.ReactElement {
 
   // Gate: show title screen before gameplay
   if (screen === 'title') {
-    return <TitleScreen hasSave={hasSave} onContinue={handleContinue} onNewGame={handleNewGame} />;
+    return (
+      <div className="animate-fade-in">
+        <TitleScreen hasSave={hasSave} onContinue={handleContinue} onNewGame={handleNewGame} />
+      </div>
+    );
   }
 
   // Gate: show intro sequence after new game
   if (screen === 'intro') {
-    return <IntroSequence onComplete={() => {
-      // Auto-open Athens after intro — player starts at Piraeus
-      window.api?.game?.action?.({ type: 'START_TRADE', port: 'athens' }).catch(() => {});
-      setSelectedPort('athens');
-      setScreen('game');
-    }} />;
+    return (
+      <div className="animate-fade-in">
+        <IntroSequence onComplete={() => {
+          // Auto-open Athens after intro — player starts at Piraeus
+          window.api?.game?.action?.({ type: 'START_TRADE', port: 'athens' }).catch(() => {});
+          setSelectedPort('athens');
+          setScreen('game');
+        }} />
+      </div>
+    );
   }
 
   // Gate: show conclusion screen when merchants_odyssey completes
   if (screen === 'conclusion' && conclusionStats) {
     return (
-      <ConclusionScreen
-        stats={conclusionStats}
-        onContinue={() => {
-          setConclusionStats(null);
-          setScreen('game');
-        }}
-      />
+      <div className="animate-fade-in">
+        <ConclusionScreen
+          stats={conclusionStats}
+          onContinue={() => {
+            setConclusionStats(null);
+            setScreen('game');
+          }}
+        />
+      </div>
     );
   }
 
@@ -757,14 +768,15 @@ export default function Shell(): React.ReactElement {
               left: '50%',
               transform: 'translateX(-50%)',
               zIndex: 1150,
-              backgroundColor: 'rgba(253, 248, 240, 0.9)',
+              backgroundColor: 'rgba(253, 248, 240, 0.92)',
               border: '1px solid rgba(196, 149, 106, 0.5)',
-              borderRadius: 4,
-              padding: '0.25rem 0.75rem',
-              maxWidth: 400,
+              borderRadius: 20,
+              padding: '0.3rem 1rem',
+              maxWidth: 420,
               textAlign: 'center',
               cursor: 'pointer',
-              transition: 'background-color 0.15s',
+              transition: 'background-color 0.2s ease, box-shadow 0.2s ease',
+              boxShadow: '0 2px 8px rgba(61, 43, 31, 0.12)',
             }}
           >
             <span style={{
@@ -789,20 +801,22 @@ export default function Shell(): React.ReactElement {
           {/* Quest details panel — shows ALL active quests with objectives */}
           {showQuestDetails && (
             <div
+              className="animate-fade-in"
               style={{
                 position: 'absolute',
                 top: 88,
                 left: '50%',
                 transform: 'translateX(-50%)',
                 zIndex: 1200,
-                backgroundColor: 'rgba(253, 248, 240, 0.96)',
+                backgroundColor: 'rgba(253, 248, 240, 0.97)',
                 border: '1px solid #c4956a',
-                borderRadius: 8,
-                padding: '1rem 1.25rem',
-                width: 400,
+                borderRadius: 10,
+                padding: '1.25rem 1.5rem',
+                width: 420,
                 maxHeight: 500,
                 overflowY: 'auto',
-                boxShadow: '0 4px 20px rgba(61, 43, 31, 0.2)',
+                boxShadow: '0 8px 32px rgba(61, 43, 31, 0.25)',
+                backdropFilter: 'blur(4px)',
               }}
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
@@ -861,11 +875,16 @@ export default function Shell(): React.ReactElement {
                       fontSize: '0.5rem',
                       fontWeight: 700,
                       color: '#fdf8f0',
-                      backgroundColor: p.status === 'active' ? '#c0392b' : p.status === 'completed' ? '#2b5c4a' : '#aaa',
-                      padding: '1px 6px',
-                      borderRadius: 3,
-                      letterSpacing: '0.08em',
+                      backgroundColor: p.status === 'active' ? '#c0392b' : p.status === 'completed' ? '#2b5c4a' : '#8a7a68',
+                      padding: '2px 8px',
+                      borderRadius: 10,
+                      letterSpacing: '0.1em',
                       textTransform: 'uppercase',
+                      boxShadow: p.status === 'active'
+                        ? '0 0 6px rgba(192, 57, 43, 0.3)'
+                        : p.status === 'completed'
+                          ? '0 0 6px rgba(43, 92, 74, 0.3)'
+                          : 'none',
                     }}>
                       {p.status === 'active' ? 'ACTIVE' : p.status === 'completed' ? 'DONE' : 'UPCOMING'}
                     </span>
