@@ -10,7 +10,7 @@
  * Port click dispatches to uiStore: sets selectedPortId and opens left panel.
  */
 
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { MapContainer, TileLayer } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-cluster';
 import { useMapPorts } from '../hooks/useMapPorts';
@@ -20,11 +20,17 @@ import PortMarker from './PortMarker';
 interface MapAreaProps {
   children?: React.ReactNode;
   onPortSelected?: () => void;
+  onRefreshAccessReady?: (refreshAccess: () => void) => void;
 }
 
-export default function MapArea({ children, onPortSelected }: MapAreaProps): React.ReactElement {
-  const { ports, portAccessMap, isLoading, error } = useMapPorts();
+export default function MapArea({ children, onPortSelected, onRefreshAccessReady }: MapAreaProps): React.ReactElement {
+  const { ports, portAccessMap, isLoading, error, refreshAccess } = useMapPorts();
   const { setSelectedPort } = useUIStore();
+
+  // Report refreshAccess to parent (Shell) so it can trigger re-fetch after auto-discover
+  useEffect(() => {
+    onRefreshAccessReady?.(refreshAccess);
+  }, [refreshAccess, onRefreshAccessReady]);
 
   const handlePortClick = useCallback((portId: string) => {
     setSelectedPort(portId);

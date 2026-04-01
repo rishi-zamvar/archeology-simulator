@@ -1,18 +1,16 @@
 /**
  * PortInfoPanel — left panel content shown when a port is selected on the map.
  *
- * Shows:
- *   - Port ancient name (heading) and modern name (subtitle)
- *   - Historical description
- *   - Reachable destinations: ports within 2 months sailing, with distance
- *     in km, voyage duration in months, and "Sail" button
+ * Content is gated by port access level:
+ *   - Unknown: "Unknown Port" heading, rumor text, destinations only
+ *   - Discovered: Port name, description, reputation, destinations, teaser for lore
+ *   - Unlocked: Full content — name, description, reputation, lore, destinations
  *
- * Uses an AbortController-inspired cancelled flag pattern to avoid
- * setting state after unmount or after portId has changed (stale responses).
+ * Players can sail to any port regardless of access level.
  */
 
 import React, { useEffect, useState, useCallback } from 'react';
-import type { Port, VoyageRoute, PortLore } from '../../shared/game-types';
+import type { Port, VoyageRoute, PortLore, PortAccessLevel } from '../../shared/game-types';
 
 interface ReachableDestination {
   port: Port;
@@ -36,6 +34,7 @@ export default function PortInfoPanel({
   const [destinations, setDestinations] = useState<ReachableDestination[]>([]);
   const [lore, setLore] = useState<PortLore | null>(null);
   const [reputation, setReputation] = useState<{ tierName: string; tierLevel: number; score: number; region: string } | null>(null);
+  const [accessLevel, setAccessLevel] = useState<PortAccessLevel>('unknown');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
@@ -47,15 +46,17 @@ export default function PortInfoPanel({
     setDestinations([]);
     setLore(null);
     setReputation(null);
+    setAccessLevel('unknown');
 
-    // Fetch port details, reachable destinations, lore, and reputation in parallel
+    // Fetch port details, reachable destinations, lore, reputation, and access level in parallel
     Promise.all([
       window.api.game.getPortDetails(portId),
       window.api.game.getReachablePorts(portId, currentTurn),
       window.api.game.getPortLore(portId),
       window.api.game.getPortReputation(portId),
+      window.api.game.getPortAccessLevel(portId),
     ])
-      .then(([portRes, reachableRes, loreRes, repRes]) => {
+      .then(([portRes, reachableRes, loreRes, repRes, accessRes]) => {
         if (cancelled) return;
         if (!portRes.success) throw new Error(portRes.error);
         if (!reachableRes.success) throw new Error(reachableRes.error);
@@ -67,6 +68,7 @@ export default function PortInfoPanel({
         setDestinations(sorted.slice(0, 5));
         if (loreRes.success && loreRes.data) setLore(loreRes.data);
         if (repRes.success && repRes.data) setReputation(repRes.data);
+        if (accessRes.success) setAccessLevel(accessRes.data);
         setIsLoading(false);
       })
       .catch((err: unknown) => {
@@ -86,6 +88,18 @@ export default function PortInfoPanel({
     },
     [onNavigate]
   );
+
+  // Derive display values based on access level
+  const displayName = accessLevel === 'unknown' ? 'Unknown Port' : port?.ancientName ?? '';
+  const displayModernName = accessLevel === 'unknown' ? null : port?.modernName;
+  const displayDescription = accessLevel === 'unknown'
+    ? 'You have heard rumors of a port in this region, but know little about it.'
+    : port?.description ?? '';
+
+  const showReputation = accessLevel !== 'unknown';
+  const showLore = accessLevel === 'unlocked';
+  const showCulturalDescription = accessLevel === 'unlocked';
+  const showTeaser = accessLevel === 'discovered';
 
   return (
     <div
@@ -107,7 +121,7 @@ export default function PortInfoPanel({
         }}
       >
         <div style={{ flex: 1 }}>
-          {port ? (
+          {port || accessLevel === 'unknown' ? (
             <>
               <h2
                 style={{
@@ -119,21 +133,24 @@ export default function PortInfoPanel({
                   textTransform: 'uppercase',
                   margin: 0,
                   lineHeight: 1.3,
+                  fontStyle: accessLevel === 'unknown' ? 'italic' : undefined,
                 }}
               >
-                {port.ancientName}
+                {displayName}
               </h2>
-              <p
-                style={{
-                  fontFamily: "'Lora', Georgia, serif",
-                  fontSize: '0.75rem',
-                  color: '#7a5c45',
-                  margin: '2px 0 0',
-                  fontStyle: 'italic',
-                }}
-              >
-                {port.modernName}
-              </p>
+              {displayModernName && (
+                <p
+                  style={{
+                    fontFamily: "'Lora', Georgia, serif",
+                    fontSize: '0.75rem',
+                    color: '#7a5c45',
+                    margin: '2px 0 0',
+                    fontStyle: 'italic',
+                  }}
+                >
+                  {displayModernName}
+                </p>
+              )}
             </>
           ) : (
             <div
@@ -207,7 +224,7 @@ export default function PortInfoPanel({
       )}
 
       {/* Port description */}
-      {port && !isLoading && (
+      {(port || accessLevel === 'unknown') && !isLoading && (
         <p
           style={{
             fontFamily: "'Lora', Georgia, serif",
@@ -215,14 +232,15 @@ export default function PortInfoPanel({
             color: '#3d2b1f',
             lineHeight: 1.6,
             margin: '0 0 1rem',
+            fontStyle: accessLevel === 'unknown' ? 'italic' : undefined,
           }}
         >
-          {port.description}
+          {displayDescription}
         </p>
       )}
 
-      {/* Your Standing — reputation tier */}
-      {port && !isLoading && reputation && (
+      {/* Your Standing — reputation tier (hidden for unknown ports) */}
+      {port && !isLoading && showReputation && reputation && (
         <div style={{ marginTop: '0.5rem', marginBottom: '0.75rem', padding: '0.5rem', backgroundColor: 'rgba(196, 149, 106, 0.08)', border: '1px solid rgba(196, 149, 106, 0.3)', borderRadius: 2 }}>
           <h4 style={{ fontFamily: "'Cinzel', serif", fontSize: '0.65rem', color: '#7a5c45', marginBottom: '0.3rem', marginTop: 0, textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 700 }}>
             Your Standing
@@ -238,8 +256,8 @@ export default function PortInfoPanel({
         </div>
       )}
 
-      {/* Historical context — cultural description */}
-      {port && !isLoading && port.culturalDescription && (
+      {/* Historical context — cultural description (unlocked only) */}
+      {port && !isLoading && showCulturalDescription && port.culturalDescription && (
         <div style={{ marginTop: '0.5rem', borderTop: '1px solid #c4956a', paddingTop: '1rem', marginBottom: '1rem' }}>
           <h4
             style={{
@@ -269,8 +287,8 @@ export default function PortInfoPanel({
         </div>
       )}
 
-      {/* Port Lore */}
-      {port && !isLoading && lore && (
+      {/* Port Lore (unlocked only) */}
+      {port && !isLoading && showLore && lore && (
         <div style={{ marginTop: '0.5rem', borderTop: '1px solid #c4956a', paddingTop: '1rem', marginBottom: '1rem' }}>
           <h4
             style={{
@@ -400,7 +418,34 @@ export default function PortInfoPanel({
         </div>
       )}
 
-      {/* Reachable destinations */}
+      {/* Teaser for discovered ports — encourage unlocking */}
+      {port && !isLoading && showTeaser && (
+        <div
+          style={{
+            marginTop: '0.5rem',
+            marginBottom: '0.75rem',
+            padding: '0.5rem',
+            backgroundColor: 'rgba(196, 149, 106, 0.08)',
+            border: '1px dashed rgba(196, 149, 106, 0.5)',
+            borderRadius: 2,
+          }}
+        >
+          <p
+            style={{
+              fontFamily: "'Lora', Georgia, serif",
+              fontSize: '0.75rem',
+              color: '#7a5c45',
+              fontStyle: 'italic',
+              margin: 0,
+              lineHeight: 1.5,
+            }}
+          >
+            Trade here or seek an introduction to learn more about this port.
+          </p>
+        </div>
+      )}
+
+      {/* Reachable destinations — always shown regardless of access level */}
       {!isLoading && destinations.length > 0 && (
         <>
           <h3
@@ -497,7 +542,7 @@ export default function PortInfoPanel({
       )}
 
       {/* No destinations fallback */}
-      {!isLoading && !error && destinations.length === 0 && port && (
+      {!isLoading && !error && destinations.length === 0 && (port || accessLevel === 'unknown') && (
         <p
           style={{
             fontFamily: "'Lora', Georgia, serif",

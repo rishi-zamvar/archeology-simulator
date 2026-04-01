@@ -106,6 +106,14 @@ export default function Shell(): React.ReactElement {
   const [questToast, setQuestToast] = useState<{ name: string; historicalNote: string } | null>(null);
   const prevQuestRef = useRef<Array<{ quest: QuestDefinition; progress: QuestProgress }>>([]);
 
+  // Phase 19: Port access level for NPC gating + auto-discover
+  const [portAccessLevel, setPortAccessLevel] = useState<import('../../shared/game-types').PortAccessLevel>('unknown');
+  const refreshAccessRef = useRef<(() => void) | null>(null);
+
+  const handleRefreshAccessReady = useCallback((fn: () => void) => {
+    refreshAccessRef.current = fn;
+  }, []);
+
   const { state: gameState } = useGameState();
   const { marketGoods, inventory, transactions, error: tradeError } = useTradeState(selectedPortId);
 
@@ -292,6 +300,31 @@ export default function Shell(): React.ReactElement {
     }
   }, [isTrading, selectedPortId]);
 
+  // Phase 19: Fetch port access level and auto-discover on arrival
+  useEffect(() => {
+    if (isTrading && selectedPortId) {
+      // Fetch access level for NPC gating
+      window.api.game.getPortAccessLevel(selectedPortId).then((res) => {
+        if (res.success) {
+          setPortAccessLevel(res.data);
+          // Auto-discover if port is unknown
+          if (res.data === 'unknown') {
+            window.api.game.autoDiscoverPort(selectedPortId, gameState?.currentTurn ?? 0).then((discoverRes) => {
+              if (discoverRes.success && discoverRes.data) {
+                // Port was upgraded to discovered — refresh map markers and update local state
+                setPortAccessLevel('discovered');
+                refreshAccessRef.current?.();
+              }
+            }).catch(() => { /* non-fatal */ });
+          }
+        }
+      }).catch(() => setPortAccessLevel('unknown'));
+    } else {
+      setPortAccessLevel('unknown');
+    }
+  // Justification: depends on isTrading, selectedPortId, and currentTurn for auto-discover timing
+  }, [isTrading, selectedPortId, gameState?.currentTurn]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // Phase 15: Fetch active quest for indicator on mount
   useEffect(() => {
     window.api.quest.getActive().then((res) => {
@@ -376,7 +409,7 @@ export default function Shell(): React.ReactElement {
     >
       {/* ── Full-screen map (background layer) ──────────────────────── */}
       <div style={{ position: 'absolute', inset: 0, zIndex: 0 }}>
-        <MapArea onPortSelected={() => setShowFullMap(false)}>
+        <MapArea onPortSelected={() => setShowFullMap(false)} onRefreshAccessReady={handleRefreshAccessReady}>
           {sailingState && portCoords.size > 0 && (
             <ShipMarker
               sailingState={sailingState}
@@ -431,7 +464,7 @@ export default function Shell(): React.ReactElement {
       )}
 
       {/* ── Talk to NPC button (top-center-left) — when NPCs available at port ── */}
-      {isTrading && selectedPortId && !showFullMap && availableNpcs.length > 0 && !dialogueNpc && (
+      {isTrading && selectedPortId && !showFullMap && availableNpcs.length > 0 && portAccessLevel === 'unlocked' && !dialogueNpc && (
         <div
           style={{
             position: 'absolute',
