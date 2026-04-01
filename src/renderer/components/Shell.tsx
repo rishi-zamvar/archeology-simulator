@@ -37,7 +37,7 @@ import { getWeatherModifiers, getSeasonalWeatherDescription } from '../../game/w
 import type { Season } from '../../game/weather';
 import type { SailingTurnResult } from '../../game/sailing';
 import type { SailingState, TradingState } from '../../game/types';
-import type { VoyageEvent, PortRegion, DialogueNode, DialogueChoice } from '../../shared/game-types';
+import type { VoyageEvent, PortRegion, DialogueNode, DialogueChoice, QuestDefinition, QuestProgress } from '../../shared/game-types';
 
 /* ── Shared floating panel style ─────────────────────────────────────── */
 const FLOAT_PANEL: React.CSSProperties = {
@@ -99,6 +99,11 @@ export default function Shell(): React.ReactElement {
     choices: DialogueChoice[];
   } | null>(null);
   const [availableNpcs, setAvailableNpcs] = useState<Array<{ npcId: string; name: string }>>([]);
+
+  // Phase 15: Active quest indicator and completion toast
+  const [activeQuest, setActiveQuest] = useState<{ quest: QuestDefinition; progress: QuestProgress } | null>(null);
+  const [questToast, setQuestToast] = useState<{ name: string; historicalNote: string } | null>(null);
+  const prevQuestRef = useRef<Array<{ quest: QuestDefinition; progress: QuestProgress }>>([]);
 
   const { state: gameState } = useGameState();
   const { marketGoods, inventory, transactions, error: tradeError } = useTradeState(selectedPortId);
@@ -285,6 +290,50 @@ export default function Shell(): React.ReactElement {
       setAvailableNpcs([]);
     }
   }, [isTrading, selectedPortId]);
+
+  // Phase 15: Fetch active quest for indicator on mount
+  useEffect(() => {
+    window.api.quest.getActive().then((res) => {
+      if (res.success && res.data.length > 0) {
+        setActiveQuest(res.data[0]);
+        prevQuestRef.current = res.data;
+      }
+    });
+  }, []);
+
+  // Phase 15: Re-fetch active quest on game:updated; detect quest completion for toast
+  useEffect(() => {
+    const cleanup = window.api.subscribe('game:updated', () => {
+      window.api.quest.getActive().then((res) => {
+        if (res.success) {
+          setActiveQuest(res.data.length > 0 ? res.data[0] : null);
+
+          // Detect quest completion: quest was active before, not active now
+          const prevIds = new Set(prevQuestRef.current.map(q => q.quest.id));
+          const currIds = new Set(res.data.map((q: { quest: QuestDefinition; progress: QuestProgress }) => q.quest.id));
+          for (const prev of prevQuestRef.current) {
+            if (prevIds.has(prev.quest.id) && !currIds.has(prev.quest.id)) {
+              // This quest was active and is no longer — check if completed
+              window.api.quest.getAll().then((allRes) => {
+                if (!allRes.success) return;
+                const completed = allRes.data.find(
+                  (q: { quest: QuestDefinition; progress: QuestProgress }) =>
+                    q.quest.id === prev.quest.id && q.progress.status === 'completed'
+                );
+                if (completed) {
+                  setQuestToast({ name: completed.quest.name, historicalNote: completed.quest.historicalNote });
+                  setTimeout(() => setQuestToast(null), 5000);
+                }
+              });
+            }
+          }
+
+          prevQuestRef.current = res.data;
+        }
+      });
+    });
+    return cleanup;
+  }, []);
 
   const handleTalkToNpc = useCallback(async (npcId: string) => {
     try {
@@ -595,6 +644,89 @@ export default function Shell(): React.ReactElement {
         monthName={weatherMods.monthName}
         seasonTint={SEASON_TINTS[weatherMods.season]}
       />
+
+      {/* ── Active quest indicator (below Logbook) ──────────────── */}
+      {activeQuest && (
+        <div
+          style={{
+            position: 'absolute',
+            top: 56,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 1150,
+            backgroundColor: 'rgba(253, 248, 240, 0.9)',
+            border: '1px solid rgba(196, 149, 106, 0.5)',
+            borderRadius: 4,
+            padding: '0.25rem 0.75rem',
+            maxWidth: 400,
+            textAlign: 'center',
+            pointerEvents: 'none',
+          }}
+        >
+          <span style={{
+            fontFamily: "'Cinzel', Georgia, serif",
+            fontSize: '0.5rem',
+            fontWeight: 700,
+            color: '#5a3e2b',
+            letterSpacing: '0.06em',
+          }}>
+            {activeQuest.quest.name}
+          </span>
+          <span style={{
+            fontFamily: "'Lora', Georgia, serif",
+            fontSize: '0.48rem',
+            color: '#7a5c45',
+            marginLeft: '0.4rem',
+          }}>
+            {activeQuest.quest.objectives[activeQuest.progress.currentObjective]?.description ?? ''}
+          </span>
+        </div>
+      )}
+
+      {/* ── Quest completion toast ──────────────────────────────── */}
+      {questToast && (
+        <div
+          role="status"
+          style={{
+            position: 'fixed',
+            bottom: 80,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 11000,
+            background: 'linear-gradient(135deg, rgba(196, 165, 106, 0.95), rgba(180, 150, 90, 0.95))',
+            color: '#3d2b1f',
+            padding: '0.8rem 1.5rem',
+            borderRadius: 6,
+            border: '1px solid #c4956a',
+            maxWidth: 420,
+            textAlign: 'center',
+            boxShadow: '0 4px 20px rgba(61, 43, 31, 0.35)',
+            pointerEvents: 'none',
+          }}
+        >
+          <div style={{
+            fontFamily: "'Cinzel', Georgia, serif",
+            fontSize: '0.7rem',
+            fontWeight: 700,
+            letterSpacing: '0.1em',
+            textTransform: 'uppercase',
+            marginBottom: '0.3rem',
+          }}>
+            Quest Complete: {questToast.name}
+          </div>
+          {questToast.historicalNote && (
+            <div style={{
+              fontFamily: "'Lora', Georgia, serif",
+              fontSize: '0.6rem',
+              fontStyle: 'italic',
+              lineHeight: 1.5,
+              color: '#5a3e2b',
+            }}>
+              {questToast.historicalNote}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* ── Cargo + Ledger drop-up (bottom-left) ────────────────── */}
       <CargoDropUp inventory={inventory} transactions={transactions} />
