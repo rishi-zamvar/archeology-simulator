@@ -4,7 +4,7 @@
 
 A turn-based ancient Mediterranean trade simulator where the player is a merchant captain sailing between ports in 600-900 BCE. Built as an Electron + React desktop app aimed at students and educators, it combines historically grounded gameplay with real museum artifacts, academic source data, and dynamic economic systems to teach ancient history through interactive decision-making. Think Oregon Trail meets ancient Mediterranean commerce.
 
-Shipped v1.0 (2026-03-16), v1.1 (2026-03-31), v1.2 (2026-03-31). Full gameplay loop with 25 ports, curated historical art, offline image serving, structured IPC, and zero TypeScript errors.
+Shipped v1.0 (2026-03-16), v1.1 (2026-03-31), v1.2 (2026-03-31), v1.3 (2026-04-01). Full gameplay loop with 25 ports, curated historical art, seasonal weather system, captain's journal, animated sailing, trade P&L feedback, and title screen.
 
 ## Core Value
 
@@ -34,12 +34,15 @@ Students learn ancient Mediterranean history — trade networks, cultures, geogr
 - ✓ Structured logging replacing ad-hoc console calls — v1.2
 - ✓ Zero TypeScript errors, justified lint suppressions — v1.2
 - ✓ Visible error feedback for IPC failures — v1.2
-- [ ] Seasonal sailing system with weather affecting routes
+- ✓ Seasonal weather system with Athenian calendar, mare clausum, voyage modifiers — v1.3
+- ✓ Captain's journal with auto-logged trades, events, arrivals/departures, player notes — v1.3
+- ✓ Animated sailing with per-turn events, route line, camera follow, voyage overlay — v1.3
+- ✓ Trade P&L indicators with purchase provenance and dynamic totals — v1.3
+- ✓ Title screen with New Game / Continue — v1.3
 - [ ] Political faction system with reputation
 - [ ] Ship progression and crew management
 - [ ] Commodity chains (copper + tin = bronze)
-- [ ] Captain's journal/log
-- [ ] ~40-60 ports (currently 5)
+- [ ] ~40-60 ports (currently 25)
 - [ ] Bundle fonts for offline use
 
 ### Out of Scope
@@ -50,30 +53,20 @@ Students learn ancient Mediterranean history — trade networks, cultures, geogr
 - Mobile/tablet versions — desktop Electron only
 - Real-time gameplay — strictly turn-based
 
-## Current Milestone: v1.3 Gameplay Depth & Polish
+## Shipped Milestones
 
-**Goal:** Deepen gameplay with seasonal weather, a captain's journal, sailing animations, and trade profit/loss feedback.
-
-**Target features:**
-- Seasonal sailing system with weather affecting route safety and travel time
-- Captain's journal/log tracking voyages, trades, and notable events
-- Active ship animation during sailing (visible movement on map between ports)
-- Profit/loss indicator on trade panel showing price difference before confirming a sale
-
-**Previously shipped:**
-- v1.0 MVP — Playable trade simulator with 25 ports, events, audio, tutorial
-- v1.1 Integration — 57 curated images (ports + trade goods), fully offline, attribution displays
-- v1.2 Coding Hygiene — IPCResponse<T>, structured logging, zero tsc errors, error toast
+- **v1.0 MVP** — Playable trade simulator with 25 ports, events, audio, tutorial (2026-03-16)
+- **v1.1 Integration** — 57 curated images (ports + trade goods), fully offline, attribution displays (2026-03-31)
+- **v1.2 Coding Hygiene** — IPCResponse<T>, structured logging, zero tsc errors, error toast (2026-03-31)
+- **v1.3 Gameplay Depth & Polish** — Seasonal weather, captain's journal, sailing animation, trade P&L, title screen (2026-04-01)
 
 ## Context
 
-Shipped v1.0 with 7,732 lines of TypeScript across 100 files.
+**Tech stack:** Electron 35, React 19, Vite 7.3, TypeScript, better-sqlite3, Leaflet, leaflet.motion, Tailwind CSS 4, Web Audio API
 
-**Tech stack:** Electron 35, React 19, Vite 7.3, TypeScript, better-sqlite3, Leaflet, Tailwind CSS 4, Web Audio API
+**Current state (v1.3):** Fully playable with 25 ports, 8 trade goods, 24 voyage events, seasonal weather (Athenian calendar), captain's journal with auto-logging, animated per-turn sailing with route lines and voyage overlay, trade P&L indicators, and title screen. 57 curated historical images served offline. 60 passing tests (game logic + weather + sailing). Zero TypeScript errors.
 
-**Current state:** Fully playable with 25 ports, 8 trade goods, 24 voyage events. 57 curated historical images served offline via resource-image:// protocol. Consistent IPC contract (IPCResponse<T>), structured logging, zero tsc errors.
-
-**Known gaps:** Target 40-60 ports (currently 25). Google Fonts loaded from CDN, not bundled. No CI/CD pipeline. No test suite.
+**Known gaps:** Target 40-60 ports (currently 25). Google Fonts loaded from CDN, not bundled. No CI/CD pipeline. DB tests fail in Vitest due to better-sqlite3 native module mismatch (works in Electron).
 
 ## Constraints
 
@@ -120,4 +113,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-31 — v1.3 milestone started*
+*Last updated: 2026-04-01 after v1.3 milestone*

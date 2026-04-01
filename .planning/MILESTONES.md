@@ -1,5 +1,23 @@
 # Project Milestones: Archeology Simulator
 
+## v1.3 Gameplay Depth & Polish (Shipped: 2026-04-01)
+
+**Phases completed:** 4 phases, 10 plans, 21 tasks
+
+**Key accomplishments:**
+
+- Pure weather functions with Athenian calendar season derivation, duration multipliers, storm weights, mare clausum flags, and seasonal descriptions -- 37 TDD tests green
+- Seasonal event weights wired into SET_SAIL handler and duration multiplier into getReachablePorts IPC -- winter voyages now longer and stormier, summer voyages shorter and calmer
+- Season header display with Athenian month names, mare clausum sailing warning modal, Wait for Spring IPC, and seasonal logbook weather descriptions
+- SQLite journal_entries table with typed query functions, IPC handlers, and preload bridge for captain's journal
+- Injected insertJournalEntry calls into buyGood/sellGood transactions and game:action/resolveEvent IPC handlers for automatic trade, event, departure, and arrival journaling
+- Commit:
+- Per-turn sailing IPC with advanceSailingTurn handler, RESUME_SAILING FSM transition, and animation utility functions
+- Per-turn segmented ship animation with dashed route line, camera follow, and floating voyage progress overlay
+- Green/red profit-loss indicators per cargo row with weighted-average cost, dynamic total preview, and purchase provenance in TradePanel
+
+---
+
 ## v1.0 MVP (Shipped: 2026-03-12)
 
 **Delivered:** Fully playable ancient Mediterranean trade simulator with illustrated port scenes, museum artifact integration, ambient audio, and guided tutorial.
