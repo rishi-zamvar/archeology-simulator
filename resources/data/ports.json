@@ -48,5 +48,15 @@
     "description": "A major city at the crossroads of eastern trade routes.",
     "region": "Syria",
     "culturalDescription": "Antioch-on-the-Orontes was the third-largest city in the Roman Empire, founded by Seleucus I after Alexander's conquests. The city sat at the crossroads of overland routes from Persia and Arabia with Mediterranean sea trade, making it an entrepot for spices, silk, and Eastern luxury goods destined for Roman markets. Its famous colonnaded main street stretched for miles and its cosmopolitan population included Greeks, Jews, Syrians, and Persians."
+  },
+  {
+    "id": "tyre",
+    "name": "Tyre",
+    "ancientName": "Tyros",
+    "lat": 33.27,
+    "lng": 35.20,
+    "description": "Island fortress city of the Phoenicians, famed for its purple dye and seafaring merchants.",
+    "region": "Levant",
+    "culturalDescription": "Tyre was the greatest of the Phoenician city-states, built on an island just off the coast of modern Lebanon. Its sailors were the finest in the ancient world, reaching as far as Britain and the Atlantic coast of Africa. Tyre's most famous export was Tyrian purple dye, extracted from the murex sea snail -- so precious that purple became the color of royalty. The city founded Carthage around 814 BCE and its alphabet became the ancestor of Greek and Latin scripts."
   }
 ]

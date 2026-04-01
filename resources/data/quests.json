@@ -1,5 +1,21 @@
 {
   "quests": [
-    { "id": "main_quest", "name": "The Commission of Kephalos" }
+    {
+      "id": "tyrian_commission",
+      "name": "The Tyrian Commission",
+      "description": "Nikias, a merchant of Athens, asks you to deliver Attic pottery to Tyre and return with Tyrian purple dye.",
+      "objectives": [
+        { "id": "obj_buy_pottery", "type": "complete_trade", "description": "Purchase Attic pottery at Piraeus", "portId": "athens", "goodId": "attic_pottery", "action": "buy" },
+        { "id": "obj_deliver_pottery", "type": "deliver_cargo", "description": "Deliver Attic pottery to Tyre", "portId": "tyre", "goodId": "attic_pottery", "minQuantity": 5 },
+        { "id": "obj_buy_purple", "type": "complete_trade", "description": "Purchase Tyrian purple dye at Tyre", "portId": "tyre", "goodId": "purple_dye", "action": "buy" },
+        { "id": "obj_return_purple", "type": "deliver_cargo", "description": "Return with Tyrian purple to Piraeus", "portId": "athens", "goodId": "purple_dye", "minQuantity": 3 }
+      ],
+      "prerequisites": null,
+      "rewards": [
+        { "type": "reputation_change", "region": "greece", "delta": 10 },
+        { "type": "journal_entry", "title": "The Tyrian Commission Complete", "text": "Nikias is pleased with the Tyrian purple. The rich dye, extracted from murex sea snails by Phoenician artisans, will fetch a handsome price at the Athenian agora." }
+      ],
+      "historicalNote": "Tyrian purple (porphyra) was the most prized dye in the ancient Mediterranean, worth more than gold by weight. Produced from the mucus of Bolinus brandaris sea snails, it took 10,000 snails to produce 1 gram of dye. Athens exported fine pottery (especially red-figure and black-figure ware) across the Mediterranean, making pottery-for-dye a historically plausible trade."
+    }
   ]
 }

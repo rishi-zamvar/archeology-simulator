@@ -22,5 +22,21 @@
     "unit": "amphora",
     "description": "Prized across the Mediterranean. Quality varies by region.",
     "origin": ["rome", "athens"]
+  },
+  {
+    "id": "attic_pottery",
+    "name": "Attic Pottery",
+    "basePrice": 25,
+    "unit": "crate",
+    "description": "Fine Athenian pottery decorated with red-figure scenes of mythology and daily life.",
+    "origin": ["athens"]
+  },
+  {
+    "id": "purple_dye",
+    "name": "Tyrian Purple",
+    "basePrice": 80,
+    "unit": "amphora",
+    "description": "Rare dye extracted from murex sea snails, worth more than gold by weight.",
+    "origin": ["tyre"]
   }
 ]

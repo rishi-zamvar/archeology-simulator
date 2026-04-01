@@ -274,6 +274,8 @@ export function seedGoods(db: Database.Database): void {
     ['bronze',    'Bronze',    180, 'The primary metal for tools, weapons, and decorative arts. Cyprus (meaning copper) was the ancient world\'s leading source.'],
     ['timber',    'Timber',    90,  'Quality shipbuilding timber was scarce in the Mediterranean. Lebanese cedar and Macedonian pine were prized by Egypt, Greece, and Phoenicia alike.'],
     ['pottery',   'Pottery',   60,  'Fine painted pottery from Athens and Corinth served as both luxury goods and practical containers for transporting wine and oil.'],
+    ['attic_pottery', 'Attic Pottery', 25, 'Fine Athenian pottery decorated with red-figure scenes of mythology and daily life. Prized across the Mediterranean as both art and trade goods.'],
+    ['purple_dye', 'Tyrian Purple', 80, 'Rare dye extracted from murex sea snails by Phoenician artisans. Worth more than gold by weight, it took 10,000 snails to produce 1 gram.'],
   ];
 
   const seedAll = db.transaction(() => {
@@ -302,13 +304,13 @@ export function seedPortInventory(db: Database.Database): void {
   // High supply relative to demand → low price; high demand relative to supply → high price
   const inventoryByPort: Record<string, Array<[string, number, number]>> = {
     // Greece region — wine, olive oil, pottery surplus; grain deficit
-    'athens':    [['wheat', 3, 8], ['olive_oil', 10, 4], ['wine', 10, 5], ['textiles', 3, 6], ['spices', 2, 5], ['bronze', 4, 6], ['timber', 3, 7], ['pottery', 8, 4]],
-    'corinth':   [['wheat', 3, 7], ['olive_oil', 8, 4], ['wine', 8, 5], ['textiles', 4, 6], ['spices', 2, 4], ['bronze', 5, 5], ['timber', 3, 6], ['pottery', 9, 4]],
+    'athens':    [['wheat', 3, 8], ['olive_oil', 10, 4], ['wine', 10, 5], ['textiles', 3, 6], ['spices', 2, 5], ['bronze', 4, 6], ['timber', 3, 7], ['pottery', 8, 4], ['attic_pottery', 10, 3], ['purple_dye', 1, 8]],
+    'corinth':   [['wheat', 3, 7], ['olive_oil', 8, 4], ['wine', 8, 5], ['textiles', 4, 6], ['spices', 2, 4], ['bronze', 5, 5], ['timber', 3, 6], ['pottery', 9, 4], ['attic_pottery', 6, 4], ['purple_dye', 2, 5]],
     'sparta':    [['wheat', 4, 6], ['olive_oil', 6, 4], ['wine', 5, 5], ['textiles', 4, 5], ['spices', 1, 4], ['bronze', 3, 6], ['timber', 5, 5], ['pottery', 4, 5]],
     'miletos':   [['wheat', 4, 7], ['olive_oil', 7, 4], ['wine', 6, 5], ['textiles', 8, 4], ['spices', 3, 5], ['bronze', 4, 5], ['timber', 3, 6], ['pottery', 7, 4]],
     'ephesos':   [['wheat', 3, 7], ['olive_oil', 8, 4], ['wine', 7, 5], ['textiles', 7, 4], ['spices', 4, 5], ['bronze', 4, 5], ['timber', 3, 6], ['pottery', 6, 4]],
     'byzantion': [['wheat', 5, 8], ['olive_oil', 6, 5], ['wine', 8, 5], ['textiles', 5, 5], ['spices', 3, 5], ['bronze', 5, 5], ['timber', 4, 6], ['pottery', 5, 4]],
-    'rhodes':    [['wheat', 3, 7], ['olive_oil', 9, 4], ['wine', 10, 4], ['textiles', 4, 6], ['spices', 4, 5], ['bronze', 4, 5], ['timber', 3, 6], ['pottery', 7, 4]],
+    'rhodes':    [['wheat', 3, 7], ['olive_oil', 9, 4], ['wine', 10, 4], ['textiles', 4, 6], ['spices', 4, 5], ['bronze', 4, 5], ['timber', 3, 6], ['pottery', 7, 4], ['attic_pottery', 4, 5], ['purple_dye', 3, 5]],
     'knossos':   [['wheat', 5, 6], ['olive_oil', 9, 4], ['wine', 9, 4], ['textiles', 4, 6], ['spices', 3, 5], ['bronze', 4, 5], ['timber', 4, 6], ['pottery', 7, 4]],
 
     // Italy/Sicily region — wine, pottery, timber surplus
@@ -318,18 +320,18 @@ export function seedPortInventory(db: Database.Database): void {
     'ostia':     [['wheat', 4, 12], ['olive_oil', 5, 8], ['wine', 6, 9], ['textiles', 4, 8], ['spices', 3, 8], ['bronze', 5, 7], ['timber', 6, 8], ['pottery', 6, 6]],
 
     // North Africa — grain and textiles surplus
-    'carthage':  [['wheat', 8, 5], ['olive_oil', 5, 6], ['wine', 2, 7], ['textiles', 6, 5], ['spices', 3, 6], ['bronze', 4, 6], ['timber', 3, 7], ['pottery', 4, 5]],
+    'carthage':  [['wheat', 8, 5], ['olive_oil', 5, 6], ['wine', 2, 7], ['textiles', 6, 5], ['spices', 3, 6], ['bronze', 4, 6], ['timber', 3, 7], ['pottery', 4, 5], ['attic_pottery', 3, 5], ['purple_dye', 4, 5]],
     'utica':     [['wheat', 7, 5], ['olive_oil', 5, 5], ['wine', 2, 6], ['textiles', 5, 5], ['spices', 2, 5], ['bronze', 3, 5], ['timber', 3, 6], ['pottery', 4, 5]],
     'leptis':    [['wheat', 8, 4], ['olive_oil', 6, 5], ['wine', 2, 6], ['textiles', 5, 5], ['spices', 3, 6], ['bronze', 3, 5], ['timber', 2, 7], ['pottery', 4, 5]],
 
     // Egypt — grain and textiles heavy surplus; wine/olive oil deficit
-    'alexandria':[['wheat', 15, 4], ['olive_oil', 3, 8], ['wine', 2, 9], ['textiles', 8, 5], ['spices', 5, 6], ['bronze', 4, 6], ['timber', 2, 9], ['pottery', 5, 5]],
+    'alexandria':[['wheat', 15, 4], ['olive_oil', 3, 8], ['wine', 2, 9], ['textiles', 8, 5], ['spices', 5, 6], ['bronze', 4, 6], ['timber', 2, 9], ['pottery', 5, 5], ['attic_pottery', 3, 5], ['purple_dye', 2, 6]],
     'naukratis': [['wheat', 12, 4], ['olive_oil', 3, 7], ['wine', 3, 8], ['textiles', 7, 5], ['spices', 4, 5], ['bronze', 3, 5], ['timber', 2, 8], ['pottery', 5, 5]],
     'memphis':   [['wheat', 14, 4], ['olive_oil', 3, 7], ['wine', 2, 8], ['textiles', 9, 5], ['spices', 4, 5], ['bronze', 3, 5], ['timber', 2, 8], ['pottery', 4, 5]],
 
     // Levant — textiles, spices, timber surplus; grain moderate
-    'tyre':      [['wheat', 3, 7], ['olive_oil', 4, 6], ['wine', 3, 7], ['textiles', 10, 4], ['spices', 8, 4], ['bronze', 5, 5], ['timber', 7, 5], ['pottery', 5, 5]],
-    'sidon':     [['wheat', 3, 7], ['olive_oil', 4, 6], ['wine', 3, 7], ['textiles', 9, 4], ['spices', 7, 4], ['bronze', 5, 5], ['timber', 6, 5], ['pottery', 5, 5]],
+    'tyre':      [['wheat', 3, 7], ['olive_oil', 4, 6], ['wine', 3, 7], ['textiles', 10, 4], ['spices', 8, 4], ['bronze', 5, 5], ['timber', 7, 5], ['pottery', 5, 5], ['attic_pottery', 2, 6], ['purple_dye', 10, 3]],
+    'sidon':     [['wheat', 3, 7], ['olive_oil', 4, 6], ['wine', 3, 7], ['textiles', 9, 4], ['spices', 7, 4], ['bronze', 5, 5], ['timber', 6, 5], ['pottery', 5, 5], ['attic_pottery', 2, 5], ['purple_dye', 8, 3]],
     'byblos':    [['wheat', 3, 6], ['olive_oil', 4, 6], ['wine', 3, 7], ['textiles', 7, 5], ['spices', 6, 5], ['bronze', 4, 5], ['timber', 10, 4], ['pottery', 4, 5]],
     'kition':    [['wheat', 3, 6], ['olive_oil', 5, 5], ['wine', 4, 6], ['textiles', 7, 4], ['spices', 6, 4], ['bronze', 8, 4], ['timber', 5, 5], ['pottery', 5, 5]],
     'salamis_cy':[['wheat', 4, 6], ['olive_oil', 5, 5], ['wine', 5, 6], ['textiles', 7, 4], ['spices', 5, 5], ['bronze', 8, 4], ['timber', 4, 5], ['pottery', 5, 5]],

@@ -7,23 +7,42 @@
       "id": "greeting",
       "speaker": "Nikias",
       "text": "Welcome to Piraeus, captain. The merchant house of Kephalos has need of your services.",
-      "conditions": { "type": "quest", "id": "main_quest", "status": "not_started" },
+      "conditions": { "type": "quest", "id": "tyrian_commission", "status": "not_started" },
       "choices": [
         { "text": "I am at your service.", "next": "quest_offer", "effects": [] },
         { "text": "What sort of work?", "next": "quest_details", "effects": [] }
       ]
     },
     {
+      "id": "greeting_active",
+      "speaker": "Nikias",
+      "text": "Ah, captain! How fares the commission? Have you secured the Attic pottery and the Tyrian purple?",
+      "conditions": { "type": "quest", "id": "tyrian_commission", "status": "active" },
+      "choices": [
+        { "text": "I am still working on it.", "next": "quest_reminder", "effects": [] },
+        { "text": "Remind me of the details.", "next": "quest_details", "effects": [] }
+      ]
+    },
+    {
+      "id": "greeting_complete",
+      "speaker": "Nikias",
+      "text": "Captain! You have done the house of Kephalos a great service. The Tyrian purple is magnificent -- the priests of Athena will be most pleased. Your reputation in Athens grows.",
+      "conditions": { "type": "quest", "id": "tyrian_commission", "status": "completed" },
+      "choices": [
+        { "text": "It was a profitable voyage.", "next": "quest_complete_farewell", "effects": [] }
+      ]
+    },
+    {
       "id": "quest_offer",
       "speaker": "Nikias",
-      "text": "We need Tyrian purple from Sidon. The festival of Athena approaches and the priests require new vestments.",
+      "text": "We need fine Attic pottery delivered to the Phoenician merchants at Tyre, and in return, you must bring back their famous purple dye. The festival of Athena approaches and the priests require new vestments.",
       "choices": [
         {
-          "text": "I will sail to Sidon.",
+          "text": "I will sail to Tyre.",
           "next": "quest_accepted",
           "effects": [
-            { "type": "quest_update", "questId": "main_quest", "status": "active" },
-            { "type": "journal_entry", "title": "Commission from Nikias", "text": "The merchant Nikias of Athens has tasked me with procuring Tyrian purple from the Phoenician city of Sidon." }
+            { "type": "quest_update", "questId": "tyrian_commission", "status": "active" },
+            { "type": "journal_entry", "title": "The Tyrian Commission", "text": "The merchant Nikias of Athens has tasked me with delivering Attic pottery to Tyre and returning with Tyrian purple dye for the festival of Athena." }
           ]
         },
         { "text": "The journey is too dangerous.", "next": "quest_declined", "effects": [] }
@@ -32,7 +51,7 @@
     {
       "id": "quest_accepted",
       "speaker": "Nikias",
-      "text": "Excellent. May Poseidon grant you fair winds. You will find the Phoenician dye merchants near the harbor temple.",
+      "text": "Excellent. First, purchase Attic pottery here at Piraeus -- at least five crates. Deliver them to Tyre, then buy the purple dye and bring it back. May Poseidon grant you fair winds.",
       "choices": []
     },
     {
@@ -44,7 +63,7 @@
     {
       "id": "quest_details",
       "speaker": "Nikias",
-      "text": "The Phoenicians of Sidon produce the finest purple dye in all the Mediterranean -- extracted from the murex snail. It is worth more than silver by weight.",
+      "text": "The Phoenicians of Tyre produce the finest purple dye in all the Mediterranean -- extracted from the murex snail. It is worth more than silver by weight. We trade our pottery for their dye.",
       "choices": [
         { "text": "Tell me more about Tyrian purple.", "next": "lore_purple", "effects": [] },
         { "text": "I will fetch it.", "next": "quest_offer", "effects": [] }
@@ -57,6 +76,18 @@
       "choices": [
         { "text": "Fascinating. I will seek it out.", "next": "quest_offer", "effects": [] }
       ]
+    },
+    {
+      "id": "quest_reminder",
+      "speaker": "Nikias",
+      "text": "Remember -- buy Attic pottery here at Piraeus, deliver it to Tyre, purchase their purple dye, and return it to me. The festival cannot wait forever.",
+      "choices": []
+    },
+    {
+      "id": "quest_complete_farewell",
+      "speaker": "Nikias",
+      "text": "Indeed it was. You are always welcome at the house of Kephalos, captain. Perhaps we shall have more work for you in the future.",
+      "choices": []
     }
   ]
 }
