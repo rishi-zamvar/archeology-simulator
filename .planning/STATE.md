@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: Immersion & Polish
 status: executing
-stopped_at: Roadmap created for v2.1 milestone
-last_updated: "2026-04-01T23:22:39.309Z"
+stopped_at: Completed Phase 27 (Ship & Crew)
+last_updated: "2026-04-01T23:39:25.241Z"
 last_activity: 2026-04-01
 progress:
   total_phases: 6
   completed_phases: 0
   total_plans: 0
-  completed_plans: 3
-  percent: 79
+  completed_plans: 6
+  percent: 83
 ---
 
 # Project State
@@ -21,13 +21,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-02)
 
 **Core value:** Students learn ancient Mediterranean history by making decisions as a merchant captain, not by reading about them.
-**Current focus:** Phase 28 — world-events-collectibles
+**Current focus:** Phase 29 — phase-29
 
 ## Current Position
 
-Phase: 28
+Phase: 29
 Plan: Not started
-Status: Phase 27 complete
+Status: Executing Phase 29
 Last activity: 2026-04-01
 
 Progress: [█████████████████░░░] 83% (phases 1-27 complete, 28-29 remaining)

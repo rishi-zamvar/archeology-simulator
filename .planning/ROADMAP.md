@@ -60,9 +60,9 @@
 - [x] **Phase 24: Animation & Effects** - Typewriter dialogue, wax seals, parchment unfurls, coin animations, screen transitions (completed 2026-04-01)
 - [x] **Phase 25: Visual Immersion** - Parallax port scenes, ambient particles, day/night tinting, fog discovery, vignette borders (completed 2026-04-01)
 - [x] **Phase 26: Audio Atmosphere** - Port-specific ambience, sailing sounds, UI sound effects (completed 2026-04-01)
-- [ ] **Phase 27: Ship & Crew** - Hull wear and repair, crew morale system
-- [ ] **Phase 28: World Events & Collectibles** - NPC trade rumors, seasonal festivals, historical postcards
-- [ ] **Phase 29: Narrative & Memory** - NPC memory of trades, port gossip network, ending epilogue
+- [x] **Phase 27: Ship & Crew** - Hull wear and repair, crew morale system (completed 2026-04-01)
+- [x] **Phase 28: World Events & Collectibles** - NPC trade rumors, seasonal festivals, historical postcards (completed 2026-04-01)
+- [x] **Phase 29: Narrative & Memory** - NPC memory of trades, port gossip network, ending epilogue (completed 2026-04-01)
 
 ## Phase Details
 
@@ -148,6 +148,6 @@
 | 24. Animation & Effects | v2.1 | 0/? | Complete    | 2026-04-01 |
 | 25. Visual Immersion | v2.1 | 0/? | Complete    | 2026-04-01 |
 | 26. Audio Atmosphere | v2.1 | 0/? | Complete    | 2026-04-01 |
-| 27. Ship & Crew | v2.1 | 0/? | Not started | - |
-| 28. World Events & Collectibles | v2.1 | 0/? | Not started | - |
-| 29. Narrative & Memory | v2.1 | 0/? | Not started | - |
+| 27. Ship & Crew | v2.1 | 0/? | Complete    | 2026-04-01 |
+| 28. World Events & Collectibles | v2.1 | 0/? | Complete    | 2026-04-01 |
+| 29. Narrative & Memory | v2.1 | 0/? | Complete    | 2026-04-01 |
