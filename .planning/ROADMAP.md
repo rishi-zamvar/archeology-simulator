@@ -69,8 +69,11 @@ Plans:
   2. A dialogue engine (~200 lines) loads JSON, evaluates conditions (reputation, quest status, visited ports), and returns the correct next node
   3. A build-time validation script (npm run data:validate) catches broken node references, missing entity IDs, and orphaned terminal nodes
   4. A port content template defines minimum requirements per port (lore word count, NPC count, dialogue node count, source citations)
-**Plans**: TBD
-**UI hint**: yes
+**Plans**: 2 plans
+
+Plans:
+- [ ] 14-01-PLAN.md -- Pure dialogue engine, types, validation script, sample dialogue JSON, tests
+- [ ] 14-02-PLAN.md -- IPC handlers, preload bridge, DialogueModal UI, Shell wiring, human verification
 
 ### Phase 15: Quest System Foundation
 **Goal**: Players can receive, track, and complete quests that observe game state without modifying the game FSM
@@ -155,7 +158,7 @@ Note: Phase 15 and Phase 16 can proceed in parallel after Phase 14 completes. Ph
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 13. Infrastructure & Migration System | v2.0 | 2/2 | Complete    | 2026-04-01 |
-| 14. Dialogue Engine & Content Pipeline | v2.0 | 0/TBD | Not started | - |
+| 14. Dialogue Engine & Content Pipeline | v2.0 | 0/2 | Not started | - |
 | 15. Quest System Foundation | v2.0 | 0/TBD | Not started | - |
 | 16. Port Content & World Building | v2.0 | 0/TBD | Not started | - |
 | 17. NPC Characters & Dialogue Content | v2.0 | 0/TBD | Not started | - |
