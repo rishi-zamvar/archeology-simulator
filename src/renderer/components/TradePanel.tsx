@@ -42,9 +42,9 @@ const SUBTEXT: React.CSSProperties = {
 };
 
 const ROW_STYLE: React.CSSProperties = {
-  borderBottom: '1px solid #e0cdb0',
-  paddingBottom: '0.75rem',
-  marginBottom: '0.75rem',
+  borderBottom: '1px solid #e8d5b8',
+  paddingBottom: '0.85rem',
+  marginBottom: '0.85rem',
 };
 
 export default function TradePanel({
@@ -194,30 +194,39 @@ export default function TradePanel({
                   <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem', marginBottom: '0.35rem' }}>
                     <figure style={{
                       margin: 0,
-                      width: 120,
-                      minWidth: 120,
-                      maxWidth: 120,
-                      borderRadius: 4,
+                      width: 110,
+                      minWidth: 110,
+                      maxWidth: 110,
+                      borderRadius: 6,
                       overflow: 'hidden',
                       border: '1px solid #d4c4a8',
+                      boxShadow: '0 2px 8px rgba(61, 43, 31, 0.12)',
+                      backgroundColor: '#f0e4cc',
                     }}>
                       <img
                         src={entry.url}
                         alt={good.name}
-                        style={{ width: '100%', height: 120, objectFit: 'cover', objectPosition: 'center' }}
+                        style={{
+                          width: '100%',
+                          height: 90,
+                          objectFit: 'cover',
+                          objectPosition: 'center',
+                          display: 'block',
+                        }}
                       />
                       {entry.attribution && (
                         <figcaption
                           style={{
                             fontFamily: "'Lora', Georgia, serif",
-                            fontSize: '0.7rem',
-                            color: '#7a5c45',
+                            fontSize: '0.6rem',
+                            color: '#9a8570',
                             fontStyle: 'italic',
-                            padding: '4px 6px',
+                            padding: '3px 6px',
                             display: '-webkit-box',
-                            WebkitLineClamp: 2,
+                            WebkitLineClamp: 1,
                             WebkitBoxOrient: 'vertical',
                             overflow: 'hidden',
+                            lineHeight: 1.4,
                           }}
                         >
                           {entry.attribution}
@@ -417,12 +426,12 @@ export default function TradePanel({
 }
 
 const stepperBtn: React.CSSProperties = {
-  width: '1.4rem',
-  height: '1.4rem',
+  width: '1.5rem',
+  height: '1.5rem',
   lineHeight: '1',
   backgroundColor: '#f0e4cc',
   border: '1px solid #c4956a',
-  borderRadius: '2px',
+  borderRadius: '4px',
   cursor: 'pointer',
   fontFamily: "'Lora', Georgia, serif",
   fontSize: '0.9rem',
@@ -431,17 +440,18 @@ const stepperBtn: React.CSSProperties = {
   alignItems: 'center',
   justifyContent: 'center',
   padding: 0,
+  transition: 'background-color 0.15s ease',
 };
 
 const actionBtn: React.CSSProperties = {
-  padding: '0.2rem 0.4rem',
+  padding: '0.3rem 0.5rem',
   border: 'none',
-  borderRadius: '2px',
+  borderRadius: '4px',
   fontFamily: "'Cinzel', Georgia, serif",
   fontSize: '0.65rem',
   fontWeight: 700,
   letterSpacing: '0.05em',
   color: '#fdf8f0',
   textTransform: 'uppercase' as const,
-  transition: 'opacity 0.15s',
+  transition: 'background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease',
 };
