@@ -9,7 +9,7 @@
  * Terminal nodes (no choices) show a "Farewell" dismiss button.
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import type { DialogueNode, DialogueChoice } from '../../shared/game-types';
 
 interface DialogueModalProps {
@@ -32,6 +32,43 @@ export default function DialogueModal({
   const [resolving, setResolving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+
+  // Typewriter effect state (FX-01)
+  const [displayedChars, setDisplayedChars] = useState(0);
+  const [typewriterDone, setTypewriterDone] = useState(false);
+  const typewriterRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const fullText = currentNode.text;
+
+  // Reset typewriter when node changes
+  useEffect(() => {
+    setDisplayedChars(0);
+    setTypewriterDone(false);
+    if (typewriterRef.current) clearInterval(typewriterRef.current);
+
+    typewriterRef.current = setInterval(() => {
+      setDisplayedChars((prev) => {
+        if (prev >= fullText.length) {
+          if (typewriterRef.current) clearInterval(typewriterRef.current);
+          setTypewriterDone(true);
+          return prev;
+        }
+        return prev + 1;
+      });
+    }, 30);
+
+    return () => {
+      if (typewriterRef.current) clearInterval(typewriterRef.current);
+    };
+  }, [fullText]);
+
+  const skipTypewriter = useCallback(() => {
+    if (!typewriterDone) {
+      if (typewriterRef.current) clearInterval(typewriterRef.current);
+      setDisplayedChars(fullText.length);
+      setTypewriterDone(true);
+    }
+  }, [typewriterDone, fullText.length]);
 
   const isTerminal = availableChoices.length === 0;
 
@@ -132,8 +169,9 @@ export default function DialogueModal({
           </h2>
         </div>
 
-        {/* Dialogue text */}
+        {/* Dialogue text — typewriter effect (FX-01) */}
         <p
+          onClick={skipTypewriter}
           style={{
             fontFamily: "'Lora', Georgia, serif",
             fontSize: 16,
@@ -141,9 +179,24 @@ export default function DialogueModal({
             lineHeight: 1.75,
             marginTop: 0,
             marginBottom: 28,
+            cursor: typewriterDone ? 'default' : 'pointer',
+            minHeight: '2.5em',
           }}
         >
-          {currentNode.text}
+          {fullText.slice(0, displayedChars)}
+          {!typewriterDone && (
+            <span
+              style={{
+                display: 'inline-block',
+                width: 2,
+                height: '1em',
+                backgroundColor: '#5a3e2b',
+                marginLeft: 1,
+                verticalAlign: 'text-bottom',
+                animation: 'typewriterBlink 0.6s step-end infinite',
+              }}
+            />
+          )}
         </p>
 
         {/* Error message */}
