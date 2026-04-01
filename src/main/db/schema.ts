@@ -1,27 +1,29 @@
 /**
- * Database schema initialization.
+ * Database schema initialization with version-tracked migration system.
  *
  * initializeDatabase(dbPath) opens (or creates) a better-sqlite3 database
  * at the given path, enables WAL journal mode for concurrent read performance,
- * and creates the game tables (idempotent — IF NOT EXISTS).
+ * and runs all pending migrations.
  *
  * Accepts a path parameter so tests can pass ':memory:' without touching
  * the filesystem.
  */
 
 import Database from 'better-sqlite3';
+import { createLogger } from '../lib/logger';
 
-export function initializeDatabase(dbPath: string): Database.Database {
-  const db = new Database(dbPath);
+const log = createLogger('Migrations');
 
-  // Enable WAL mode for better concurrent read performance and crash safety.
-  // WAL mode persists across connections on the same database file.
-  db.pragma('journal_mode = WAL');
+type Migration = (db: Database.Database) => void;
 
-  // Create tables in a single transaction for atomicity.
-  db.transaction(() => {
-    // game_state: always contains exactly one row — the current save.
-    // Upsert pattern (id=1) ensures single-row invariant.
+/**
+ * Ordered array of migrations. Each function receives the db and runs
+ * DDL statements. Migrations are applied inside individual transactions.
+ */
+const MIGRATIONS: Migration[] = [
+  // v1 (index 0): Baseline — all 10 original tables + indexes.
+  // Uses IF NOT EXISTS for idempotency on v1.3 upgrade path.
+  (db) => {
     db.prepare(`
       CREATE TABLE IF NOT EXISTS game_state (
         id          INTEGER PRIMARY KEY DEFAULT 1,
@@ -30,7 +32,6 @@ export function initializeDatabase(dbPath: string): Database.Database {
       )
     `).run();
 
-    // saves_history: append-only log of every save for auditing / undo.
     db.prepare(`
       CREATE TABLE IF NOT EXISTS saves_history (
         id          INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -39,7 +40,6 @@ export function initializeDatabase(dbPath: string): Database.Database {
       )
     `).run();
 
-    // ports: 25 historical Mediterranean ports (seeded via seedPorts in queries.ts)
     db.prepare(`
       CREATE TABLE IF NOT EXISTS ports (
         id                   TEXT PRIMARY KEY,
@@ -54,14 +54,6 @@ export function initializeDatabase(dbPath: string): Database.Database {
       )
     `).run();
 
-    // Add cultural_description column if upgrading an existing database (idempotent)
-    try {
-      db.prepare('ALTER TABLE ports ADD COLUMN cultural_description TEXT').run();
-    } catch {
-      // Column already exists — ignore
-    }
-
-    // goods: tradeable commodities
     db.prepare(`
       CREATE TABLE IF NOT EXISTS goods (
         id          TEXT PRIMARY KEY,
@@ -71,7 +63,6 @@ export function initializeDatabase(dbPath: string): Database.Database {
       )
     `).run();
 
-    // port_inventory: supply/demand for each good at each port
     db.prepare(`
       CREATE TABLE IF NOT EXISTS port_inventory (
         port_id     TEXT NOT NULL REFERENCES ports(id),
@@ -82,7 +73,6 @@ export function initializeDatabase(dbPath: string): Database.Database {
       )
     `).run();
 
-    // player_inventory: single-row record of player's gold and cargo
     db.prepare(`
       CREATE TABLE IF NOT EXISTS player_inventory (
         id              INTEGER PRIMARY KEY DEFAULT 1,
@@ -92,7 +82,6 @@ export function initializeDatabase(dbPath: string): Database.Database {
       )
     `).run();
 
-    // transaction_history: audit log of all buy/sell events
     db.prepare(`
       CREATE TABLE IF NOT EXISTS transaction_history (
         id            INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -107,8 +96,6 @@ export function initializeDatabase(dbPath: string): Database.Database {
       )
     `).run();
 
-    // artifact_cache: museum artifact images per trade good, cached with 24h TTL.
-    // museum_id is the external ID (Met object ID or "wiki_*" for Wikimedia fallback).
     db.prepare(`
       CREATE TABLE IF NOT EXISTS artifact_cache (
         id                TEXT PRIMARY KEY,
@@ -125,9 +112,6 @@ export function initializeDatabase(dbPath: string): Database.Database {
       CREATE INDEX IF NOT EXISTS idx_artifact_cache_good_id ON artifact_cache (good_id)
     `).run();
 
-    // curated_images: offline-curated image metadata for goods and ports.
-    // Each row links to either a good (good_id) or a port (port_id) — never neither.
-    // The CHECK constraint enforces that at least one FK is non-null.
     db.prepare(`
       CREATE TABLE IF NOT EXISTS curated_images (
         id          TEXT PRIMARY KEY,
@@ -149,7 +133,6 @@ export function initializeDatabase(dbPath: string): Database.Database {
       CREATE INDEX IF NOT EXISTS idx_curated_images_port_id ON curated_images (port_id)
     `).run();
 
-    // journal_entries: persistent captain's journal log (Phase 10)
     db.prepare(`
       CREATE TABLE IF NOT EXISTS journal_entries (
         id          INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -164,7 +147,154 @@ export function initializeDatabase(dbPath: string): Database.Database {
     db.prepare(`
       CREATE INDEX IF NOT EXISTS idx_journal_entries_turn ON journal_entries (turn)
     `).run();
-  })();
+  },
+
+  // v2 (index 1): Add cultural_description column to ports.
+  // Wrapped in try/catch because v1.3 databases already have this column
+  // (it was part of the ports CREATE TABLE). This is the ONE migration
+  // where catch-and-ignore is acceptable.
+  (db) => {
+    try {
+      db.prepare('ALTER TABLE ports ADD COLUMN cultural_description TEXT').run();
+    } catch {
+      // Column already exists — safe to ignore
+    }
+  },
+
+  // v3 (index 2): Quest progress tracking
+  (db) => {
+    db.prepare(`
+      CREATE TABLE quest_progress (
+        quest_id          TEXT PRIMARY KEY,
+        status            TEXT NOT NULL,
+        current_objective INTEGER NOT NULL DEFAULT 0,
+        started_at        TEXT,
+        completed_at      TEXT
+      )
+    `).run();
+  },
+
+  // v4 (index 3): NPC dialogue state
+  (db) => {
+    db.prepare(`
+      CREATE TABLE npc_dialogue_state (
+        npc_id           TEXT PRIMARY KEY,
+        last_node_id     TEXT,
+        times_spoken     INTEGER NOT NULL DEFAULT 0,
+        last_spoken_turn INTEGER
+      )
+    `).run();
+  },
+
+  // v5 (index 4): Reputation per region
+  (db) => {
+    db.prepare(`
+      CREATE TABLE reputation (
+        region TEXT PRIMARY KEY,
+        score  INTEGER NOT NULL DEFAULT 0
+      )
+    `).run();
+  },
+
+  // v6 (index 5): Port lore (reference data)
+  (db) => {
+    db.prepare(`
+      CREATE TABLE port_lore (
+        port_id              TEXT PRIMARY KEY,
+        history              TEXT,
+        culture              TEXT,
+        trade_specialization TEXT,
+        notable_facts_json   TEXT,
+        historical_period    TEXT,
+        primary_sources_json TEXT
+      )
+    `).run();
+  },
+
+  // v7 (index 6): Port access / discovery tracking
+  (db) => {
+    db.prepare(`
+      CREATE TABLE port_access (
+        port_id        TEXT PRIMARY KEY,
+        discovered     INTEGER NOT NULL DEFAULT 0,
+        discovered_turn INTEGER,
+        unlock_method  TEXT
+      )
+    `).run();
+  },
+];
+
+/**
+ * Player-data tables that should be cleared on "New Game".
+ * port_lore is reference data and is NOT included.
+ * schema_version is infrastructure and is NOT included.
+ */
+export const PLAYER_DATA_TABLES = [
+  'game_state',
+  'saves_history',
+  'transaction_history',
+  'journal_entries',
+  'player_inventory',
+  'quest_progress',
+  'npc_dialogue_state',
+  'reputation',
+  'port_access',
+] as const;
+
+/**
+ * Run all pending migrations from current version to latest.
+ *
+ * Each migration runs in its own transaction. On failure, the failing
+ * transaction auto-rolls back and the error propagates. The database
+ * remains at the last successfully-applied version.
+ */
+export function runMigrations(db: Database.Database): void {
+  // Ensure schema_version table exists
+  db.prepare(`
+    CREATE TABLE IF NOT EXISTS schema_version (
+      version     INTEGER NOT NULL DEFAULT 0,
+      migrated_at TEXT
+    )
+  `).run();
+
+  // Read current version
+  const row = db.prepare('SELECT version FROM schema_version').get() as
+    | { version: number }
+    | undefined;
+
+  let currentVersion: number;
+  if (row === undefined) {
+    db.prepare('INSERT INTO schema_version (version) VALUES (0)').run();
+    currentVersion = 0;
+  } else {
+    currentVersion = row.version;
+  }
+
+  // Apply pending migrations
+  for (let i = currentVersion; i < MIGRATIONS.length; i++) {
+    const applyMigration = db.transaction(() => {
+      MIGRATIONS[i](db);
+      db.prepare(
+        "UPDATE schema_version SET version = ?, migrated_at = datetime('now')"
+      ).run(i + 1);
+    });
+
+    applyMigration();
+    log.info('Migration applied', { from: i, to: i + 1 });
+  }
+}
+
+/**
+ * Open (or create) the game database at dbPath, enable WAL mode,
+ * and apply all pending migrations.
+ */
+export function initializeDatabase(dbPath: string): Database.Database {
+  const db = new Database(dbPath);
+
+  // Enable WAL mode for better concurrent read performance and crash safety.
+  db.pragma('journal_mode = WAL');
+
+  runMigrations(db);
 
   return db;
 }
