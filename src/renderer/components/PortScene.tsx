@@ -13,8 +13,9 @@
  * Fonts: Cinzel (headings), Lora (body).
  */
 
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import PortIllustration from './PortIllustration';
+import ParticleOverlay from './ParticleOverlay';
 import { useResourceImages } from '../hooks/useResourceImages';
 import type { PortRegion } from '../../shared/game-types';
 
@@ -49,6 +50,25 @@ export default function PortScene({
   const [ambientDescription, setAmbientDescription] = useState<string | null>(null);
   const { ports: portImages } = useResourceImages();
   const curatedPortImage = portImages[portId];
+
+  /* ── VIS-01: Parallax depth — mouse tracking ─────────────────────── */
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [parallax, setParallax] = useState({ x: 0, y: 0 });
+
+  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    const el = containerRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    // Normalize to -1..1
+    const nx = ((e.clientX - rect.left) / rect.width - 0.5) * 2;
+    const ny = ((e.clientY - rect.top) / rect.height - 0.5) * 2;
+    // Max ±10px shift
+    setParallax({ x: nx * 10, y: ny * 10 });
+  }, []);
+
+  const handleMouseLeave = useCallback(() => {
+    setParallax({ x: 0, y: 0 });
+  }, []);
 
   // Fetch ambient description when port changes
   useEffect(() => {
@@ -96,6 +116,9 @@ export default function PortScene({
 
   return (
     <div
+      ref={containerRef}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
       style={{
         position: 'absolute',
         inset: 0,
@@ -105,7 +128,14 @@ export default function PortScene({
       }}
     >
       {/* Port illustration — curated image if available, SVG fallback */}
-      <div style={{ position: 'absolute', inset: 0, zIndex: 1 }}>
+      {/* VIS-01: parallax transform on port image layer */}
+      <div style={{
+        position: 'absolute',
+        inset: '-12px',
+        zIndex: 1,
+        transform: `translate(${parallax.x}px, ${parallax.y}px)`,
+        transition: 'transform 0.15s ease-out',
+      }}>
         {curatedPortImage ? (
           <>
             <img
@@ -164,6 +194,20 @@ export default function PortScene({
               rgba(196, 149, 106, 0.04) 41px
             )
           `,
+          pointerEvents: 'none',
+        }}
+      />
+
+      {/* VIS-02: Ambient particles based on region */}
+      <ParticleOverlay region={region} />
+
+      {/* VIS-05: Vignette border — porthole effect */}
+      <div
+        style={{
+          position: 'absolute',
+          inset: 0,
+          zIndex: 3,
+          background: 'radial-gradient(ellipse at center, transparent 55%, rgba(61, 43, 31, 0.25) 80%, rgba(30, 20, 10, 0.55) 100%)',
           pointerEvents: 'none',
         }}
       />
