@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: The Merchant's Odyssey
-status: completed
-stopped_at: Completed 17-02-PLAN.md
-last_updated: "2026-04-01T18:28:03.038Z"
-last_activity: 2026-04-01
+status: executing
+stopped_at: Completed 18-01-PLAN.md
+last_updated: "2026-04-01T18:42:00.000Z"
+last_activity: 2026-04-01 -- Phase 18 Plan 01 complete (reputation logic + trade integration)
 progress:
   total_phases: 8
   completed_phases: 5
-  total_plans: 12
-  completed_plans: 12
-  percent: 8
+  total_plans: 14
+  completed_plans: 13
+  percent: 93
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-01)
 
 **Core value:** Students learn ancient Mediterranean history by making decisions as a merchant captain, not by reading about them.
-**Current focus:** Phase 17 — npc-characters-dialogue-content
+**Current focus:** Phase 18 — reputation-trade-integration
 
 ## Current Position
 
-Phase: 18
-Plan: Not started
-Status: Phase complete
-Last activity: 2026-04-01
+Phase: 18 (reputation-trade-integration) — EXECUTING
+Plan: 2 of 2
+Status: Executing Phase 18 (Plan 01 complete)
+Last activity: 2026-04-01 -- Phase 18 Plan 01 complete
 
-Progress: [▓░░░░░░░░░] 8% (v2.0 milestone)
+Progress: [▓▓▓▓▓▓▓▓▓░] 93% (v2.0 milestone)
 
 ## Accumulated Context
 
@@ -68,6 +68,9 @@ Progress: [▓░░░░░░░░░] 8% (v2.0 milestone)
 - [Phase 17]: Fixed validator BFS to treat nodes with conditions as alternate entry points for dialogue state branching
 - [Phase 17]: talk_to_npc objective evaluates npcDialogueState.timesSpoken > 0 via GameContext
 - [Phase 17-02]: port_unlock uses ON CONFLICT with conditional UPDATE to only upgrade status, never downgrade
+- [Phase 18-01]: Pure reputation module (no DB) with 4 tiers: Stranger/Known Trader/Trusted Partner/Proxenos
+- [Phase 18-01]: Trade gain formula min(3, max(1, floor(totalValue/250))) -- every trade awards 1-3 rep points
+- [Phase 18-01]: getMarketPrices applies buy-side discount so TradePanel shows reputation-adjusted prices
 
 ### Blockers/Concerns
 
@@ -76,6 +79,6 @@ Progress: [▓░░░░░░░░░] 8% (v2.0 milestone)
 
 ## Session Continuity
 
-Last session: 2026-04-01T18:22:00Z
-Stopped at: Completed 17-02-PLAN.md
+Last session: 2026-04-01T18:42:00Z
+Stopped at: Completed 18-01-PLAN.md
 Resume file: None

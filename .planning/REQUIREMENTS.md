@@ -29,9 +29,9 @@
 
 ## Reputation & Standing
 
-- [ ] **REP-01**: Player builds trade reputation through successful trades and quest completion
-- [ ] **REP-02**: Reputation affects trade prices (better deals at ports where you're known)
-- [ ] **REP-03**: Reputation never gates required content — only modifies experience
+- [x] **REP-01**: Player builds trade reputation through successful trades and quest completion
+- [x] **REP-02**: Reputation affects trade prices (better deals at ports where you're known)
+- [x] **REP-03**: Reputation never gates required content — only modifies experience
 
 ## Captain's Journal Integration
 
@@ -80,9 +80,9 @@
 | UNLOCK-01 | Phase 19 | Planned |
 | UNLOCK-02 | Phase 19 | Planned |
 | UNLOCK-03 | Phase 19 | Planned |
-| REP-01 | Phase 18 | Planned |
-| REP-02 | Phase 18 | Planned |
-| REP-03 | Phase 18 | Planned |
+| REP-01 | Phase 18 | Complete |
+| REP-02 | Phase 18 | Complete |
+| REP-03 | Phase 18 | Complete |
 | JRNL-01 | Phase 20 | Planned |
 | JRNL-02 | Phase 20 | Planned |
 | JRNL-03 | Phase 20 | Planned |
