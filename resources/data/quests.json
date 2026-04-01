@@ -16,6 +16,74 @@
         { "type": "journal_entry", "title": "The Tyrian Commission Complete", "text": "Nikias is pleased with the Tyrian purple. The rich dye, extracted from murex sea snails by Phoenician artisans, will fetch a handsome price at the Athenian agora." }
       ],
       "historicalNote": "Tyrian purple (porphyra) was the most prized dye in the ancient Mediterranean, worth more than gold by weight. Produced from the mucus of Bolinus brandaris sea snails, it took 10,000 snails to produce 1 gram of dye. Athens exported fine pottery (especially red-figure and black-figure ware) across the Mediterranean, making pottery-for-dye a historically plausible trade."
+    },
+    {
+      "id": "nile_grain",
+      "name": "The Grain of the Nile",
+      "description": "Taharqa, grain factor of Memphis, asks you to deliver Egyptian grain to Athens where it commands high prices.",
+      "objectives": [
+        { "id": "obj_talk_taharqa", "type": "talk_to_npc", "description": "Speak with Taharqa in Memphis", "npcId": "taharqa" },
+        { "id": "obj_buy_grain_memphis", "type": "complete_trade", "description": "Purchase grain at Memphis", "portId": "memphis", "goodId": "grain", "action": "buy" },
+        { "id": "obj_deliver_grain_athens", "type": "deliver_cargo", "description": "Deliver grain to Athens", "portId": "athens", "goodId": "grain", "minQuantity": 3 }
+      ],
+      "prerequisites": null,
+      "rewards": [
+        { "type": "reputation_change", "region": "egypt", "delta": 10 },
+        { "type": "reputation_change", "region": "greece", "delta": 5 },
+        { "type": "journal_entry", "title": "The Grain of the Nile Complete", "text": "Taharqa's Egyptian grain has reached Athens. The Athenians depend on imported grain -- their rocky Attic soil produces olives and grapes but not enough wheat to feed the city. Egypt, blessed by the annual Nile flood, is the breadbasket of the Mediterranean." }
+      ],
+      "historicalNote": "Egypt was the primary grain supplier to the ancient Mediterranean world. The annual Nile flood (akhet) deposited rich black silt across the floodplain, enabling massive agricultural surpluses. Athens, with its poor soil for grain cultivation, imported heavily from Egypt and the Black Sea region. Herodotus Book II extensively documents Egyptian agriculture and trade customs."
+    },
+    {
+      "id": "pillars_of_melqart",
+      "name": "The Pillars of Melqart",
+      "description": "Elissa of Carthage asks you to sail beyond the Pillars of Melqart to Gadir and bring back Iberian wine.",
+      "objectives": [
+        { "id": "obj_talk_elissa", "type": "talk_to_npc", "description": "Speak with Elissa in Carthage", "npcId": "elissa" },
+        { "id": "obj_visit_gadir", "type": "visit_port", "description": "Sail to Gadir beyond the Pillars", "portId": "gadir" },
+        { "id": "obj_buy_wine_gadir", "type": "complete_trade", "description": "Purchase wine at Gadir", "portId": "gadir", "goodId": "wine", "action": "buy" },
+        { "id": "obj_deliver_wine_carthage", "type": "deliver_cargo", "description": "Deliver Iberian wine to Carthage", "portId": "carthage", "goodId": "wine", "minQuantity": 3 }
+      ],
+      "prerequisites": null,
+      "rewards": [
+        { "type": "reputation_change", "region": "north_africa", "delta": 10 },
+        { "type": "reputation_change", "region": "iberia", "delta": 5 },
+        { "type": "journal_entry", "title": "The Pillars of Melqart Complete", "text": "The Iberian wine has reached Carthage. Elissa is pleased. The voyage beyond the Pillars of Melqart taught me that the Phoenician trade network extends far beyond the Inner Sea, reaching the Atlantic coast of Iberia." }
+      ],
+      "historicalNote": "The Pillars of Melqart (Greek: Pillars of Heracles, modern: Strait of Gibraltar) marked the boundary between the Mediterranean and the Atlantic. Gadir (modern Cadiz) was the oldest Phoenician colony in the west, founded c. 1100 BCE. Carthage controlled western Mediterranean trade routes. Maria Eugenia Aubet's 'The Phoenicians and the West' documents this extensive trade network."
+    },
+    {
+      "id": "roman_tribute",
+      "name": "Roman Tribute",
+      "description": "Hanno, customs collector at Ostia, asks you to bring fine Athenian olive oil to the growing city of Rome.",
+      "objectives": [
+        { "id": "obj_talk_hanno", "type": "talk_to_npc", "description": "Speak with Hanno at Ostia", "npcId": "hanno" },
+        { "id": "obj_buy_oil_athens", "type": "complete_trade", "description": "Purchase olive oil at Athens", "portId": "athens", "goodId": "olive_oil", "action": "buy" },
+        { "id": "obj_deliver_oil_ostia", "type": "deliver_cargo", "description": "Deliver olive oil to Ostia", "portId": "ostia", "goodId": "olive_oil", "minQuantity": 3 }
+      ],
+      "prerequisites": null,
+      "rewards": [
+        { "type": "reputation_change", "region": "italy", "delta": 10 },
+        { "type": "journal_entry", "title": "Roman Tribute Complete", "text": "The Athenian olive oil has reached Rome. Hanno assures me the magistrates will remember this service. Rome is still a young republic, but her ambition is clear -- she will need many traders in the years to come." }
+      ],
+      "historicalNote": "In 540-530 BCE, Rome had recently transitioned from monarchy to republic (traditional date: 509 BCE). Ostia served as Rome's port. Olive oil was essential for Roman daily life -- cooking, lighting, bathing, and religious rituals. Athens was renowned for producing the finest olive oil, pressed from the sacred olive trees of Athena. Livy and Braudel document early Roman trade patterns."
+    },
+    {
+      "id": "cedar_of_lebanon",
+      "name": "The Cedar of Lebanon",
+      "description": "Aziru, a Phoenician merchant of Tyre, asks you to bring wine from Byblos for a ship-launching celebration.",
+      "objectives": [
+        { "id": "obj_talk_aziru", "type": "talk_to_npc", "description": "Speak with Aziru in Tyre", "npcId": "aziru" },
+        { "id": "obj_visit_byblos", "type": "visit_port", "description": "Visit the ancient city of Byblos", "portId": "byblos" },
+        { "id": "obj_buy_wine_byblos", "type": "complete_trade", "description": "Purchase wine at Byblos", "portId": "byblos", "goodId": "wine", "action": "buy" },
+        { "id": "obj_deliver_wine_tyre", "type": "deliver_cargo", "description": "Deliver wine to Tyre", "portId": "tyre", "goodId": "wine", "minQuantity": 3 }
+      ],
+      "prerequisites": null,
+      "rewards": [
+        { "type": "reputation_change", "region": "levant", "delta": 10 },
+        { "type": "journal_entry", "title": "The Cedar of Lebanon Complete", "text": "The wine from Byblos has reached Tyre. Aziru's shipwrights will celebrate the launching of their newest vessel. The Phoenician coast -- Tyre, Sidon, Byblos -- is the cradle of Mediterranean seamanship." }
+      ],
+      "historicalNote": "Byblos (modern Jbeil, Lebanon) is one of the oldest continuously inhabited cities in the world. It was the center of the cedar trade -- Lebanese cedar was essential for shipbuilding, construction, and Egyptian coffin-making. The very word 'Bible' derives from Byblos, as it was the primary source of papyrus imported from Egypt. Boardman's 'The Greeks Overseas' documents Phoenician trade along the Levantine coast."
     }
   ]
 }

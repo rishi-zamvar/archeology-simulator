@@ -1,0 +1,131 @@
+{
+  "npc_id": "elissa",
+  "port_id": "carthage",
+  "root_node": "greeting",
+  "nodes": [
+    {
+      "id": "greeting",
+      "speaker": "Elissa",
+      "text": "You sail into Karchedon boldly, captain. I am Elissa, daughter of the House of Barca. My ships have sailed beyond the Pillars of Melqart, to lands where the sun sets into the endless sea. Do you seek fortune or knowledge?",
+      "conditions": { "type": "quest", "id": "pillars_of_melqart", "status": "not_started" },
+      "choices": [
+        { "text": "Fortune, always.", "next": "quest_offer", "effects": [] },
+        { "text": "Tell me of the lands beyond the Pillars.", "next": "lore_pillars", "effects": [] },
+        { "text": "What is the history of Carthage?", "next": "lore_carthage", "effects": [] }
+      ]
+    },
+    {
+      "id": "greeting_active",
+      "speaker": "Elissa",
+      "text": "Captain! Have you returned from Gadir with the wine? The merchants of Karchedon grow impatient.",
+      "conditions": { "type": "quest", "id": "pillars_of_melqart", "status": "active" },
+      "choices": [
+        { "text": "I am still on my way.", "next": "quest_reminder", "effects": [] },
+        { "text": "Remind me of the route.", "next": "quest_details", "effects": [] }
+      ]
+    },
+    {
+      "id": "greeting_complete",
+      "speaker": "Elissa",
+      "text": "The wine from Gadir has arrived! You have earned the respect of the House of Barca, captain. The Phoenician trade network stretches from Tyre to the western ocean -- and now you are part of it.",
+      "conditions": { "type": "quest", "id": "pillars_of_melqart", "status": "completed" },
+      "choices": [
+        { "text": "It was a worthy voyage.", "next": "farewell_complete", "effects": [] }
+      ]
+    },
+    {
+      "id": "quest_offer",
+      "speaker": "Elissa",
+      "text": "Beyond the Pillars of Melqart lies Gadir, the oldest Phoenician colony in the west. The Iberians there produce fine wine from ancient vines. Sail to Gadir, buy their wine, and bring it back to Karchedon. I will make it worth your trouble.",
+      "choices": [
+        {
+          "text": "I will sail to Gadir.",
+          "next": "quest_accepted",
+          "effects": [
+            { "type": "quest_update", "questId": "pillars_of_melqart", "status": "active" },
+            { "type": "port_unlock", "portId": "gadir" },
+            { "type": "port_unlock", "portId": "emporion" },
+            { "type": "journal_entry", "title": "The Pillars of Melqart", "text": "Elissa of Carthage has tasked me with sailing to Gadir, beyond the Pillars of Melqart (which the Greeks call the Pillars of Heracles). I am to buy Iberian wine and return it to Carthage. She also mentioned Emporion, a Greek trading post on the Iberian coast." }
+          ]
+        },
+        { "text": "The western sea is too dangerous.", "next": "quest_declined", "effects": [] }
+      ]
+    },
+    {
+      "id": "quest_accepted",
+      "speaker": "Elissa",
+      "text": "Bold! Sail west along the African coast, past the Pillars. Gadir sits on an island just beyond. While you are in the west, you might also visit Emporion -- the Greeks built a trading post there on the Iberian coast. May Tanit and Ba'al Hammon grant you safe passage.",
+      "choices": []
+    },
+    {
+      "id": "quest_declined",
+      "speaker": "Elissa",
+      "text": "The western sea rewards the brave, captain. My ancestors sailed those waters when your Greek fathers still clung to their rocky islands. Return when your courage matches your ambition.",
+      "choices": []
+    },
+    {
+      "id": "quest_details",
+      "speaker": "Elissa",
+      "text": "Sail west to Gadir, beyond the Pillars of Melqart. Buy wine there and bring it back to me in Karchedon. The voyage is long but the winds are favorable in summer.",
+      "choices": []
+    },
+    {
+      "id": "quest_reminder",
+      "speaker": "Elissa",
+      "text": "Gadir awaits, captain. The Iberian wine will not fetch itself. Sail west and return with your hold full.",
+      "choices": []
+    },
+    {
+      "id": "lore_pillars",
+      "speaker": "Elissa",
+      "text": "The Pillars of Melqart -- you Greeks call them the Pillars of Heracles -- mark the edge of the Inner Sea. Beyond lies the great ocean, where Phoenician ships have sailed for centuries. Our ancestor Hanno the Navigator sailed down the African coast and saw mountains of fire and gorillas. The Greeks dream of their Odysseus, but our sailors lived those voyages.",
+      "choices": [
+        { "text": "Tell me about the Phoenician alphabet.", "next": "lore_alphabet", "effects": [] },
+        {
+          "text": "I would sail there myself.",
+          "next": "quest_offer",
+          "effects": [
+            { "type": "journal_entry", "title": "Beyond the Pillars", "text": "Elissa spoke of Phoenician voyages beyond the Pillars of Melqart into the great western ocean. Hanno the Navigator sailed the African coast and reported mountains of fire and strange creatures." }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lore_carthage",
+      "speaker": "Elissa",
+      "text": "Karchedon was founded by Queen Dido -- whom we also call Elissa, my namesake -- who fled from Tyre when her brother Pygmalion murdered her husband for his wealth. She bargained with the Libyan king for as much land as an ox-hide could cover, then cut the hide into thin strips to encircle the hill of Byrsa. Clever, no? That is the Phoenician way.",
+      "choices": [
+        { "text": "Tell me about Phoenician trade.", "next": "lore_trade", "effects": [] },
+        { "text": "A clever people indeed. What work do you have?", "next": "quest_offer", "effects": [] }
+      ]
+    },
+    {
+      "id": "lore_alphabet",
+      "speaker": "Elissa",
+      "text": "Every letter you Greeks write, you borrowed from us. Aleph, beth, gimel -- alpha, beta, gamma. The Phoenicians invented the alphabet so our merchants could keep accounts across a thousand ports. Before us, the Egyptians used their hieroglyphs and the Mesopotamians their wedge-marks, but our twenty-two letters could write any language. Even your Homer's epics are written in Phoenician letters, adapted.",
+      "choices": [
+        {
+          "text": "Remarkable. What cargo do you need moved?",
+          "next": "quest_offer",
+          "effects": [
+            { "type": "journal_entry", "title": "The Phoenician Gift", "text": "Elissa explained that the Greek alphabet derives from the Phoenician one: aleph became alpha, beth became beta. The Phoenicians invented their twenty-two letter system for mercantile record-keeping." }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lore_trade",
+      "speaker": "Elissa",
+      "text": "Carthage controls trade across the western Mediterranean. Our ships carry tin from Britannia, silver from Iberia, grain from our African estates, and purple dye from our Tyrian cousins. We trade with Greeks, Etruscans, Iberians, and Libyans. Maria Eugenia Aubet wrote that the Phoenician trade network was the first truly global economy -- and Carthage is its beating heart.",
+      "choices": [
+        { "text": "I would be part of this network.", "next": "quest_offer", "effects": [] }
+      ]
+    },
+    {
+      "id": "farewell_complete",
+      "speaker": "Elissa",
+      "text": "Sail well, captain. The House of Barca remembers its friends. May Tanit watch over your voyages.",
+      "choices": []
+    }
+  ]
+}

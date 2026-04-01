@@ -1,0 +1,141 @@
+{
+  "npc_id": "hanno",
+  "port_id": "ostia",
+  "root_node": "greeting",
+  "nodes": [
+    {
+      "id": "greeting",
+      "speaker": "Hanno",
+      "text": "Halt, captain. I am Hanno, customs collector for the port of Ostia. All foreign vessels must declare their cargo. But if you are a trader of good repute, perhaps we can do business.",
+      "conditions": { "type": "quest", "id": "roman_tribute", "status": "not_started" },
+      "choices": [
+        { "text": "I seek trade, not trouble.", "next": "quest_offer", "effects": [] },
+        { "text": "Tell me about Rome.", "next": "lore_rome", "effects": [] },
+        { "text": "Who rules here?", "next": "lore_republic", "effects": [] }
+      ]
+    },
+    {
+      "id": "greeting_active",
+      "speaker": "Hanno",
+      "text": "Captain, the magistrates ask after the olive oil from Athens. Have you secured it?",
+      "conditions": { "type": "quest", "id": "roman_tribute", "status": "active" },
+      "choices": [
+        { "text": "I am still gathering the cargo.", "next": "quest_reminder", "effects": [] },
+        { "text": "What exactly do you need again?", "next": "quest_details", "effects": [] }
+      ]
+    },
+    {
+      "id": "greeting_complete",
+      "speaker": "Hanno",
+      "text": "The Athenian olive oil has arrived! The magistrates are pleased. Rome remembers those who serve her well, captain. You will find favorable terms at our markets in the future.",
+      "conditions": { "type": "quest", "id": "roman_tribute", "status": "completed" },
+      "choices": [
+        { "text": "Rome is a worthy trading partner.", "next": "farewell_complete", "effects": [] },
+        { "text": "Where else might I trade in Italia?", "next": "lore_colonies", "effects": [] }
+      ]
+    },
+    {
+      "id": "quest_offer",
+      "speaker": "Hanno",
+      "text": "Rome grows, captain, and her people need oil -- for cooking, for their lamps, for their baths. Athenian olive oil is the finest in the Mediterranean. Sail to Athens, buy oil, and deliver it here to Ostia. The Roman magistrates will pay well.",
+      "choices": [
+        {
+          "text": "I will bring olive oil from Athens.",
+          "next": "quest_accepted",
+          "effects": [
+            { "type": "quest_update", "questId": "roman_tribute", "status": "active" },
+            { "type": "port_unlock", "portId": "taras" },
+            { "type": "port_unlock", "portId": "syracuse" },
+            { "type": "journal_entry", "title": "Roman Tribute", "text": "Hanno, customs collector at Ostia, has asked me to bring Athenian olive oil to Rome. He mentioned Taras and Syracuse as important Greek colonies in southern Italia and Sicilia." }
+          ]
+        },
+        { "text": "I have other business.", "next": "quest_declined", "effects": [] }
+      ]
+    },
+    {
+      "id": "quest_accepted",
+      "speaker": "Hanno",
+      "text": "Good. Sail to Athens and buy olive oil -- at least three amphorae. On your way, you might stop at Taras or Syracuse. The Greek colonies there are wealthy and always eager for trade. May Jupiter Optimus Maximus grant you calm seas.",
+      "choices": []
+    },
+    {
+      "id": "quest_declined",
+      "speaker": "Hanno",
+      "text": "As you wish. But know that Rome does not forget those who refuse her requests -- nor those who accept them. Choose wisely, captain.",
+      "choices": []
+    },
+    {
+      "id": "quest_details",
+      "speaker": "Hanno",
+      "text": "Buy olive oil at Athens -- at least three amphorae of the finest quality. Then deliver it here to Ostia. Simple enough for a captain of your experience.",
+      "choices": []
+    },
+    {
+      "id": "quest_reminder",
+      "speaker": "Hanno",
+      "text": "Athens is east across the sea. Buy olive oil there and return. The magistrates grow impatient, captain.",
+      "choices": []
+    },
+    {
+      "id": "lore_rome",
+      "speaker": "Hanno",
+      "text": "Rome is still young -- we expelled our last king, Tarquinius Superbus, not many years ago. Now two consuls rule, elected each year, so no one man holds too much power. We are not yet masters of Italia, but mark my words, captain -- Rome will be great. The Etruscans taught us their arts, and we have surpassed the teachers.",
+      "choices": [
+        { "text": "Tell me about the Etruscans.", "next": "lore_etruscans", "effects": [] },
+        {
+          "text": "An ambitious people. What trade do you need?",
+          "next": "quest_offer",
+          "effects": [
+            { "type": "journal_entry", "title": "The Young Republic", "text": "Hanno spoke of Rome's recent transition from monarchy to republic. The last king, Tarquinius Superbus, was expelled, and now two elected consuls govern. The Romans learned much from the Etruscans but consider themselves the superior civilization." }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lore_republic",
+      "speaker": "Hanno",
+      "text": "The Roman Republic, captain. Two consuls elected by the Senate, each serving one year. Below them, praetors, aediles, quaestors -- all elected, all accountable. We also have tribunes of the plebs, who protect the common people from the patricians. It is a system the Greeks would recognize, though we Romans perfect what others merely attempt.",
+      "choices": [
+        { "text": "Tell me about the early republic.", "next": "lore_rome", "effects": [] },
+        { "text": "What work do you have for a trader?", "next": "quest_offer", "effects": [] }
+      ]
+    },
+    {
+      "id": "lore_etruscans",
+      "speaker": "Hanno",
+      "text": "The Etruscans ruled Rome before the Republic. They taught us to drain marshes, build arches, and read the will of the gods in the flight of birds -- the augury. Their cities like Veii and Cerveteri are rich with painted tombs showing feasts and games. Braudel wrote that the Mediterranean was shaped by such exchanges between peoples. The Etruscans shaped Rome, and Rome will shape the world.",
+      "choices": [
+        { "text": "Where else can I trade in Italia?", "next": "lore_colonies", "effects": [] },
+        {
+          "text": "A proud heritage. I will help Rome grow.",
+          "next": "quest_offer",
+          "effects": [
+            { "type": "journal_entry", "title": "Etruscan Legacy", "text": "Hanno described the Etruscan civilization that preceded Rome -- masters of architecture, augury, and tomb painting. Their influence on Roman culture was profound, from engineering to religious practice." }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lore_colonies",
+      "speaker": "Hanno",
+      "text": "South of us, the Greeks have planted colonies across Magna Graecia -- Great Greece, we call it. Taras, founded by Spartan exiles, is rich in wool and pottery. Syracuse in Sicilia rivals Athens herself in wealth and power. These Greek cities trade freely with Rome -- for now.",
+      "choices": [
+        {
+          "text": "I will visit these colonies.",
+          "next": "farewell_complete",
+          "effects": [
+            { "type": "port_unlock", "portId": "taras" },
+            { "type": "port_unlock", "portId": "syracuse" },
+            { "type": "journal_entry", "title": "Magna Graecia", "text": "Hanno described the Greek colonies of southern Italy: Taras (founded by Spartan exiles) and Syracuse in Sicily, both wealthy trading centers. The Romans call this region Magna Graecia -- Great Greece." }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "farewell_complete",
+      "speaker": "Hanno",
+      "text": "Safe travels, captain. Remember -- Rome watches the sea, and those who trade fairly will always find a welcome at Ostia.",
+      "choices": []
+    }
+  ]
+}

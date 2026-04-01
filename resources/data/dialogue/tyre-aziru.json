@@ -1,0 +1,155 @@
+{
+  "npc_id": "aziru",
+  "port_id": "tyre",
+  "root_node": "greeting",
+  "nodes": [
+    {
+      "id": "greeting",
+      "speaker": "Aziru",
+      "text": "Welcome to Tyre, captain -- Tsur, the Rock, queen of the Phoenician coast. I am Aziru, merchant of spices and resins. My family has traded the length of this sea for ten generations. What brings you to our ancient city?",
+      "conditions": { "type": "quest", "id": "cedar_of_lebanon", "status": "not_started" },
+      "choices": [
+        { "text": "I am looking for profitable trade.", "next": "quest_offer", "effects": [] },
+        { "text": "Tell me about Phoenician trade.", "next": "lore_trade", "effects": [] },
+        { "text": "What makes Tyre so famous?", "next": "lore_tyre", "effects": [] }
+      ]
+    },
+    {
+      "id": "greeting_active",
+      "speaker": "Aziru",
+      "text": "Captain! Have you brought the wine from Byblos? The shipwrights are waiting.",
+      "conditions": { "type": "quest", "id": "cedar_of_lebanon", "status": "active" },
+      "choices": [
+        { "text": "Not yet, but I will.", "next": "quest_reminder", "effects": [] },
+        { "text": "What was I collecting again?", "next": "quest_details", "effects": [] }
+      ]
+    },
+    {
+      "id": "greeting_complete",
+      "speaker": "Aziru",
+      "text": "The wine from Byblos has arrived! The shipwrights will celebrate tonight. You have done well, captain. The merchants of Sidon and Byblos will hear of your reliability.",
+      "conditions": { "type": "quest", "id": "cedar_of_lebanon", "status": "completed" },
+      "choices": [
+        { "text": "A fine partnership.", "next": "farewell_complete", "effects": [] },
+        { "text": "Tell me about Sidon.", "next": "lore_sidon", "effects": [] }
+      ]
+    },
+    {
+      "id": "quest_offer",
+      "speaker": "Aziru",
+      "text": "Our shipwrights build the finest vessels in the Mediterranean, but they need provisions. The vineyards of Byblos produce excellent wine -- a necessity for any ship-launching celebration. Sail north to Byblos, buy wine, and bring it back to Tyre. I will pay you well, and you will have friends on the Phoenician coast.",
+      "choices": [
+        {
+          "text": "I will sail to Byblos for the wine.",
+          "next": "quest_accepted",
+          "effects": [
+            { "type": "quest_update", "questId": "cedar_of_lebanon", "status": "active" },
+            { "type": "port_unlock", "portId": "byblos" },
+            { "type": "port_unlock", "portId": "sidon" },
+            { "type": "journal_entry", "title": "The Cedar of Lebanon", "text": "Aziru, a Phoenician merchant of Tyre, has asked me to bring wine from Byblos for his shipwrights' celebrations. He spoke of Sidon and Byblos, the other great Phoenician cities along the Levantine coast." }
+          ]
+        },
+        { "text": "I have other routes planned.", "next": "quest_declined", "effects": [] }
+      ]
+    },
+    {
+      "id": "quest_accepted",
+      "speaker": "Aziru",
+      "text": "Byblos is just up the coast -- a short sail north. Buy wine there and return. You might also visit Sidon along the way. The three cities -- Tyre, Sidon, Byblos -- are the heart of Phoenicia. May Melqart guide your prow.",
+      "choices": []
+    },
+    {
+      "id": "quest_declined",
+      "speaker": "Aziru",
+      "text": "The sea is wide and a captain must follow the winds. But remember, captain -- Phoenician merchants have long memories, for good and ill.",
+      "choices": []
+    },
+    {
+      "id": "quest_details",
+      "speaker": "Aziru",
+      "text": "Sail to Byblos, buy wine there, and bring it back to Tyre. The shipwrights need it for the launching ceremony of our newest trireme.",
+      "choices": []
+    },
+    {
+      "id": "quest_reminder",
+      "speaker": "Aziru",
+      "text": "Byblos is north along the coast. Buy wine and return. The shipwrights grow restless without their celebration wine.",
+      "choices": []
+    },
+    {
+      "id": "lore_trade",
+      "speaker": "Aziru",
+      "text": "We Phoenicians were the first to sail the open sea by the stars. Our merchants carry purple dye, glass, cedar wood, and metalwork across the entire Mediterranean. From Gadir in the west to Tyre in the east, every port knows the Phoenician sail. Boardman wrote in 'The Greeks Overseas' that without Phoenician seamanship, the Greeks would never have learned to navigate beyond sight of land.",
+      "choices": [
+        { "text": "Tell me about Tyrian purple.", "next": "lore_purple", "effects": [] },
+        {
+          "text": "I am impressed. What cargo do you need?",
+          "next": "quest_offer",
+          "effects": [
+            { "type": "journal_entry", "title": "Masters of the Sea", "text": "Aziru described the Phoenician trading network spanning the entire Mediterranean. They were the first to navigate by stars across open water, carrying purple dye, glass, cedar, and metalwork." }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lore_tyre",
+      "speaker": "Aziru",
+      "text": "Tyre is an island fortress -- invincible by land. Alexander will one day build a causeway to conquer us, but that is far in the future. For now, our walls have never been breached. The temple of Melqart stands here, the greatest in all Phoenicia. And our purple dye -- extracted from the murex snail -- clothes kings and priests across the known world.",
+      "choices": [
+        { "text": "Tell me about Phoenician glass-making.", "next": "lore_glass", "effects": [] },
+        { "text": "Tell me about the purple dye.", "next": "lore_purple", "effects": [] },
+        { "text": "What trade can we do?", "next": "quest_offer", "effects": [] }
+      ]
+    },
+    {
+      "id": "lore_purple",
+      "speaker": "Aziru",
+      "text": "The murex snail produces a tiny gland that yields the dye. Ten thousand snails for a single garment! The stench of the dye works is unbearable -- they are kept outside the city walls. But the color is magnificent and never fades. Persian kings, Egyptian pharaohs, and Greek tyrants all pay fortunes for Tyrian purple. It is our greatest treasure.",
+      "choices": [
+        { "text": "Tell me about Phoenician glass.", "next": "lore_glass", "effects": [] },
+        {
+          "text": "A remarkable industry. What work do you have?",
+          "next": "quest_offer",
+          "effects": [
+            { "type": "journal_entry", "title": "The Purple Industry", "text": "Aziru described the murex snail dye industry of Tyre. Ten thousand snails produce enough dye for a single garment. The stench is terrible but the color magnificent and permanent. Kings across the Mediterranean pay fortunes for it." }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lore_glass",
+      "speaker": "Aziru",
+      "text": "We Phoenicians discovered that mixing sand with natron produces glass. Our craftsmen at Sidon are the finest glass-blowers in the world -- though in truth, glass-blowing has not yet been invented. For now, we cast it in molds and grind it to shape. Small glass beads and vessels are prized from Egypt to Iberia. Sidon is the center of this craft.",
+      "choices": [
+        {
+          "text": "I should visit Sidon.",
+          "next": "quest_offer",
+          "effects": [
+            { "type": "port_unlock", "portId": "sidon" },
+            { "type": "journal_entry", "title": "Phoenician Glass", "text": "Aziru explained that the Phoenicians discovered glass-making by mixing sand with natron. In this era, glass is cast in molds rather than blown. Sidon is the center of the craft, producing beads and vessels prized across the Mediterranean." }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lore_sidon",
+      "speaker": "Aziru",
+      "text": "Sidon is our sister city, just north of Tyre. She is famous for glass-making and metalwork. Some say Sidon is older than Tyre, and the rivalry between us is ancient. But we are all Phoenicians -- children of the same coast, speakers of the same tongue, worshippers of the same gods.",
+      "choices": [
+        {
+          "text": "I will visit both cities.",
+          "next": "farewell_complete",
+          "effects": [
+            { "type": "port_unlock", "portId": "sidon" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "farewell_complete",
+      "speaker": "Aziru",
+      "text": "Sail safely, captain. Remember -- in every port of the Mediterranean, you will find a Phoenician merchant. We are everywhere. May Melqart of Tyre protect you.",
+      "choices": []
+    }
+  ]
+}

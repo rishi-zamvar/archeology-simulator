@@ -86,9 +86,18 @@ export function validateDialogueFile(
     }
   }
 
-  // BFS reachability from root_node — detect orphan/unreachable nodes
+  // BFS reachability from root_node AND alternate entry nodes (nodes with conditions).
+  // Nodes with top-level conditions serve as alternate entry points based on game state
+  // (e.g. greeting_active, greeting_complete). These are valid roots for reachability.
   const reachable = new Set<string>();
   const queue: string[] = rootNode ? [rootNode] : [];
+  // Add all nodes with conditions as alternate entry points
+  for (const node of nodes) {
+    const nodeId = node.id as string;
+    if (nodeId && node.conditions) {
+      queue.push(nodeId);
+    }
+  }
   while (queue.length > 0) {
     const current = queue.shift()!;
     if (reachable.has(current)) continue;

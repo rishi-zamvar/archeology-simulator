@@ -1,0 +1,154 @@
+{
+  "npc_id": "taharqa",
+  "port_id": "memphis",
+  "root_node": "greeting",
+  "nodes": [
+    {
+      "id": "greeting",
+      "speaker": "Taharqa",
+      "text": "Ah, a foreign captain at the docks of Men-nefer! I am Taharqa, grain factor to the temples of Ptah. The granaries overflow after the Inundation -- perhaps you seek cargo?",
+      "conditions": { "type": "quest", "id": "nile_grain", "status": "not_started" },
+      "choices": [
+        { "text": "I am always looking for good cargo.", "next": "quest_offer", "effects": [] },
+        { "text": "Tell me about the grain trade here.", "next": "lore_grain", "effects": [] },
+        { "text": "What is this city like?", "next": "lore_memphis", "effects": [] }
+      ]
+    },
+    {
+      "id": "greeting_active",
+      "speaker": "Taharqa",
+      "text": "Captain! Have you delivered the grain to Athens yet? The priests of Ptah expect good silver in return.",
+      "conditions": { "type": "quest", "id": "nile_grain", "status": "active" },
+      "choices": [
+        { "text": "I am still working on it.", "next": "quest_reminder", "effects": [] },
+        { "text": "Tell me again what you need.", "next": "quest_details", "effects": [] }
+      ]
+    },
+    {
+      "id": "greeting_complete",
+      "speaker": "Taharqa",
+      "text": "The silver from Athens has arrived! The priests of Ptah are pleased. You have proven yourself a reliable trader, captain. The merchants of Naukratis speak well of you.",
+      "conditions": { "type": "quest", "id": "nile_grain", "status": "completed" },
+      "choices": [
+        { "text": "It was a profitable voyage.", "next": "farewell_complete", "effects": [] },
+        { "text": "Tell me about Naukratis.", "next": "lore_naukratis", "effects": [] }
+      ]
+    },
+    {
+      "id": "quest_offer",
+      "speaker": "Taharqa",
+      "text": "The Nile flood was generous this year -- Hapi has blessed us. I have more grain than the temples can store. Athens always hungers for Egyptian grain. Buy grain here and deliver it to Piraeus. The Athenians will pay handsomely.",
+      "choices": [
+        {
+          "text": "I will carry your grain to Athens.",
+          "next": "quest_accepted",
+          "effects": [
+            { "type": "quest_update", "questId": "nile_grain", "status": "active" },
+            { "type": "port_unlock", "portId": "naukratis" },
+            { "type": "journal_entry", "title": "The Grain of the Nile", "text": "Taharqa, grain factor of Memphis, has asked me to deliver Egyptian grain to Athens. He spoke of Naukratis, the Greek trading colony on the Nile Delta, where Hellenes and Egyptians trade freely." }
+          ]
+        },
+        { "text": "Perhaps another time.", "next": "quest_declined", "effects": [] }
+      ]
+    },
+    {
+      "id": "quest_accepted",
+      "speaker": "Taharqa",
+      "text": "Excellent! Buy grain from our market -- at least three amphorae. The voyage to Athens is long, but the winds favor ships sailing north in summer. May Amun-Ra watch over your sails. And captain -- if you pass through the Delta, stop at Naukratis. The Greek merchants there may have further work for you.",
+      "choices": [
+        { "text": "I will remember Naukratis.", "next": "lore_naukratis", "effects": [] }
+      ]
+    },
+    {
+      "id": "quest_declined",
+      "speaker": "Taharqa",
+      "text": "The grain will not keep forever, captain. Return before the next Inundation if you change your mind.",
+      "choices": []
+    },
+    {
+      "id": "quest_details",
+      "speaker": "Taharqa",
+      "text": "Buy grain here at Memphis and deliver it to Athens. The Athenians cannot feed themselves from Attic soil alone -- they depend on Egyptian and Pontic grain. At least three amphorae, captain.",
+      "choices": []
+    },
+    {
+      "id": "quest_reminder",
+      "speaker": "Taharqa",
+      "text": "The grain waits in our granaries. Buy it and sail north to Athens. The Athenians pay well for Egyptian grain -- their rocky soil grows olives and grapes, not wheat.",
+      "choices": []
+    },
+    {
+      "id": "lore_grain",
+      "speaker": "Taharqa",
+      "text": "Every year, the Nile floods and deposits rich black soil across the fields -- kemet, we call it, the Black Land. This is why Egypt feeds the world. Herodotus himself wrote that Egypt is the gift of the Nile. Without the Inundation, we would be as barren as the Red Land beyond the valley.",
+      "choices": [
+        { "text": "Tell me about the embalming arts.", "next": "lore_embalming", "effects": [] },
+        {
+          "text": "I would like to carry your grain.",
+          "next": "quest_offer",
+          "effects": [
+            { "type": "journal_entry", "title": "The Gift of the Nile", "text": "Taharqa explained how the annual Nile flood deposits fertile black silt across Egypt's fields, making the kingdom the breadbasket of the Mediterranean. The Egyptians call their land 'kemet' -- the Black Land." }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lore_embalming",
+      "speaker": "Taharqa",
+      "text": "The priests of Anubis guard the secrets of preservation. They remove the organs, pack the body in natron salt for seventy days, and wrap it in linen. Cedar oil from Byblos and frankincense from Punt are essential. Herodotus described three grades of embalming -- the finest reserved for pharaohs and nobles, the cheapest for common folk.",
+      "choices": [
+        {
+          "text": "Fascinating. Where does the cedar come from?",
+          "next": "lore_trade_routes",
+          "effects": [
+            { "type": "journal_entry", "title": "The Arts of Anubis", "text": "Taharqa described the Egyptian embalming process: natron salt, seventy days of drying, cedar oil from Byblos, and linen wrappings. Three grades of preservation exist, from pharaonic luxury to simple burial." }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lore_trade_routes",
+      "speaker": "Taharqa",
+      "text": "The cedar comes from the mountains of Lebanon, shipped through Byblos. We have traded with the Phoenicians for a thousand years -- cedar for our ships and coffins, papyrus and grain in return. The port of Alexandria -- or rather, the fishing village of Rhakotis where it will one day stand -- lies at the western edge of the Delta.",
+      "choices": [
+        {
+          "text": "I should visit these places.",
+          "next": "quest_offer",
+          "effects": [
+            { "type": "port_unlock", "portId": "alexandria" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lore_memphis",
+      "speaker": "Taharqa",
+      "text": "Men-nefer -- Memphis, as you Greeks call it -- was the first capital of united Egypt, founded by Menes three thousand years ago. The great temple of Ptah still stands, and the step pyramid of Djoser at nearby Saqqara is the oldest stone building in the world. We are a land of monuments, captain.",
+      "choices": [
+        { "text": "Tell me about the grain trade.", "next": "lore_grain", "effects": [] },
+        { "text": "I am interested in trading here.", "next": "quest_offer", "effects": [] }
+      ]
+    },
+    {
+      "id": "lore_naukratis",
+      "speaker": "Taharqa",
+      "text": "Naukratis is a Greek trading colony in the Nile Delta, the only place where Hellenes are permitted to trade freely in Egypt. Pharaoh Amasis granted this privilege. Greek pottery, silver, and olive oil flow in; Egyptian grain, papyrus, and linen flow out. It is a city of two worlds.",
+      "choices": [
+        {
+          "text": "I will visit Naukratis on my travels.",
+          "next": "farewell_complete",
+          "effects": [
+            { "type": "port_unlock", "portId": "naukratis" },
+            { "type": "journal_entry", "title": "Naukratis, City of Two Worlds", "text": "Taharqa told me of Naukratis, the only Greek trading colony permitted in Egypt. Pharaoh Amasis granted this privilege -- a city where Hellene and Egyptian merchants trade side by side." }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "farewell_complete",
+      "speaker": "Taharqa",
+      "text": "May the Eye of Horus protect you on your voyages, captain. You are always welcome at the docks of Men-nefer.",
+      "choices": []
+    }
+  ]
+}
