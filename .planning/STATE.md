@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: The Merchant's Odyssey
 status: executing
-stopped_at: Completed 20-02-PLAN.md
-last_updated: "2026-03-31T14:42:16Z"
-last_activity: 2026-03-31 -- Plan 20-02 executed (expanded voyage events)
+stopped_at: Completed 20-01-PLAN.md
+last_updated: "2026-04-01T19:25:38.783Z"
+last_activity: 2026-04-01
 progress:
   total_phases: 8
   completed_phases: 7
   total_plans: 19
-  completed_plans: 17
+  completed_plans: 18
   percent: 95
 ---
 
@@ -26,9 +26,9 @@ See: .planning/PROJECT.md (updated 2026-04-01)
 ## Current Position
 
 Phase: 20 (journal-integration-game-polish) — EXECUTING
-Plan: 2 of 3
-Status: Executing Phase 20
-Last activity: 2026-03-31 -- Plan 20-02 executed (expanded voyage events)
+Plan: 3 of 3
+Status: Ready to execute
+Last activity: 2026-04-01
 
 Progress: [▓▓▓▓▓▓▓▓▓░] 95% (v2.0 milestone)
 
@@ -77,6 +77,9 @@ Progress: [▓▓▓▓▓▓▓▓▓░] 95% (v2.0 milestone)
 - [Phase 19]: Starting ports: athens (unlocked), corinth (unlocked), miletos (discovered)
 - [Phase 19]: refreshAccess callback passed from MapArea to Shell via onRefreshAccessReady prop pattern
 - [Phase 19]: Auto-discover fires on trading state transition, not explicit sail action
+- [Phase 20]: Migration v10 recreates journal_entries table to widen CHECK constraint (SQLite cannot ALTER CHECK)
+- [Phase 20]: Discovery entries fire on dialogue end and first port arrival for maximum educational coverage
+- [Phase 20]: Journal cap (3/turn) applied via insertJournalEntryIfUnderCap; existing entries bypass cap
 
 ### Blockers/Concerns
 
@@ -85,6 +88,6 @@ Progress: [▓▓▓▓▓▓▓▓▓░] 95% (v2.0 milestone)
 
 ## Session Continuity
 
-Last session: 2026-03-31T14:42:16Z
-Stopped at: Completed 20-02-PLAN.md
+Last session: 2026-04-01T19:25:38.781Z
+Stopped at: Completed 20-01-PLAN.md
 Resume file: None

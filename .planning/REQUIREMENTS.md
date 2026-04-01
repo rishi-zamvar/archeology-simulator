@@ -35,9 +35,9 @@
 
 ## Captain's Journal Integration
 
-- [ ] **JRNL-01**: Quest events, NPC conversations, and story milestones logged in captain's journal
-- [ ] **JRNL-02**: Educational "discoveries" recorded (first time learning about a culture or trade good)
-- [ ] **JRNL-03**: Journal becomes a personal history record by end of game
+- [x] **JRNL-01**: Quest events, NPC conversations, and story milestones logged in captain's journal
+- [x] **JRNL-02**: Educational "discoveries" recorded (first time learning about a culture or trade good)
+- [x] **JRNL-03**: Journal becomes a personal history record by end of game
 
 ## Game Polish
 
