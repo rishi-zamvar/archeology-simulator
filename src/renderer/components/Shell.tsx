@@ -26,6 +26,7 @@ import ShipMarker from './ShipMarker';
 import SailingOverlay from './SailingOverlay';
 import WeatherOverlay from './WeatherOverlay';
 import EventCard from './EventCard';
+import DialogueModal from './DialogueModal';
 import TutorialModal from './TutorialModal';
 import Logbook from './Logbook';
 import MareClausumModal from './MareClausumModal';
@@ -36,7 +37,7 @@ import { getWeatherModifiers, getSeasonalWeatherDescription } from '../../game/w
 import type { Season } from '../../game/weather';
 import type { SailingTurnResult } from '../../game/sailing';
 import type { SailingState, TradingState } from '../../game/types';
-import type { VoyageEvent, PortRegion } from '../../shared/game-types';
+import type { VoyageEvent, PortRegion, DialogueNode, DialogueChoice } from '../../shared/game-types';
 
 /* ── Shared floating panel style ─────────────────────────────────────── */
 const FLOAT_PANEL: React.CSSProperties = {
@@ -90,6 +91,14 @@ export default function Shell(): React.ReactElement {
   const [showFullMap, setShowFullMap] = useState(false);
   // Mare clausum modal — set to destination port ID when navigating in winter
   const [mareClausumDest, setMareClausumDest] = useState<string | null>(null);
+
+  // Phase 14: NPC dialogue state
+  const [dialogueNpc, setDialogueNpc] = useState<{
+    npcId: string;
+    node: DialogueNode;
+    choices: DialogueChoice[];
+  } | null>(null);
+  const [availableNpcs, setAvailableNpcs] = useState<Array<{ npcId: string; name: string }>>([]);
 
   const { state: gameState } = useGameState();
   const { marketGoods, inventory, transactions, error: tradeError } = useTradeState(selectedPortId);
@@ -265,6 +274,35 @@ export default function Shell(): React.ReactElement {
     : '';
   const isTrading = gameState?.type === 'trading';
 
+  // Phase 14: Check for available NPCs when port selection changes
+  useEffect(() => {
+    if (isTrading && selectedPortId) {
+      window.api.dialogue.getAvailableNpcs(selectedPortId).then((res) => {
+        if (res.success) setAvailableNpcs(res.data);
+        else setAvailableNpcs([]);
+      }).catch(() => setAvailableNpcs([]));
+    } else {
+      setAvailableNpcs([]);
+    }
+  }, [isTrading, selectedPortId]);
+
+  const handleTalkToNpc = useCallback(async (npcId: string) => {
+    try {
+      const res = await window.api.dialogue.getNodes(npcId);
+      if (res.success) {
+        setDialogueNpc({
+          npcId,
+          node: res.data.node,
+          choices: res.data.availableChoices,
+        });
+      } else {
+        showError(res.error ?? 'Failed to start dialogue');
+      }
+    } catch (err) {
+      showError('Failed to start dialogue: ' + (err instanceof Error ? err.message : 'Unknown error'));
+    }
+  }, [showError]);
+
   const portDisplayName = selectedPortId
     ? selectedPortId.charAt(0).toUpperCase() + selectedPortId.slice(1).replace(/_/g, ' ')
     : '';
@@ -338,6 +376,46 @@ export default function Shell(): React.ReactElement {
             onOpenMarket={toggleRightPanel}
             onOpenHarbor={toggleLeftPanel}
           />
+        </div>
+      )}
+
+      {/* ── Talk to NPC button (top-center-left) — when NPCs available at port ── */}
+      {isTrading && selectedPortId && !showFullMap && availableNpcs.length > 0 && !dialogueNpc && (
+        <div
+          style={{
+            position: 'absolute',
+            top: 16,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 1100,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 6,
+          }}
+        >
+          {availableNpcs.map((npc) => (
+            <button
+              key={npc.npcId}
+              type="button"
+              onClick={() => void handleTalkToNpc(npc.npcId)}
+              style={{
+                backgroundColor: 'rgba(253, 248, 240, 0.95)',
+                border: '1px solid #c4956a',
+                borderRadius: 8,
+                padding: '0.5rem 1.25rem',
+                cursor: 'pointer',
+                boxShadow: '0 4px 16px rgba(61, 43, 31, 0.18)',
+                fontFamily: "'Cinzel', 'Times New Roman', serif",
+                fontSize: '0.7rem',
+                fontWeight: 700,
+                color: '#5a3e2b',
+                letterSpacing: '0.06em',
+                textTransform: 'uppercase' as const,
+              }}
+            >
+              Speak with {npc.name}
+            </button>
+          ))}
         </div>
       )}
 
@@ -530,6 +608,25 @@ export default function Shell(): React.ReactElement {
             if (message) {
               setEventToast(message);
               setTimeout(() => setEventToast(null), 3000);
+            }
+          }}
+        />
+      )}
+
+      {/* ── NPC dialogue modal ──────────────────────────────────────── */}
+      {dialogueNpc && (
+        <DialogueModal
+          npcId={dialogueNpc.npcId}
+          initialNode={dialogueNpc.node}
+          initialChoices={dialogueNpc.choices}
+          onDismiss={() => {
+            setDialogueNpc(null);
+            // Re-check available NPCs after dialogue (conditions may have changed)
+            if (selectedPortId) {
+              window.api.dialogue.getAvailableNpcs(selectedPortId).then((res) => {
+                if (res.success) setAvailableNpcs(res.data);
+                else setAvailableNpcs([]);
+              }).catch(() => setAvailableNpcs([]));
             }
           }}
         />
