@@ -20,6 +20,100 @@
   --sepia-border: #c4956a;
 }
 
+/* ── Screen fade transitions ─────────────────────────────────────────── */
+
+.screen-enter {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+.screen-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+}
+
+.screen-exit {
+  opacity: 1;
+}
+
+.screen-exit-active {
+  opacity: 0;
+  transition: opacity 0.3s ease-in;
+}
+
+/* Fade-in keyframe for initial screen mount */
+@keyframes fadeSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeSlideIn 0.5s ease-out both;
+}
+
+/* Staggered children animation */
+.animate-stagger > * {
+  opacity: 0;
+  animation: fadeSlideIn 0.5s ease-out both;
+}
+
+.animate-stagger > *:nth-child(1) { animation-delay: 0.1s; }
+.animate-stagger > *:nth-child(2) { animation-delay: 0.2s; }
+.animate-stagger > *:nth-child(3) { animation-delay: 0.3s; }
+.animate-stagger > *:nth-child(4) { animation-delay: 0.4s; }
+.animate-stagger > *:nth-child(5) { animation-delay: 0.5s; }
+.animate-stagger > *:nth-child(6) { animation-delay: 0.6s; }
+
+/* ── Button polish ───────────────────────────────────────────────────── */
+
+/* Parchment-themed button hover/active states */
+.btn-parchment {
+  transition: background-color 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+}
+
+.btn-parchment:hover {
+  filter: brightness(1.1);
+  box-shadow: 0 4px 12px rgba(61, 43, 31, 0.3);
+  transform: translateY(-1px);
+}
+
+.btn-parchment:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(61, 43, 31, 0.2);
+}
+
+/* ── Smooth scrollbar styling ────────────────────────────────────────── */
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(196, 149, 106, 0.4);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(196, 149, 106, 0.6);
+}
+
+/* ── Panel transition helper ─────────────────────────────────────────── */
+
+.panel-float {
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
 /* Base body styles */
 body {
   background-color: var(--parchment-bg);
