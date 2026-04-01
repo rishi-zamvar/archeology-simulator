@@ -111,6 +111,7 @@ export default function Shell(): React.ReactElement {
   const [allActiveQuests, setAllActiveQuests] = useState<Array<{ quest: QuestDefinition; progress: QuestProgress }>>([]);
   const [questToast, setQuestToast] = useState<{ name: string; historicalNote: string } | null>(null);
   const [showQuestDetails, setShowQuestDetails] = useState(false);
+  const [showPortPopup, setShowPortPopup] = useState(false);
   const prevQuestRef = useRef<Array<{ quest: QuestDefinition; progress: QuestProgress }>>([]);
 
   // Phase 19: Port access level for NPC gating + auto-discover
@@ -532,15 +533,18 @@ export default function Shell(): React.ReactElement {
         />
       )}
 
-      {/* ── Port scene overlay on map when at port ──────────────────── */}
+      {/* ── Port scene overlay — click to open Market/Harbor popup ── */}
       {isTrading && selectedPortId && !showFullMap && (
-        <div style={{ position: 'absolute', inset: 0, zIndex: 5 }}>
+        <div
+          style={{ position: 'absolute', inset: 0, zIndex: 5, cursor: 'pointer' }}
+          onClick={() => setShowPortPopup(true)}
+        >
           <PortScene
             portId={selectedPortId}
             portName={portDisplayName}
             region={portRegions.get(selectedPortId) ?? 'greece'}
-            onOpenMarket={() => {}}
-            onOpenHarbor={() => {}}
+            onOpenMarket={() => setShowPortPopup(true)}
+            onOpenHarbor={() => setShowPortPopup(true)}
           />
         </div>
       )}
@@ -585,51 +589,51 @@ export default function Shell(): React.ReactElement {
         </div>
       )}
 
-      {/* ── Slide-down panel — hover top edge to reveal, contains Harbor + Market ── */}
-      {selectedPortId && isTrading && !showFullMap && (
+      {/* ── Market/Harbor popup — click port scene to open ── */}
+      {selectedPortId && isTrading && !showFullMap && showPortPopup && (
         <div
-          className="top-panel-trigger"
           style={{
             position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            zIndex: 1200,
+            inset: 0,
+            zIndex: 1300,
+            backgroundColor: 'rgba(0, 0, 0, 0.4)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
           }}
+          onClick={(e) => { if (e.target === e.currentTarget) setShowPortPopup(false); }}
         >
-          {/* Invisible hover trigger zone */}
-          <div style={{ height: 8, cursor: 'pointer' }} />
-
-          {/* Panel that slides down on hover */}
           <div
-            className="top-panel-content"
             style={{
-              backgroundColor: 'rgba(253, 248, 240, 0.97)',
-              borderBottom: '1px solid #c4956a',
-              boxShadow: '0 4px 20px rgba(61, 43, 31, 0.15)',
-              maxHeight: 'calc(100vh - 60px)',
+              backgroundColor: 'rgba(253, 248, 240, 0.98)',
+              border: '1px solid #c4956a',
+              borderRadius: 12,
+              boxShadow: '0 8px 40px rgba(61, 43, 31, 0.3)',
+              width: '90%',
+              maxWidth: 900,
+              maxHeight: '85vh',
               overflowY: 'auto',
-              padding: '0.75rem 1.5rem',
               display: 'flex',
               gap: '1.5rem',
-              backdropFilter: 'blur(6px)',
+              padding: '1.25rem',
+              animation: 'fadeSlideIn 0.3s ease-out',
             }}
           >
-            {/* Left: Harbor info (port details + destinations) */}
-            <div style={{ flex: 1, minWidth: 0, maxWidth: 400 }}>
+            {/* Left: Harbor info */}
+            <div style={{ flex: 1, minWidth: 0 }}>
               <PortInfoPanel
                 portId={selectedPortId}
                 currentTurn={gameState?.currentTurn ?? 0}
-                onClose={() => { /* no-op — panel hides on mouse leave */ }}
-                onNavigate={handleNavigate}
+                onClose={() => setShowPortPopup(false)}
+                onNavigate={(destId, dur) => { setShowPortPopup(false); handleNavigate(destId, dur); }}
               />
             </div>
 
             {/* Divider */}
             <div style={{ width: 1, backgroundColor: '#e8d5b8', flexShrink: 0 }} />
 
-            {/* Right: Market (trade goods) */}
-            <div style={{ flex: 1, minWidth: 0, maxWidth: 450 }}>
+            {/* Right: Market */}
+            <div style={{ flex: 1, minWidth: 0 }}>
               <TradePanel
                 portId={selectedPortId}
                 portName={portDisplayName}
@@ -748,7 +752,31 @@ export default function Shell(): React.ReactElement {
         </button>
       )}
 
-      {/* ── Logbook dropdown (top-center) ──────────────────────── */}
+      {/* ── Top HUD — hover to reveal logbook + quest ──────────── */}
+      <div
+        className="top-panel-trigger"
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          zIndex: 1150,
+        }}
+      >
+        <div style={{ height: 6 }} />
+        <div
+          className="top-panel-content"
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            padding: '0.5rem 1rem',
+            backgroundColor: 'rgba(253, 248, 240, 0.95)',
+            borderBottom: '1px solid #c4956a',
+            boxShadow: '0 4px 16px rgba(61, 43, 31, 0.12)',
+            backdropFilter: 'blur(6px)',
+          }}
+        >
       <Logbook
         currentTurn={gameState?.currentTurn ?? 0}
         gameStateType={gameState?.type ?? 'idle'}
@@ -957,6 +985,9 @@ export default function Shell(): React.ReactElement {
           )}
         </>
       )}
+
+        </div>
+      </div>
 
       {/* ── Quest completion toast ──────────────────────────────── */}
       {questToast && (
