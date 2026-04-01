@@ -3,7 +3,7 @@
 ## Port Content & World Building
 
 - [ ] **PORT-01**: Each port displays rich historical lore — culture, customs, religion, daily life, and what the region is known for
-- [ ] **PORT-02**: Regional trade goods are historically accurate (Tyrian purple from Sidon, grain from Egypt, olive oil from Athens, silver from Iberia, cedar from Byblos)
+- [x] **PORT-02**: Regional trade goods are historically accurate (Tyrian purple from Sidon, grain from Egypt, olive oil from Athens, silver from Iberia, cedar from Byblos)
 - [ ] **PORT-03**: Player can read "Port Lore" sections teaching real ancient history (Phoenician alphabet, Athenian democracy, Egyptian grain trade)
 - [ ] **PORT-04**: World expanded to 15-25 historically important ports (Tyre, Sidon, Corinth, Syracuse, Massalia, Gades, Memphis, Knossos, etc.)
 
@@ -66,7 +66,7 @@
 | REQ-ID | Phase | Status |
 |--------|-------|--------|
 | PORT-01 | Phase 16 | Planned |
-| PORT-02 | Phase 16 | Planned |
+| PORT-02 | Phase 16 | Complete |
 | PORT-03 | Phase 16 | Planned |
 | PORT-04 | Phase 16 | Planned |
 | QUEST-01 | Phase 15 | Planned |

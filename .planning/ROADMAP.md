@@ -104,7 +104,7 @@ Plans:
 
 Plans:
 - [ ] 16-01-PLAN.md -- Migration v8, port lore seeding (25 ports), ambient descriptions, query functions, ports.json sync
-- [ ] 16-02-PLAN.md -- 5 new trade goods (papyrus, silver, glass, garum, silphium) with port inventory matrices
+- [x] 16-02-PLAN.md -- 5 new trade goods (papyrus, silver, glass, garum, silphium) with port inventory matrices
 - [ ] 16-03-PLAN.md -- IPC + UI wiring (lore display, ambient arrival text), sea route waypoints, human verification
 
 ### Phase 17: NPC Characters & Dialogue Content

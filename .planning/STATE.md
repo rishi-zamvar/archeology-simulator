@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: The Merchant's Odyssey
-status: verifying
+status: executing
 stopped_at: Completed 15-03-PLAN.md
-last_updated: "2026-04-01T12:28:29.073Z"
-last_activity: 2026-04-01
+last_updated: "2026-04-01T13:14:13.055Z"
+last_activity: 2026-04-01 -- Phase 16 execution started
 progress:
   total_phases: 8
   completed_phases: 3
-  total_plans: 7
+  total_plans: 10
   completed_plans: 7
   percent: 6
 ---
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-01)
 
 **Core value:** Students learn ancient Mediterranean history by making decisions as a merchant captain, not by reading about them.
-**Current focus:** Phase 15 — quest-system-foundation
+**Current focus:** Phase 16 — port-content-world-building
 
 ## Current Position
 
-Phase: 16
-Plan: Not started
-Status: Phase complete — ready for verification
-Last activity: 2026-04-01
+Phase: 16 (port-content-world-building) — EXECUTING
+Plan: 2 of 3
+Status: Executing Phase 16
+Last activity: 2026-04-01 -- Completed 16-02-PLAN.md (trade goods)
 
 Progress: [▓░░░░░░░░░] 6% (v2.0 milestone)
 
@@ -59,6 +59,7 @@ Progress: [▓░░░░░░░░░] 6% (v2.0 milestone)
 - [Phase 15]: evaluateActiveQuests is a plain exported function called after game actions, not an IPC handler
 - [Phase 15]: buildGameContext exported from dialogue.ts for reuse by quest.ts
 - [Phase 15]: Logbook uses tab bar (Journal/Quests) matching parchment theme; quest completion detected via active quest ID diff
+- [Phase 16-02]: 5 historically accurate trade goods added with regional supply/demand patterns for all 25 ports
 
 ### Blockers/Concerns
 
@@ -67,6 +68,6 @@ Progress: [▓░░░░░░░░░] 6% (v2.0 milestone)
 
 ## Session Continuity
 
-Last session: 2026-04-01T12:26:54.492Z
-Stopped at: Completed 15-03-PLAN.md
+Last session: 2026-04-01T17:45:57Z
+Stopped at: Completed 16-02-PLAN.md
 Resume file: None
