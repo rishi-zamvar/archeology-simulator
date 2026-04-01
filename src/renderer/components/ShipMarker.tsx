@@ -49,21 +49,35 @@ type LeafletWithMotion = typeof L & {
   };
 };
 
-// Ship icon -- SVG boat shape oriented east
+// Ship icon -- SVG trireme (ancient Greek warship/merchant vessel)
 function createShipIcon(): L.DivIcon {
   return L.divIcon({
     className: 'ship-icon',
-    html: `<div style="width:20px;height:20px;display:flex;align-items:center;justify-content:center;">
-      <svg width="20" height="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-        <g transform="translate(10,10) rotate(-90)">
-          <ellipse cx="0" cy="0" rx="7" ry="3.5" fill="#7a5c45" stroke="#3d2b1f" stroke-width="1"/>
-          <line x1="0" y1="-3.5" x2="0" y2="-9" stroke="#3d2b1f" stroke-width="1.5"/>
-          <path d="M0,-9 L5,-6 L0,-3.5 Z" fill="#f8edd8" stroke="#7a5c45" stroke-width="0.5"/>
-        </g>
+    html: `<div style="width:36px;height:24px;display:flex;align-items:center;justify-content:center;filter:drop-shadow(1px 1px 2px rgba(61,43,31,0.4));">
+      <svg width="36" height="24" viewBox="0 0 36 24" xmlns="http://www.w3.org/2000/svg">
+        <!-- Hull: long narrow trireme shape -->
+        <path d="M2,16 Q4,20 18,20 Q32,20 35,16 L33,14 Q30,18 18,18 Q6,18 3,14 Z" fill="#7a5c45" stroke="#3d2b1f" stroke-width="0.8"/>
+        <!-- Ram/prow -->
+        <path d="M35,16 L36,15 L35,14.5" fill="#5a3e2b" stroke="#3d2b1f" stroke-width="0.5"/>
+        <!-- Deck line -->
+        <path d="M5,15 Q18,13 31,15" fill="none" stroke="#3d2b1f" stroke-width="0.6"/>
+        <!-- Mast -->
+        <line x1="18" y1="14" x2="18" y2="3" stroke="#3d2b1f" stroke-width="1.2"/>
+        <!-- Sail -->
+        <path d="M18,4 Q24,6 26,10 L18,12 Z" fill="#f8edd8" stroke="#7a5c45" stroke-width="0.6"/>
+        <path d="M18,4 Q12,6 10,10 L18,12 Z" fill="#efe0c8" stroke="#7a5c45" stroke-width="0.6"/>
+        <!-- Oar bank (3 rows of oars) -->
+        <line x1="10" y1="17" x2="8" y2="21" stroke="#5a3e2b" stroke-width="0.5" opacity="0.7"/>
+        <line x1="14" y1="17" x2="12" y2="21" stroke="#5a3e2b" stroke-width="0.5" opacity="0.7"/>
+        <line x1="18" y1="17" x2="16" y2="21" stroke="#5a3e2b" stroke-width="0.5" opacity="0.7"/>
+        <line x1="22" y1="17" x2="20" y2="21" stroke="#5a3e2b" stroke-width="0.5" opacity="0.7"/>
+        <line x1="26" y1="17" x2="24" y2="21" stroke="#5a3e2b" stroke-width="0.5" opacity="0.7"/>
+        <!-- Stern ornament -->
+        <path d="M2,16 Q1,12 3,10" fill="none" stroke="#3d2b1f" stroke-width="0.8"/>
       </svg>
     </div>`,
-    iconSize: [20, 20],
-    iconAnchor: [10, 10],
+    iconSize: [36, 24],
+    iconAnchor: [18, 12],
   });
 }
 

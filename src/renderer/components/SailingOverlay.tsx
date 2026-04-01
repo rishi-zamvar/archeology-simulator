@@ -18,6 +18,8 @@ interface SailingOverlayProps {
   season: Season;
   monthName: string;
   lastEventMessage?: string;
+  stormWeight?: number;
+  durationMultiplier?: number;
 }
 
 const SEASON_COLORS: Record<Season, string> = {
@@ -36,9 +38,13 @@ export default function SailingOverlay({
   season,
   monthName,
   lastEventMessage,
+  stormWeight = 0,
+  durationMultiplier = 1,
 }: SailingOverlayProps): React.ReactElement {
   const progress = totalTurns > 0 ? (currentTurn / totalTurns) * 100 : 0;
   const seasonColor = SEASON_COLORS[season];
+  const isStormy = stormWeight > 25;
+  const isSlowed = durationMultiplier > 1;
 
   return (
     <div
@@ -155,11 +161,39 @@ export default function SailingOverlay({
           fontStyle: 'italic',
           color: '#7a5c45',
           textAlign: 'center',
-          marginBottom: lastEventMessage ? 4 : 0,
+          marginBottom: 4,
         }}
       >
         {weatherDescription}
       </div>
+
+      {/* Weather impact warning */}
+      {(isStormy || isSlowed) && (
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 6,
+            padding: '3px 8px',
+            borderRadius: 4,
+            backgroundColor: isStormy ? 'rgba(139, 46, 46, 0.12)' : 'rgba(100, 136, 180, 0.12)',
+            marginBottom: 4,
+          }}
+        >
+          <span style={{ fontSize: '0.7rem' }}>{isStormy ? '\u26C8' : '\u2744'}</span>
+          <span
+            style={{
+              fontFamily: "'Lora', Georgia, serif",
+              fontSize: '0.6rem',
+              fontWeight: 600,
+              color: isStormy ? '#8b2e2e' : '#4a6a8a',
+            }}
+          >
+            {isStormy ? 'Storm risk! Voyage slowed' : `Seasonal delay \u00d7${durationMultiplier.toFixed(1)}`}
+          </span>
+        </div>
+      )}
 
       {/* Event message */}
       {lastEventMessage && (

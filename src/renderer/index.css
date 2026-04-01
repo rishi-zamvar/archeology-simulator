@@ -54,6 +54,65 @@ h1, h2, h3, h4, h5, h6 {
   filter: sepia(60%) saturate(80%) brightness(105%);
 }
 
+/* ── Water wave animation (active during sailing) ──────────────────── */
+
+@keyframes water-wave {
+  0%   { transform: translate(0, 0); }
+  25%  { transform: translate(-2px, 1px); }
+  50%  { transform: translate(0, 2px); }
+  75%  { transform: translate(2px, 1px); }
+  100% { transform: translate(0, 0); }
+}
+
+/* Calm seas — gentle subtle sway */
+.sailing-active .leaflet-tile-pane {
+  animation: water-wave 4s ease-in-out infinite;
+}
+
+/* Rough seas (storm weather) — faster, more pronounced movement */
+.sailing-storm .leaflet-tile-pane {
+  animation: water-wave 1.5s ease-in-out infinite;
+}
+
+/* Storm overlay tint — darker, bluer water */
+.sailing-storm .leaflet-tile {
+  filter: sepia(30%) saturate(60%) brightness(85%) hue-rotate(10deg);
+  transition: filter 1s ease;
+}
+
+/* Winter overlay — cooler, greyer tones */
+.sailing-winter .leaflet-tile {
+  filter: sepia(40%) saturate(50%) brightness(95%) hue-rotate(15deg);
+  transition: filter 1s ease;
+}
+
+/* Spring/summer — warm, bright tones (default parchment) */
+.sailing-calm .leaflet-tile {
+  filter: sepia(60%) saturate(80%) brightness(108%);
+  transition: filter 1s ease;
+}
+
+/* Ship icon slight bob animation */
+.ship-icon {
+  animation: ship-bob 2s ease-in-out infinite;
+}
+
+@keyframes ship-bob {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-2px); }
+}
+
+/* Storm ship bob — more dramatic */
+.sailing-storm .ship-icon {
+  animation: ship-bob-storm 0.8s ease-in-out infinite;
+}
+
+@keyframes ship-bob-storm {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  25%      { transform: translateY(-3px) rotate(2deg); }
+  75%      { transform: translateY(2px) rotate(-2deg); }
+}
+
 /* Port marker icon */
 .port-icon {
   background: transparent !important;

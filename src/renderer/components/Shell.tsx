@@ -70,7 +70,7 @@ export default function Shell(): React.ReactElement {
 
   // Check for existing save on mount (lightweight IPC, no game state loading)
   useEffect(() => {
-    window.api.game.hasSave().then(res => {
+    window.api?.game?.hasSave?.().then(res => {
       if (res.success) setHasSave(res.data);
     }).catch(() => { /* non-fatal: defaults to false, hiding Continue */ });
   }, []);
@@ -80,7 +80,7 @@ export default function Shell(): React.ReactElement {
   }, []);
 
   const handleNewGame = useCallback(() => {
-    window.api.game.newGame().then(res => {
+    window.api?.game?.newGame?.().then(res => {
       if (res.success) setScreen('game');
     }).catch((err: unknown) => showError('Failed to start new game: ' + (err instanceof Error ? err.message : 'Unknown error')));
   }, [showError]);
@@ -253,6 +253,15 @@ export default function Shell(): React.ReactElement {
     if (!isSailing) setSailingOverlayData(null);
   }, [isSailing]);
   const sailingState = isSailing ? (gameState as SailingState) : null;
+
+  // Determine water animation class based on sailing + weather
+  const sailingWeatherClass = isSailing
+    ? weatherMods.stormWeight > 25
+      ? 'sailing-active sailing-storm'
+      : weatherMods.season === 'winter'
+        ? 'sailing-active sailing-winter'
+        : 'sailing-active sailing-calm'
+    : '';
   const isTrading = gameState?.type === 'trading';
 
   const portDisplayName = selectedPortId
@@ -266,6 +275,7 @@ export default function Shell(): React.ReactElement {
 
   return (
     <div
+      className={sailingWeatherClass}
       onClick={handleFirstInteraction}
       style={{
         width: '100vw',
@@ -305,6 +315,8 @@ export default function Shell(): React.ReactElement {
           season={sailingOverlayData.season}
           monthName={sailingOverlayData.monthName}
           lastEventMessage={sailingOverlayData.lastEventMessage}
+          stormWeight={weatherMods.stormWeight}
+          durationMultiplier={weatherMods.durationMultiplier}
         />
       )}
 

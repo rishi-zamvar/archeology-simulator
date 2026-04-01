@@ -29,6 +29,7 @@ export function useGameState(): UseGameStateReturn {
   useEffect(() => {
     let cancelled = false;
 
+    if (!window.api?.game?.load) { setIsLoading(false); return; }
     window.api.game.load()
       .then((response) => {
         if (!cancelled) {
@@ -53,6 +54,7 @@ export function useGameState(): UseGameStateReturn {
   // CRITICAL: returning the cleanup function unsubscribes the listener on unmount.
   // Without this return, every remount registers an additional listener — a memory leak.
   useEffect(() => {
+    if (!window.api?.subscribe) return;
     const cleanup = window.api.subscribe('game:updated', (data: unknown) => {
       setState(data as GameState);
     });
