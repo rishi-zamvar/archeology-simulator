@@ -50,54 +50,55 @@ export default function SailingOverlay({
     <div
       style={{
         position: 'absolute',
-        top: 16,
+        top: 48,
         left: '50%',
         transform: 'translateX(-50%)',
         zIndex: 1100,
         pointerEvents: 'none',
-        backgroundColor: 'rgba(253, 248, 240, 0.92)',
+        backgroundColor: 'rgba(253, 248, 240, 0.94)',
         border: '1px solid #c4956a',
-        borderRadius: 8,
-        boxShadow: '0 4px 20px rgba(61, 43, 31, 0.18)',
-        padding: '0.75rem 1.5rem',
-        minWidth: 260,
-        maxWidth: 400,
+        borderRadius: 10,
+        boxShadow: '0 6px 24px rgba(61, 43, 31, 0.22)',
+        padding: '0.85rem 1.75rem',
+        minWidth: 280,
+        maxWidth: 420,
+        backdropFilter: 'blur(4px)',
       }}
     >
       {/* Route line */}
       <div
         style={{
           fontFamily: "'Cinzel', serif",
-          fontSize: '0.75rem',
+          fontSize: '0.78rem',
           fontWeight: 700,
           color: '#5a3e2b',
           textTransform: 'uppercase',
           letterSpacing: '0.06em',
           textAlign: 'center',
-          marginBottom: 6,
+          marginBottom: 8,
         }}
       >
-        Departing {departurePort} &rarr; {destinationPort}
+        {departurePort} <span style={{ color: '#c4956a', margin: '0 4px' }}>&rarr;</span> {destinationPort}
       </div>
 
       {/* Progress bar */}
       <div
         style={{
           width: '100%',
-          height: 6,
+          height: 8,
           backgroundColor: '#e8d5b8',
-          borderRadius: 3,
+          borderRadius: 4,
           overflow: 'hidden',
-          marginBottom: 4,
+          marginBottom: 6,
         }}
       >
         <div
           style={{
             width: `${Math.min(progress, 100)}%`,
             height: '100%',
-            backgroundColor: '#c4956a',
-            borderRadius: 3,
-            transition: 'width 0.3s ease',
+            background: 'linear-gradient(90deg, #c4956a, #d4a87a)',
+            borderRadius: 4,
+            transition: 'width 0.5s ease',
           }}
         />
       </div>
@@ -128,15 +129,16 @@ export default function SailingOverlay({
         <span
           style={{
             display: 'inline-block',
-            padding: '1px 8px',
-            borderRadius: 4,
+            padding: '2px 10px',
+            borderRadius: 10,
             backgroundColor: seasonColor + '26', // ~15% opacity via hex alpha
             color: seasonColor,
             fontFamily: "'Cinzel', serif",
             fontSize: '0.6rem',
             fontWeight: 700,
             textTransform: 'uppercase',
-            letterSpacing: '0.08em',
+            letterSpacing: '0.1em',
+            border: `1px solid ${seasonColor}33`,
           }}
         >
           {season}
