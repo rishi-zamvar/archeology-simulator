@@ -25,7 +25,7 @@
 
 - [x] **UNLOCK-01**: Player starts with Athens + 2 nearby ports, more unlock through trade and NPC introductions
 - [x] **UNLOCK-02**: Port unlocking feels earned — tied to reputation, quest progress, or NPC referrals
-- [ ] **UNLOCK-03**: Locked ports visible on map but marked as unknown/unexplored
+- [x] **UNLOCK-03**: Locked ports visible on map but marked as unknown/unexplored
 
 ## Reputation & Standing
 

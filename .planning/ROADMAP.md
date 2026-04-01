@@ -40,7 +40,7 @@ Seasonal weather with Athenian calendar, captain's journal with auto-logging, an
 - [x] **Phase 16: Port Content & World Building** - Historically researched lore, trade specializations, and ambient descriptions for 25 ports (completed 2026-04-01)
 - [x] **Phase 17: NPC Characters & Dialogue Content** - 5 key NPCs with portraits, historically grounded dialogue trees, and quest hooks at ports (completed 2026-04-01)
 - [x] **Phase 18: Reputation & Trade Integration** - Reputation tracking with qualitative descriptors, price modifiers, and recovery paths (completed 2026-04-01)
-- [ ] **Phase 19: Progressive Port Unlocking** - Fog-of-knowledge discovery model with tiered port status and NPC-driven reveals
+- [x] **Phase 19: Progressive Port Unlocking** - Fog-of-knowledge discovery model with tiered port status and NPC-driven reveals (completed 2026-04-01)
 - [ ] **Phase 20: Journal Integration & Game Polish** - Quest/NPC journal entries with priority taxonomy, intro sequence, expanded events, and win condition
 
 ## Phase Details
@@ -150,7 +150,7 @@ Plans:
 
 Plans:
 - [x] 19-01-PLAN.md -- Migration v9 (status column), port access queries, IPC handlers, preload bridge, new-game seeding, tests
-- [ ] 19-02-PLAN.md -- Tiered map markers (grey/normal/gold), PortInfoPanel content gating, auto-discover on arrival, human verification
+- [x] 19-02-PLAN.md -- Tiered map markers (grey/normal/gold), PortInfoPanel content gating, auto-discover on arrival, human verification
 
 ### Phase 20: Journal Integration & Game Polish
 **Goal**: The game feels complete -- journal captures the narrative journey, intro sets the scene, events are richer, and the odyssey has a satisfying conclusion
@@ -180,5 +180,5 @@ Note: Phase 15 and Phase 16 can proceed in parallel after Phase 14 completes. Ph
 | 16. Port Content & World Building | v2.0 | 3/3 | Complete    | 2026-04-01 |
 | 17. NPC Characters & Dialogue Content | v2.0 | 2/2 | Complete    | 2026-04-01 |
 | 18. Reputation & Trade Integration | v2.0 | 2/2 | Complete    | 2026-04-01 |
-| 19. Progressive Port Unlocking | v2.0 | 1/2 | In Progress|  |
+| 19. Progressive Port Unlocking | v2.0 | 2/2 | Complete   | 2026-04-01 |
 | 20. Journal Integration & Game Polish | v2.0 | 0/TBD | Not started | - |

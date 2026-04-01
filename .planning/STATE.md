@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: The Merchant's Odyssey
-status: executing
-stopped_at: Completed 19-01-PLAN.md
-last_updated: "2026-04-01T19:04:34.032Z"
+status: verifying
+stopped_at: Completed 19-02-PLAN.md
+last_updated: "2026-04-01T19:10:29.190Z"
 last_activity: 2026-04-01
 progress:
   total_phases: 8
-  completed_phases: 6
+  completed_phases: 7
   total_plans: 16
-  completed_plans: 15
+  completed_plans: 16
   percent: 93
 ---
 
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-04-01)
 
 Phase: 19 (progressive-port-unlocking) — EXECUTING
 Plan: 2 of 2
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-04-01
 
 Progress: [▓▓▓▓▓▓▓▓▓░] 93% (v2.0 milestone)
@@ -75,6 +75,8 @@ Progress: [▓▓▓▓▓▓▓▓▓░] 93% (v2.0 milestone)
 - [Phase 19]: Port access uses no-downgrade semantics: status can only upgrade (unknown->discovered->unlocked)
 - [Phase 19]: Legacy v1.3 saves get all 25 ports set to unlocked on first load
 - [Phase 19]: Starting ports: athens (unlocked), corinth (unlocked), miletos (discovered)
+- [Phase 19]: refreshAccess callback passed from MapArea to Shell via onRefreshAccessReady prop pattern
+- [Phase 19]: Auto-discover fires on trading state transition, not explicit sail action
 
 ### Blockers/Concerns
 
@@ -83,6 +85,6 @@ Progress: [▓▓▓▓▓▓▓▓▓░] 93% (v2.0 milestone)
 
 ## Session Continuity
 
-Last session: 2026-04-01T19:04:34.028Z
-Stopped at: Completed 19-01-PLAN.md
+Last session: 2026-04-01T19:10:29.187Z
+Stopped at: Completed 19-02-PLAN.md
 Resume file: None
