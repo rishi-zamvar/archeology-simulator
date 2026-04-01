@@ -989,48 +989,99 @@ export default function Shell(): React.ReactElement {
         </div>
       </div>
 
-      {/* ── Quest completion toast ──────────────────────────────── */}
+      {/* ── Quest completion wax seal (FX-02) ──────────────────── */}
       {questToast && (
         <div
           role="status"
           style={{
             position: 'fixed',
-            bottom: 80,
-            left: '50%',
-            transform: 'translateX(-50%)',
+            inset: 0,
             zIndex: 11000,
-            background: 'linear-gradient(135deg, rgba(196, 165, 106, 0.95), rgba(180, 150, 90, 0.95))',
-            color: '#3d2b1f',
-            padding: '0.8rem 1.5rem',
-            borderRadius: 6,
-            border: '1px solid #c4956a',
-            maxWidth: 420,
-            textAlign: 'center',
-            boxShadow: '0 4px 20px rgba(61, 43, 31, 0.35)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
             pointerEvents: 'none',
           }}
         >
-          <div style={{
-            fontFamily: "'Cinzel', Georgia, serif",
-            fontSize: '0.7rem',
-            fontWeight: 700,
-            letterSpacing: '0.1em',
-            textTransform: 'uppercase',
-            marginBottom: '0.3rem',
-          }}>
-            Quest Complete: {questToast.name}
+          <div
+            className="wax-seal-stamp"
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '1rem',
+            }}
+          >
+            {/* Wax seal SVG */}
+            <svg
+              width="120"
+              height="120"
+              viewBox="0 0 120 120"
+              style={{ filter: 'drop-shadow(0 6px 20px rgba(139, 30, 30, 0.5))' }}
+            >
+              {/* Irregular seal edge */}
+              <path
+                d="M60 5 L68 18 L82 8 L80 24 L96 20 L88 35 L104 38 L93 48 L108 58 L93 62 L104 75 L88 72 L96 88 L80 80 L82 96 L68 88 L60 104 L52 88 L38 96 L40 80 L24 88 L32 72 L16 75 L27 62 L12 58 L27 48 L16 38 L32 35 L24 20 L40 24 L38 8 L52 18 Z"
+                fill="#8b1a1a"
+                stroke="#6b1010"
+                strokeWidth="1"
+              />
+              {/* Inner circle */}
+              <circle cx="60" cy="55" r="32" fill="none" stroke="#a02020" strokeWidth="1.5" opacity="0.6" />
+              {/* Quest name text */}
+              <text
+                x="60"
+                y="52"
+                textAnchor="middle"
+                dominantBaseline="middle"
+                fontFamily="'Cinzel', Georgia, serif"
+                fontSize="8"
+                fontWeight="700"
+                fill="#e8c0a0"
+                letterSpacing="0.05em"
+              >
+                {questToast.name.length > 20
+                  ? questToast.name.slice(0, 18) + '...'
+                  : questToast.name}
+              </text>
+              <text
+                x="60"
+                y="65"
+                textAnchor="middle"
+                fontFamily="'Cinzel', Georgia, serif"
+                fontSize="6"
+                fill="#d4a080"
+                letterSpacing="0.08em"
+                textDecoration="none"
+              >
+                COMPLETE
+              </text>
+            </svg>
+
+            {/* Historical note below seal */}
+            {questToast.historicalNote && (
+              <div
+                className="animate-fade-in"
+                style={{
+                  fontFamily: "'Lora', Georgia, serif",
+                  fontSize: '0.7rem',
+                  fontStyle: 'italic',
+                  lineHeight: 1.6,
+                  color: '#5a3e2b',
+                  textAlign: 'center',
+                  maxWidth: 320,
+                  backgroundColor: 'rgba(253, 248, 240, 0.92)',
+                  padding: '0.6rem 1.2rem',
+                  borderRadius: 6,
+                  border: '1px solid #c4956a',
+                  boxShadow: '0 4px 16px rgba(61, 43, 31, 0.2)',
+                  animationDelay: '0.5s',
+                }}
+              >
+                {questToast.historicalNote}
+              </div>
+            )}
           </div>
-          {questToast.historicalNote && (
-            <div style={{
-              fontFamily: "'Lora', Georgia, serif",
-              fontSize: '0.6rem',
-              fontStyle: 'italic',
-              lineHeight: 1.5,
-              color: '#5a3e2b',
-            }}>
-              {questToast.historicalNote}
-            </div>
-          )}
         </div>
       )}
 

@@ -71,6 +71,20 @@
 .animate-stagger > *:nth-child(5) { animation-delay: 0.5s; }
 .animate-stagger > *:nth-child(6) { animation-delay: 0.6s; }
 
+/* ── Wax seal stamp animation (FX-02) ───────────────────────────────── */
+
+@keyframes waxSealStamp {
+  0%   { transform: scale(3) rotate(-30deg); opacity: 0; }
+  40%  { transform: scale(0.9) rotate(5deg); opacity: 1; }
+  55%  { transform: scale(1.05) rotate(-2deg); }
+  70%  { transform: scale(0.98) rotate(1deg); }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+.wax-seal-stamp {
+  animation: waxSealStamp 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
 /* ── Typewriter cursor blink (FX-01) ────────────────────────────────── */
 
 @keyframes typewriterBlink {
