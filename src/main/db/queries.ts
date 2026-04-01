@@ -14,6 +14,7 @@
 import type Database from 'better-sqlite3';
 import type { GameState } from '../../game/types';
 import type { Port, Good, MarketGood, PlayerInventory, CargoItem, JournalEntry, JournalEntryType, PortLore } from '../../shared/game-types';
+import { getReputationTier, getReputationPriceModifier, getTradeReputationGain, applyReputationToPrice } from '../../game/reputation';
 
 // ─── Game State ──────────────────────────────────────────────────────────────
 
@@ -393,8 +394,24 @@ export function seedPortInventory(db: Database.Database): void {
   seedAll();
 }
 
+// ─── Reputation Queries ─────────────────────────────────────────────────────
+
+/**
+ * Get the player's reputation at a port (looked up by the port's region).
+ * Returns tier info for UI display and price modifier calculation.
+ */
+export function getPortReputation(db: Database.Database, portId: string): { region: string; score: number; tierName: string; tierLevel: number } {
+  const portRow = db.prepare('SELECT region FROM ports WHERE id = ?').get(portId) as { region: string } | undefined;
+  if (!portRow) return { region: 'unknown', score: 0, tierName: 'Stranger', tierLevel: 0 };
+  const repRow = db.prepare('SELECT score FROM reputation WHERE region = ?').get(portRow.region) as { score: number } | undefined;
+  const score = repRow?.score ?? 0;
+  const tier = getReputationTier(score);
+  return { region: portRow.region, score, tierName: tier.name, tierLevel: tier.level };
+}
+
 /**
  * Get market prices for a port — joins port_inventory with goods and calculates price.
+ * Applies reputation-based price modifier for the port's region.
  */
 export function getMarketPrices(db: Database.Database, portId: string): MarketGood[] {
   const rows = db.prepare(`
@@ -415,13 +432,21 @@ export function getMarketPrices(db: Database.Database, portId: string): MarketGo
     demand: number;
   }>;
 
+  // Look up reputation modifier for this port's region
+  const rep = getPortReputation(db, portId);
+  const repMod = getReputationPriceModifier(rep.tierLevel);
+
   return rows.map(r => {
-    // Price formula: base × (1 + (demand - supply) × 0.02), capped ±50%
+    // Price formula: base * (1 + (demand - supply) * 0.02), capped +/-50%
     const delta = r.demand - r.supply;
     const multiplier = 1 + delta * 0.02;
-    const currentPrice = Math.round(
+    let currentPrice = Math.round(
       Math.max(r.base_price * 0.5, Math.min(r.base_price * 1.5, r.base_price * multiplier))
     );
+    // Apply reputation discount for buy prices shown in market
+    if (repMod > 0) {
+      currentPrice = applyReputationToPrice(currentPrice, repMod, 'buy');
+    }
     return {
       id: r.id,
       name: r.name,
@@ -485,12 +510,16 @@ export function updatePlayerInventory(db: Database.Database, inventory: PlayerIn
  * Calculate current price at a port for a given good using supply/demand formula.
  * delta = demand - supply; multiplier = 1 + delta * 0.02, capped ±50% of basePrice.
  */
-function calcCurrentPrice(basePrice: number, supply: number, demand: number): number {
+function calcCurrentPrice(basePrice: number, supply: number, demand: number, reputationModifier?: number, action?: 'buy' | 'sell'): number {
   const delta = demand - supply;
   const multiplier = 1 + delta * 0.02;
-  return Math.round(
+  let price = Math.round(
     Math.max(basePrice * 0.5, Math.min(basePrice * 1.5, basePrice * multiplier))
   );
+  if (reputationModifier) {
+    price = applyReputationToPrice(price, reputationModifier, action);
+  }
+  return price;
 }
 
 /**
@@ -528,7 +557,13 @@ export function buyGood(
       | undefined;
     if (!goodRow) throw new Error(`Unknown good: ${goodId}`);
 
-    const pricePerUnit = calcCurrentPrice(goodRow.base_price, piRow.supply, piRow.demand);
+    // Look up reputation for price modifier
+    const portRegionRow = db.prepare('SELECT region FROM ports WHERE id = ?').get(portId) as { region: string } | undefined;
+    const repRow = db.prepare('SELECT score FROM reputation WHERE region = ?').get(portRegionRow?.region ?? '') as { score: number } | undefined;
+    const tier = getReputationTier(repRow?.score ?? 0);
+    const repMod = getReputationPriceModifier(tier.level);
+
+    const pricePerUnit = calcCurrentPrice(goodRow.base_price, piRow.supply, piRow.demand, repMod, 'buy');
     const totalCost = pricePerUnit * qty;
 
     // Load player inventory
@@ -603,6 +638,10 @@ export function buyGood(
       WHERE port_id = ? AND good_id = ?
     `).run(portId, goodId);
 
+    // Award reputation for trade (REP-01: reputation from trades)
+    const repGain = getTradeReputationGain(totalCost);
+    db.prepare('INSERT INTO reputation (region, score) VALUES (?, ?) ON CONFLICT(region) DO UPDATE SET score = score + excluded.score').run(portRegionRow?.region ?? '', repGain);
+
     const newCurrentCargo = cargoItems.reduce((s, i) => s + i.quantity, 0);
     result = { gold: newGold, cargoItems, cargoCapacity, currentCargo: newCurrentCargo };
   });
@@ -646,7 +685,13 @@ export function sellGood(
       | undefined;
     if (!goodRow) throw new Error(`Unknown good: ${goodId}`);
 
-    const pricePerUnit = calcCurrentPrice(goodRow.base_price, piRow.supply, piRow.demand);
+    // Look up reputation for price modifier
+    const portRegionRow = db.prepare('SELECT region FROM ports WHERE id = ?').get(portId) as { region: string } | undefined;
+    const repRow = db.prepare('SELECT score FROM reputation WHERE region = ?').get(portRegionRow?.region ?? '') as { score: number } | undefined;
+    const tier = getReputationTier(repRow?.score ?? 0);
+    const repMod = getReputationPriceModifier(tier.level);
+
+    const pricePerUnit = calcCurrentPrice(goodRow.base_price, piRow.supply, piRow.demand, repMod, 'sell');
     const totalRevenue = pricePerUnit * qty;
 
     // Load player inventory
@@ -670,7 +715,7 @@ export function sellGood(
       throw new Error(`Not enough ${goodId} to sell. Have ${totalOwned}, trying to sell ${qty}.`);
     }
 
-    // Remove from cargo — FIFO across stacks
+    // Remove from cargo -- FIFO across stacks
     let remaining = qty;
     const newCargoItems: CargoItem[] = [];
     for (const item of cargoItems) {
@@ -721,6 +766,10 @@ export function sellGood(
       SET demand = MAX(1, demand - 1)
       WHERE port_id = ? AND good_id = ?
     `).run(portId, goodId);
+
+    // Award reputation for trade (REP-01: reputation from trades)
+    const repGain = getTradeReputationGain(totalRevenue);
+    db.prepare('INSERT INTO reputation (region, score) VALUES (?, ?) ON CONFLICT(region) DO UPDATE SET score = score + excluded.score').run(portRegionRow?.region ?? '', repGain);
 
     const newCurrentCargo = newCargoItems.reduce((s, i) => s + i.quantity, 0);
     result = { gold: newGold, cargoItems: newCargoItems, cargoCapacity, currentCargo: newCurrentCargo };
