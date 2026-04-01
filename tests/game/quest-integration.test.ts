@@ -42,8 +42,9 @@ function setCurrentPort(database: Database, portId: string): void {
 
 function addCargo(database: Database, goodId: string, qty: number): void {
   const invRow = database.prepare('SELECT cargo_json FROM player_inventory WHERE id = 1').get() as { cargo_json: string } | undefined;
-  const cargo = invRow ? JSON.parse(invRow.cargo_json) as Array<{ goodId: string; quantity: number }> : [];
-  const existing = cargo.find((c: { goodId: string }) => c.goodId === goodId);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- test helper, not production code
+  const cargo: any[] = invRow ? JSON.parse(invRow.cargo_json) : [];
+  const existing = cargo.find((c: any) => c.goodId === goodId);
   if (existing) {
     existing.quantity += qty;
   } else {
