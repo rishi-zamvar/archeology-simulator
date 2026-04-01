@@ -119,21 +119,16 @@
 .top-panel-content {
   transform: translateY(-100%);
   opacity: 0;
-  transition: transform 0.35s ease, opacity 0.25s ease;
+  transition: transform 0.35s ease 0.6s, opacity 0.25s ease 0.6s;
   pointer-events: none;
 }
 
-.top-panel-trigger:hover .top-panel-content {
-  transform: translateY(0);
-  opacity: 1;
-  pointer-events: auto;
-}
-
-/* Keep panel open while mouse is inside it */
+.top-panel-trigger:hover .top-panel-content,
 .top-panel-content:hover {
   transform: translateY(0);
   opacity: 1;
   pointer-events: auto;
+  transition: transform 0.35s ease 0s, opacity 0.25s ease 0s;
 }
 
 /* Base body styles */
