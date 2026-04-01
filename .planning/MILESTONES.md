@@ -1,5 +1,32 @@
 # Project Milestones: Archeology Simulator
 
+## v2.0 The Merchant's Odyssey (Shipped: 2026-04-01)
+
+**Phases completed:** 8 phases, 19 plans, 41 tasks
+
+**Key accomplishments:**
+
+- Version-tracked migration system replacing ad-hoc CREATE TABLE pattern with 7 ordered migrations, 5 new v2.0 tables, and 6 exported type definitions
+- Consolidated new-game reset to iterate PLAYER_DATA_TABLES (9 tables) and added db:schemaVersion IPC handler
+- Pure dialogue engine with 6 condition types, AND/OR/NOT composition, build-time JSON validation, and sample Tyrian purple trade dialogue
+- Dialogue system wired end-to-end: IPC handlers serve NPC dialogue from JSON files, DialogueModal renders conversations with parchment styling and branching choices, Shell shows "Speak with NPC" at ports
+- Pure quest engine with visit_port/deliver_cargo/complete_trade evaluation, sequential objective advancement, and full Tyrian Commission quest data with Tyre port and 2 new trade goods
+- Quest engine wired to game loop via IPC handlers with automatic evaluation after trades and port arrivals, plus full lifecycle integration tests
+- Quests tab in Logbook with objective progress tracking, active quest indicator in Shell, and gold-tinted completion toast with historical notes
+- Historically cited port lore for all 25 ports with sensory ambient descriptions and updated ports.json reference
+- 5 historically accurate trade goods (papyrus, silver, glass, garum, silphium) with regional supply/demand matrices for all 25 ports
+- 4 historically grounded NPCs at Memphis, Carthage, Ostia, and Tyre with branching dialogue trees, NPC-initiated quests, port_unlock effects revealing 6 ports, and talk_to_npc objective wired to npc_dialogue_state
+- NPC portraits displayed in DialogueModal with 64x64 SVG images, port_unlock effect writes to port_access table for map port revealing
+- Pure reputation module with 4-tier system (Stranger to Proxenos) and reputation-aware pricing integrated into all trade functions
+- IPC bridge for reputation data with tier display in PortInfoPanel and discount indicator in TradePanel
+- Migration v9 with three-tier port access model (unknown/discovered/unlocked), no-downgrade query functions, IPC handlers, new-game seeding, and legacy save backward compatibility
+- Three-tier port marker display (grey/normal/gold), PortInfoPanel content gating by access level, auto-discover on arrival, NPC buttons gated to unlocked ports
+- Quest/dialogue/discovery journal entry types with priority taxonomy, discovery tracking, 3-per-turn cap, and gold-styled discovery UI in Logbook
+- 13 new historically accurate voyage events covering sirocco winds, Cilician ambushes, Phoenician navigation, and ancient shipwreck salvage -- expanding the event pool from 24 to 37
+- 4-slide Piraeus intro narrative, merchants_odyssey meta-quest win condition, and conclusion screen with journey stats
+
+---
+
 ## v1.3 Gameplay Depth & Polish (Shipped: 2026-04-01)
 
 **Phases completed:** 4 phases, 10 plans, 21 tasks
