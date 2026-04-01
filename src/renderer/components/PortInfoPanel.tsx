@@ -118,8 +118,9 @@ export default function PortInfoPanel({
         display: 'flex',
         flexDirection: 'column',
         height: '100%',
-        padding: '1rem',
+        padding: '1.25rem',
         overflowY: 'auto',
+        scrollBehavior: 'smooth',
       }}
     >
       {/* Header row: port name + close button */}
@@ -137,7 +138,7 @@ export default function PortInfoPanel({
               <h2
                 style={{
                   fontFamily: "'Cinzel', 'Palatino Linotype', Georgia, serif",
-                  fontSize: '1rem',
+                  fontSize: '1.05rem',
                   fontWeight: 700,
                   color: '#3d2b1f',
                   letterSpacing: '0.08em',
@@ -153,9 +154,9 @@ export default function PortInfoPanel({
                 <p
                   style={{
                     fontFamily: "'Lora', Georgia, serif",
-                    fontSize: '0.75rem',
-                    color: '#7a5c45',
-                    margin: '2px 0 0',
+                    fontSize: '0.78rem',
+                    color: '#9a8570',
+                    margin: '4px 0 0',
                     fontStyle: 'italic',
                   }}
                 >
@@ -239,9 +240,9 @@ export default function PortInfoPanel({
         <p
           style={{
             fontFamily: "'Lora', Georgia, serif",
-            fontSize: '0.8rem',
+            fontSize: '0.85rem',
             color: '#3d2b1f',
-            lineHeight: 1.6,
+            lineHeight: 1.7,
             margin: '0 0 1rem',
             fontStyle: accessLevel === 'unknown' ? 'italic' : undefined,
           }}
@@ -253,7 +254,7 @@ export default function PortInfoPanel({
       {/* Your Standing — reputation tier (hidden for unknown ports) */}
       {port && !isLoading && showReputation && reputation && (
         <div style={{ marginTop: '0.5rem', marginBottom: '0.75rem', padding: '0.5rem', backgroundColor: 'rgba(196, 149, 106, 0.08)', border: '1px solid rgba(196, 149, 106, 0.3)', borderRadius: 2 }}>
-          <h4 style={{ fontFamily: "'Cinzel', serif", fontSize: '0.65rem', color: '#7a5c45', marginBottom: '0.3rem', marginTop: 0, textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 700 }}>
+          <h4 style={{ fontFamily: "'Cinzel', serif", fontSize: '0.7rem', color: '#7a5c45', marginBottom: '0.35rem', marginTop: 0, textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 700 }}>
             Your Standing
           </h4>
           <p style={{ fontFamily: "'Lora', Georgia, serif", fontSize: '0.8rem', color: '#3d2b1f', margin: 0, lineHeight: 1.6 }}>
@@ -482,7 +483,7 @@ export default function PortInfoPanel({
             Destinations
           </h3>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
             {knownDestinations.map(({ port: dest, route }) => {
               const destAccess = destAccessMap.get(dest.id);
               const isNew = destAccess === 'discovered';
@@ -494,10 +495,11 @@ export default function PortInfoPanel({
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
-                  padding: '0.4rem 0.5rem',
-                  backgroundColor: isNew ? 'rgba(212, 160, 23, 0.08)' : 'rgba(196, 149, 106, 0.08)',
-                  border: isNew ? '1px solid rgba(212, 160, 23, 0.4)' : '1px solid rgba(196, 149, 106, 0.3)',
-                  borderRadius: 2,
+                  padding: '0.5rem 0.6rem',
+                  backgroundColor: isNew ? 'rgba(212, 160, 23, 0.08)' : 'rgba(196, 149, 106, 0.06)',
+                  border: isNew ? '1px solid rgba(212, 160, 23, 0.4)' : '1px solid rgba(196, 149, 106, 0.25)',
+                  borderRadius: 6,
+                  transition: 'background-color 0.2s ease',
                 }}
               >
                 {/* Destination name and stats */}
@@ -552,10 +554,10 @@ export default function PortInfoPanel({
                   aria-label={`Sail to ${dest.ancientName}`}
                   style={{
                     marginLeft: '0.5rem',
-                    padding: '3px 8px',
+                    padding: '4px 10px',
                     backgroundColor: '#c4956a',
                     border: '1px solid #7a5c45',
-                    borderRadius: 2,
+                    borderRadius: 4,
                     color: '#fdf8f0',
                     fontFamily: "'Cinzel', Georgia, serif",
                     fontSize: '0.6rem',
@@ -564,7 +566,7 @@ export default function PortInfoPanel({
                     textTransform: 'uppercase',
                     cursor: 'pointer',
                     flexShrink: 0,
-                    transition: 'background-color 0.15s',
+                    transition: 'background-color 0.2s ease, transform 0.15s ease',
                   }}
                   onMouseEnter={(e) => {
                     (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#b8894a';
