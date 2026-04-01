@@ -1,15 +1,16 @@
 ---
 gsd_state_version: 1.0
-milestone: v2.0.1
-milestone_name: milestone
-status: executing
-last_updated: "2026-04-01T22:19:09.235Z"
-last_activity: 2026-04-01
+milestone: v2.1
+milestone_name: "Immersion & Polish"
+status: defining_requirements
+last_updated: "2026-04-02"
+last_activity: 2026-04-02
 progress:
-  total_phases: 3
+  total_phases: 0
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
+  percent: 0
 ---
 
 # Project State
@@ -19,24 +20,21 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-02)
 
 **Core value:** Students learn ancient Mediterranean history by making decisions as a merchant captain, not by reading about them.
-**Current focus:** Phase 23 — ui-polish-immersion
+**Current focus:** Defining requirements for v2.1 Immersion & Polish
 
 ## Current Position
 
-Phase: 23
-Plan: Not started
-Status: Executing Phase 23
-Last activity: 2026-04-01
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-04-02 — Milestone v2.1 started
 
 ## Accumulated Context
 
 ### Decisions
-
-- v2.0 shipped with 54 broken tests from rapid FSM/schema changes
-- SET_SAIL now carries departurePortId and voyageTurnsTotal
-- Sea routes use BFS graph pathfinding through 24 waypoints
+- v2.0.1 stabilized all 202 tests, polished UI
+- Hover-to-reveal top HUD, click-to-open port popup
+- BFS graph sea routing with 24 waypoints
 
 ### Blockers/Concerns
-
-- 8 test files failing (54 tests)
-- Sailing animation edge cases
+None

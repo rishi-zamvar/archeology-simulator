@@ -53,21 +53,21 @@ Students learn ancient Mediterranean history — trade networks, cultures, geogr
 - Mobile/tablet versions — desktop Electron only
 - Real-time gameplay — strictly turn-based
 
-## Current Milestone: v2.0.1 Polish & Stabilization
+## Current Milestone: v2.1 Immersion & Polish
 
-**Goal:** Fix all broken tests, stabilize the game loop end-to-end, improve UI transitions and layout, and make the experience immersive and polished.
+**Goal:** Make the game feel alive — every port has its own atmosphere, every action has satisfying feedback, and the world responds to the player's journey.
 
 **Target features:**
-- All test suites passing (fix 54 broken tests from v2.0 changes)
-- End-to-end game flow validation (new game → intro → trade → sail → arrive → quest progress)
-- Smoother transitions, better framing of images, improved layout
-- UI polish: better port scenes, trade panel, dialogue modal, sailing overlay
-- Remove dead code and clean up convoluted logic
+- Parallax port scenes, ambient particles, day/night tinting
+- Port-specific audio, sailing sounds, UI sound effects
+- Typewriter dialogue, wax seal quest completion, parchment animations
+- Gold coin trading effects, map fog discovery animation
+- NPC rumors/memory, seasonal festivals, ship wear, crew morale
+- Historical postcards collectibles, ending epilogue narrative
 
 **Previously shipped:**
-- v2.0 The Merchant's Odyssey — quest system, NPCs, 25 ports with lore, reputation, port unlocking
-- Captain's journal as narrative device recording discoveries and quest progress
-- Reputation/standing system affecting trade prices and NPC access
+- v2.0 The Merchant's Odyssey — quest system, 5 NPCs, 25 ports with lore, reputation, port unlocking
+- v2.0.1 Polish & Stabilization — 202 tests passing, UI polish, game flow validated
 - Expanded historically accurate voyage events
 - Polished game flow: title → intro → tutorial at Piraeus → open world → odyssey complete
 
