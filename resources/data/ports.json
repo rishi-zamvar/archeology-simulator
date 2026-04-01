@@ -1,62 +1,227 @@
 [
   {
-    "id": "alexandria",
-    "name": "Alexandria",
-    "ancientName": "Alexandria",
-    "lat": 31.2,
-    "lng": 29.92,
-    "description": "The great port city of Egypt, renowned for its lighthouse and library.",
-    "region": "Egypt",
-    "culturalDescription": "Alexandria was founded by Alexander the Great in 331 BCE and swiftly grew to become the greatest city of the Hellenistic world. Its famous Pharos Lighthouse — one of the Seven Wonders — stood over 100 meters tall and guided sailors to Egypt's grain-rich harbors. The Library of Alexandria held scrolls from every corner of the known world. Egyptian grain, papyrus, linen, and luxury goods flowed outward while the city absorbed merchants and scholars from Greece, Persia, and beyond."
+    "id": "athens",
+    "ancientName": "Athenai",
+    "modernName": "Athens",
+    "lat": 37.97,
+    "lng": 23.73,
+    "region": "greece",
+    "pleiadesId": "579885"
+  },
+  {
+    "id": "corinth",
+    "ancientName": "Korinthos",
+    "modernName": "Corinth",
+    "lat": 37.94,
+    "lng": 22.93,
+    "region": "greece",
+    "pleiadesId": "570182"
+  },
+  {
+    "id": "sparta",
+    "ancientName": "Sparte",
+    "modernName": "Sparta",
+    "lat": 37.08,
+    "lng": 22.43,
+    "region": "greece",
+    "pleiadesId": "570685"
+  },
+  {
+    "id": "miletos",
+    "ancientName": "Miletos",
+    "modernName": "Miletus",
+    "lat": 37.53,
+    "lng": 27.28,
+    "region": "greece",
+    "pleiadesId": "599799"
+  },
+  {
+    "id": "ephesos",
+    "ancientName": "Ephesos",
+    "modernName": "Ephesus",
+    "lat": 37.94,
+    "lng": 27.34,
+    "region": "greece",
+    "pleiadesId": "599612"
+  },
+  {
+    "id": "byzantion",
+    "ancientName": "Byzantion",
+    "modernName": "Istanbul",
+    "lat": 41.02,
+    "lng": 28.97,
+    "region": "greece",
+    "pleiadesId": "520985"
+  },
+  {
+    "id": "rhodes",
+    "ancientName": "Rhodos",
+    "modernName": "Rhodes",
+    "lat": 36.44,
+    "lng": 28.22,
+    "region": "greece",
+    "pleiadesId": "590031"
+  },
+  {
+    "id": "knossos",
+    "ancientName": "Knossos",
+    "modernName": "Heraklion",
+    "lat": 35.30,
+    "lng": 25.16,
+    "region": "greece",
+    "pleiadesId": "589872"
+  },
+  {
+    "id": "syracuse",
+    "ancientName": "Syrakousai",
+    "modernName": "Syracuse",
+    "lat": 37.07,
+    "lng": 15.29,
+    "region": "italy",
+    "pleiadesId": "462503"
+  },
+  {
+    "id": "massalia",
+    "ancientName": "Massalia",
+    "modernName": "Marseille",
+    "lat": 43.30,
+    "lng": 5.37,
+    "region": "italy",
+    "pleiadesId": "148107"
+  },
+  {
+    "id": "taras",
+    "ancientName": "Taras",
+    "modernName": "Taranto",
+    "lat": 40.47,
+    "lng": 17.24,
+    "region": "italy",
+    "pleiadesId": "442782"
+  },
+  {
+    "id": "ostia",
+    "ancientName": "Ostia",
+    "modernName": "Ostia",
+    "lat": 41.75,
+    "lng": 12.29,
+    "region": "italy",
+    "pleiadesId": "422995"
   },
   {
     "id": "carthage",
-    "name": "Carthage",
-    "ancientName": "Carthago",
-    "lat": 36.85,
+    "ancientName": "Karchedon",
+    "modernName": "Carthage",
+    "lat": 36.86,
     "lng": 10.32,
-    "description": "A powerful trading hub on the North African coast.",
-    "region": "North Africa",
-    "culturalDescription": "Carthage was founded by Phoenician settlers from Tyre around 814 BCE and grew to control trade throughout the western Mediterranean — Spain, Sardinia, Sicily, and the North African coast. Carthaginian sailors reached the Atlantic coast of Africa and possibly Britain. The city's destruction by Rome in 146 BCE at the end of the Third Punic War was one of antiquity's most deliberate acts of erasure."
+    "region": "north_africa",
+    "pleiadesId": "314921"
   },
   {
-    "id": "rome",
-    "name": "Rome (Ostia)",
-    "ancientName": "Ostia",
-    "lat": 41.75,
-    "lng": 12.28,
-    "description": "The port of Rome, gateway to the empire's capital.",
-    "region": "Italia",
-    "culturalDescription": "Ostia, at the mouth of the Tiber River, served as the harbor of Rome. As the capital's population grew to over a million people, Ostia became the critical logistics hub through which Egyptian grain flowed to feed the city. Warehouses, merchants' guilds, baths, and temples lined its streets, making Ostia a cosmopolitan city of merchants from every corner of the empire."
+    "id": "utica",
+    "ancientName": "Utika",
+    "modernName": "Utique",
+    "lat": 37.06,
+    "lng": 9.86,
+    "region": "north_africa",
+    "pleiadesId": "315247"
   },
   {
-    "id": "athens",
-    "name": "Athens (Piraeus)",
-    "ancientName": "Peiraieus",
-    "lat": 37.95,
-    "lng": 23.64,
-    "description": "The harbor of Athens, center of Aegean trade.",
-    "region": "Greece",
-    "culturalDescription": "Piraeus was Athens' busy seaport, three miles from the city itself. Silver mined from the Laurion hills nearby paid for Athens' famous trireme warships and filled its treasury. Olive oil, fine pottery, and Athenian silver coins bearing the owl of Athena traveled the Mediterranean from this harbor."
+    "id": "leptis",
+    "ancientName": "Lepcis Magna",
+    "modernName": "Khoms",
+    "lat": 32.64,
+    "lng": 14.29,
+    "region": "north_africa",
+    "pleiadesId": "344448"
   },
   {
-    "id": "antioch",
-    "name": "Antioch",
-    "ancientName": "Antiochia",
-    "lat": 36.2,
-    "lng": 36.16,
-    "description": "A major city at the crossroads of eastern trade routes.",
-    "region": "Syria",
-    "culturalDescription": "Antioch-on-the-Orontes was the third-largest city in the Roman Empire, founded by Seleucus I after Alexander's conquests. The city sat at the crossroads of overland routes from Persia and Arabia with Mediterranean sea trade, making it an entrepot for spices, silk, and Eastern luxury goods destined for Roman markets. Its famous colonnaded main street stretched for miles and its cosmopolitan population included Greeks, Jews, Syrians, and Persians."
+    "id": "alexandria",
+    "ancientName": "Alexandreia",
+    "modernName": "Alexandria",
+    "lat": 31.20,
+    "lng": 29.91,
+    "region": "egypt",
+    "pleiadesId": "727070"
+  },
+  {
+    "id": "naukratis",
+    "ancientName": "Naukratis",
+    "modernName": "Kom Geif",
+    "lat": 30.89,
+    "lng": 30.60,
+    "region": "egypt",
+    "pleiadesId": "727199"
+  },
+  {
+    "id": "memphis",
+    "ancientName": "Memphis",
+    "modernName": "Mit Rahina",
+    "lat": 29.84,
+    "lng": 31.25,
+    "region": "egypt",
+    "pleiadesId": "786022"
   },
   {
     "id": "tyre",
-    "name": "Tyre",
     "ancientName": "Tyros",
+    "modernName": "Tyre",
     "lat": 33.27,
     "lng": 35.20,
-    "description": "Island fortress city of the Phoenicians, famed for its purple dye and seafaring merchants.",
-    "region": "Levant",
-    "culturalDescription": "Tyre was the greatest of the Phoenician city-states, built on an island just off the coast of modern Lebanon. Its sailors were the finest in the ancient world, reaching as far as Britain and the Atlantic coast of Africa. Tyre's most famous export was Tyrian purple dye, extracted from the murex sea snail -- so precious that purple became the color of royalty. The city founded Carthage around 814 BCE and its alphabet became the ancestor of Greek and Latin scripts."
+    "region": "levant",
+    "pleiadesId": "678437"
+  },
+  {
+    "id": "sidon",
+    "ancientName": "Sidon",
+    "modernName": "Sidon",
+    "lat": 33.56,
+    "lng": 35.37,
+    "region": "levant",
+    "pleiadesId": "678405"
+  },
+  {
+    "id": "byblos",
+    "ancientName": "Byblos",
+    "modernName": "Jbeil",
+    "lat": 34.12,
+    "lng": 35.64,
+    "region": "levant",
+    "pleiadesId": "678063"
+  },
+  {
+    "id": "kition",
+    "ancientName": "Kition",
+    "modernName": "Larnaca",
+    "lat": 34.91,
+    "lng": 33.64,
+    "region": "levant",
+    "pleiadesId": "707498"
+  },
+  {
+    "id": "salamis_cy",
+    "ancientName": "Salamis",
+    "modernName": "Famagusta",
+    "lat": 35.18,
+    "lng": 33.90,
+    "region": "levant",
+    "pleiadesId": "707611"
+  },
+  {
+    "id": "emporion",
+    "ancientName": "Emporion",
+    "modernName": "Empuries",
+    "lat": 42.13,
+    "lng": 3.12,
+    "region": "iberia",
+    "pleiadesId": "246347"
+  },
+  {
+    "id": "gadir",
+    "ancientName": "Gadir",
+    "modernName": "Cadiz",
+    "lat": 36.53,
+    "lng": -6.30,
+    "region": "iberia",
+    "pleiadesId": "256177"
   }
 ]
