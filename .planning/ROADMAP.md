@@ -44,4 +44,4 @@
 |-------|-----------|----------------|--------|-----------|
 | 21. Test Stabilization | v2.0.1 | 0/? | Complete    | 2026-04-01 |
 | 22. Game Flow | v2.0.1 | 0/? | Complete    | 2026-04-01 |
-| 23. UI Polish | v2.0.1 | 0/? | Not started | - |
+| 23. UI Polish | v2.0.1 | 0/? | Complete    | 2026-04-01 |
