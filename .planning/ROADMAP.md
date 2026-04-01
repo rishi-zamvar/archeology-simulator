@@ -149,7 +149,7 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 19-01-PLAN.md -- Migration v9 (status column), port access queries, IPC handlers, preload bridge, new-game seeding, tests
+- [x] 19-01-PLAN.md -- Migration v9 (status column), port access queries, IPC handlers, preload bridge, new-game seeding, tests
 - [ ] 19-02-PLAN.md -- Tiered map markers (grey/normal/gold), PortInfoPanel content gating, auto-discover on arrival, human verification
 
 ### Phase 20: Journal Integration & Game Polish
@@ -180,5 +180,5 @@ Note: Phase 15 and Phase 16 can proceed in parallel after Phase 14 completes. Ph
 | 16. Port Content & World Building | v2.0 | 3/3 | Complete    | 2026-04-01 |
 | 17. NPC Characters & Dialogue Content | v2.0 | 2/2 | Complete    | 2026-04-01 |
 | 18. Reputation & Trade Integration | v2.0 | 2/2 | Complete    | 2026-04-01 |
-| 19. Progressive Port Unlocking | v2.0 | 0/2 | Not started | - |
+| 19. Progressive Port Unlocking | v2.0 | 1/2 | In Progress|  |
 | 20. Journal Integration & Game Polish | v2.0 | 0/TBD | Not started | - |
