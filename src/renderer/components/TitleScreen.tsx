@@ -6,7 +6,7 @@
  * Continue is only visible when a save exists.
  */
 
-import React from 'react';
+import React, { useState } from 'react';
 
 interface TitleScreenProps {
   hasSave: boolean;
@@ -26,16 +26,28 @@ const BTN_BASE: React.CSSProperties = {
   padding: '0.7rem 2.5rem',
   cursor: 'pointer',
   boxShadow: '0 2px 8px rgba(61, 43, 31, 0.2)',
-  transition: 'opacity 0.15s',
+  transition: 'background-color 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease',
 };
 
 export default function TitleScreen({ hasSave, onContinue, onNewGame }: TitleScreenProps): React.ReactElement {
+  const [hovered, setHovered] = useState<string | null>(null);
+
+  const btnHoverStyle = (id: string, baseColor: string): React.CSSProperties => ({
+    ...BTN_BASE,
+    backgroundColor: baseColor,
+    transform: hovered === id ? 'translateY(-2px)' : 'translateY(0)',
+    boxShadow: hovered === id
+      ? '0 6px 16px rgba(61, 43, 31, 0.35)'
+      : '0 2px 8px rgba(61, 43, 31, 0.2)',
+  });
+
   return (
     <div
+      className="animate-fade-in"
       style={{
         width: '100vw',
         height: '100vh',
-        backgroundColor: '#fdf8f0',
+        background: 'radial-gradient(ellipse at center, #fdf8f0 0%, #f0e0c4 60%, #e4cfa8 100%)',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -45,16 +57,31 @@ export default function TitleScreen({ hasSave, onContinue, onNewGame }: TitleScr
         boxSizing: 'border-box',
       }}
     >
+      {/* Decorative flourish */}
+      <div
+        style={{
+          fontFamily: "'Lora', Georgia, serif",
+          fontSize: '1.4rem',
+          color: '#c4956a',
+          opacity: 0.5,
+          letterSpacing: '0.5em',
+          marginBottom: '-0.5rem',
+        }}
+      >
+        ~ ~ ~
+      </div>
+
       {/* Game title */}
       <h1
         style={{
           fontFamily: "'Cinzel', Georgia, serif",
-          fontSize: '2.4rem',
+          fontSize: '2.6rem',
           fontWeight: 700,
           color: '#5a3e2b',
           margin: 0,
-          letterSpacing: '0.06em',
+          letterSpacing: '0.08em',
           textTransform: 'uppercase',
+          textShadow: '0 2px 4px rgba(61, 43, 31, 0.12)',
         }}
       >
         Mare Nostrum
@@ -64,10 +91,11 @@ export default function TitleScreen({ hasSave, onContinue, onNewGame }: TitleScr
       <p
         style={{
           fontFamily: "'Lora', Georgia, serif",
-          fontSize: '1rem',
+          fontSize: '1.05rem',
           fontStyle: 'italic',
           color: '#7a5c45',
           margin: 0,
+          letterSpacing: '0.04em',
         }}
       >
         A Mediterranean Trading Simulation
@@ -77,11 +105,11 @@ export default function TitleScreen({ hasSave, onContinue, onNewGame }: TitleScr
       <p
         style={{
           fontFamily: "'Lora', Georgia, serif",
-          fontSize: '0.9rem',
+          fontSize: '0.95rem',
           color: '#5a3e2b',
-          maxWidth: 480,
+          maxWidth: 500,
           textAlign: 'center',
-          lineHeight: 1.7,
+          lineHeight: 1.8,
           margin: '0.5rem 0',
         }}
       >
@@ -94,22 +122,24 @@ export default function TitleScreen({ hasSave, onContinue, onNewGame }: TitleScr
       <p
         style={{
           fontFamily: "'Lora', Georgia, serif",
-          fontSize: '0.75rem',
+          fontSize: '0.8rem',
           fontStyle: 'italic',
           color: '#9a8570',
-          margin: '0.25rem 0 1.5rem',
+          margin: '0.25rem 0 2rem',
         }}
       >
         &ldquo;He who would learn to pray, let him go to sea.&rdquo; &mdash; Mediterranean proverb
       </p>
 
       {/* Buttons */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', alignItems: 'center' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem', alignItems: 'center' }}>
         {hasSave && (
           <button
             type="button"
             onClick={onContinue}
-            style={{ ...BTN_BASE, backgroundColor: '#7a5c2b' }}
+            onMouseEnter={() => setHovered('continue')}
+            onMouseLeave={() => setHovered(null)}
+            style={btnHoverStyle('continue', '#7a5c2b')}
           >
             Continue
           </button>
@@ -117,7 +147,9 @@ export default function TitleScreen({ hasSave, onContinue, onNewGame }: TitleScr
         <button
           type="button"
           onClick={onNewGame}
-          style={{ ...BTN_BASE, backgroundColor: '#2b5c4a' }}
+          onMouseEnter={() => setHovered('new')}
+          onMouseLeave={() => setHovered(null)}
+          style={btnHoverStyle('new', '#2b5c4a')}
         >
           New Game
         </button>
