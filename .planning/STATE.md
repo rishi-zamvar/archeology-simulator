@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: The Merchant's Odyssey
-status: verifying
-stopped_at: Completed 13-02-PLAN.md
-last_updated: "2026-04-01T09:56:36.103Z"
+status: executing
+stopped_at: Completed 14-01-PLAN.md
+last_updated: "2026-04-01T11:43:31.697Z"
 last_activity: 2026-04-01
 progress:
   total_phases: 8
   completed_phases: 1
-  total_plans: 2
-  completed_plans: 2
+  total_plans: 4
+  completed_plans: 3
   percent: 6
 ---
 
@@ -21,13 +21,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-01)
 
 **Core value:** Students learn ancient Mediterranean history by making decisions as a merchant captain, not by reading about them.
-**Current focus:** Phase 13 — infrastructure-migration-system
+**Current focus:** Phase 14 — dialogue-engine-content-pipeline
 
 ## Current Position
 
-Phase: 14
-Plan: Not started
-Status: Phase complete — ready for verification
+Phase: 14 (dialogue-engine-content-pipeline) — EXECUTING
+Plan: 2 of 2
+Status: Ready to execute
 Last activity: 2026-04-01
 
 Progress: [▓░░░░░░░░░] 6% (v2.0 milestone)
@@ -50,6 +50,8 @@ Progress: [▓░░░░░░░░░] 6% (v2.0 milestone)
 - [13-01]: PLAYER_DATA_TABLES constant exported for new-game reset (9 tables, excludes reference data)
 - [13-01]: runMigrations exported separately for testability
 - [Phase 13-02]: PLAYER_DATA_TABLES loop replaces hardcoded DELETE statements in new-game reset
+- [Phase 14]: Composite conditions use $and/$or/$not JSON DSL for dialogue branching logic
+- [Phase 14]: Validation function exported for unit testing; CLI guarded by argv check
 
 ### Blockers/Concerns
 
@@ -58,6 +60,6 @@ Progress: [▓░░░░░░░░░] 6% (v2.0 milestone)
 
 ## Session Continuity
 
-Last session: 2026-04-01T09:54:11.102Z
-Stopped at: Completed 13-02-PLAN.md
+Last session: 2026-04-01T11:43:31.694Z
+Stopped at: Completed 14-01-PLAN.md
 Resume file: None

@@ -17,7 +17,7 @@
 ## NPCs & Dialogue
 
 - [ ] **NPC-01**: Named NPCs exist at ports who give quests, share lore, and advance the story
-- [ ] **NPC-02**: NPC dialogue is historically grounded and educational
+- [x] **NPC-02**: NPC dialogue is historically grounded and educational
 - [ ] **NPC-03**: NPCs reveal new trade routes and ports through conversation
 - [ ] **NPC-04**: 5 key NPC characters with portraits displayed during dialogue
 
