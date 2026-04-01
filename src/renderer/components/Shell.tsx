@@ -554,6 +554,29 @@ export default function Shell(): React.ReactElement {
             onOpenMarket={() => setShowPortPopup(true)}
             onOpenHarbor={() => setShowPortPopup(true)}
           />
+          {/* VIS-03: Day/night tinting based on current turn */}
+          {(() => {
+            const month = (gameState?.currentTurn ?? 0) % 12;
+            // morning (Mar-May): warm gold; midday (Jun-Aug): clear; evening (Sep-Nov): amber; winter (Dec-Feb): blue-grey
+            let tintColor = 'transparent';
+            if (month >= 2 && month <= 4) tintColor = 'rgba(255, 200, 80, 0.08)';      // spring gold
+            else if (month >= 5 && month <= 7) tintColor = 'transparent';                // midday clear
+            else if (month >= 8 && month <= 10) tintColor = 'rgba(200, 120, 50, 0.12)'; // autumn amber
+            else tintColor = 'rgba(80, 100, 150, 0.15)';                                 // winter blue-grey
+            if (tintColor === 'transparent') return null;
+            return (
+              <div
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  backgroundColor: tintColor,
+                  pointerEvents: 'none',
+                  zIndex: 6,
+                  transition: 'background-color 1.5s ease',
+                }}
+              />
+            );
+          })()}
         </div>
       )}
 
