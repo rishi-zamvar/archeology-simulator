@@ -80,14 +80,9 @@ export default function MapArea({ children, onPortSelected, onRefreshAccessReady
           attribution="&copy; Stamen Design &copy; OpenStreetMap contributors"
         />
 
-        {/* Port markers — clustered for performance at low zoom levels */}
+        {/* Port markers — no clustering, all 25 ports visible individually */}
         {!isLoading && ports.length > 0 && (
-          <MarkerClusterGroup
-            chunkedLoading
-            disableClusteringAtZoom={7}
-            showCoverageOnHover={false}
-            spiderfyOnMaxZoom={true}
-          >
+          <>
             {ports.map((port) => (
               <PortMarker
                 key={port.id}
@@ -97,7 +92,7 @@ export default function MapArea({ children, onPortSelected, onRefreshAccessReady
                 onPortClick={handlePortClick}
               />
             ))}
-          </MarkerClusterGroup>
+          </>
         )}
 
         {/* ShipMarker and other children needing MapContainer context */}
