@@ -107,6 +107,7 @@ export default function Shell(): React.ReactElement {
 
   // Phase 15: Active quest indicator and completion toast
   const [activeQuest, setActiveQuest] = useState<{ quest: QuestDefinition; progress: QuestProgress } | null>(null);
+  const [allActiveQuests, setAllActiveQuests] = useState<Array<{ quest: QuestDefinition; progress: QuestProgress }>>([]);
   const [questToast, setQuestToast] = useState<{ name: string; historicalNote: string } | null>(null);
   const [showQuestDetails, setShowQuestDetails] = useState(false);
   const prevQuestRef = useRef<Array<{ quest: QuestDefinition; progress: QuestProgress }>>([]);
@@ -334,7 +335,10 @@ export default function Shell(): React.ReactElement {
   useEffect(() => {
     window.api.quest.getActive().then((res) => {
       if (res.success && res.data.length > 0) {
-        setActiveQuest(res.data[0]);
+        setAllActiveQuests(res.data);
+        // Show the first non-meta quest (not merchants_odyssey) for the indicator
+        const subQuest = res.data.find((q: { quest: QuestDefinition }) => q.quest.id !== 'merchants_odyssey') ?? res.data[0];
+        setActiveQuest(subQuest);
         prevQuestRef.current = res.data;
       }
     });
@@ -345,7 +349,9 @@ export default function Shell(): React.ReactElement {
     const cleanup = window.api.subscribe('game:updated', () => {
       window.api.quest.getActive().then((res) => {
         if (res.success) {
-          setActiveQuest(res.data.length > 0 ? res.data[0] : null);
+          setAllActiveQuests(res.data);
+          const subQuest = res.data.find((q: { quest: QuestDefinition }) => q.quest.id !== 'merchants_odyssey') ?? (res.data.length > 0 ? res.data[0] : null);
+          setActiveQuest(subQuest);
 
           // Detect quest completion: quest was active before, not active now
           const prevIds = new Set(prevQuestRef.current.map(q => q.quest.id));
@@ -769,7 +775,7 @@ export default function Shell(): React.ReactElement {
             </span>
           </button>
 
-          {/* Quest details panel — shown on click */}
+          {/* Quest details panel — shows ALL active quests with objectives */}
           {showQuestDetails && (
             <div
               style={{
@@ -782,8 +788,8 @@ export default function Shell(): React.ReactElement {
                 border: '1px solid #c4956a',
                 borderRadius: 8,
                 padding: '1rem 1.25rem',
-                width: 360,
-                maxHeight: 400,
+                width: 400,
+                maxHeight: 500,
                 overflowY: 'auto',
                 boxShadow: '0 4px 20px rgba(61, 43, 31, 0.2)',
               }}
@@ -797,7 +803,7 @@ export default function Shell(): React.ReactElement {
                   margin: 0,
                   letterSpacing: '0.04em',
                 }}>
-                  {activeQuest.quest.name}
+                  Your Journey
                 </h3>
                 <button
                   type="button"
@@ -815,69 +821,104 @@ export default function Shell(): React.ReactElement {
                 </button>
               </div>
 
-              <p style={{
-                fontFamily: "'Lora', Georgia, serif",
-                fontSize: '0.8rem',
-                color: '#5a3e2b',
-                lineHeight: 1.6,
-                margin: '0 0 0.75rem',
-              }}>
-                {activeQuest.quest.description}
-              </p>
-
-              <h4 style={{
-                fontFamily: "'Cinzel', Georgia, serif",
-                fontSize: '0.65rem',
-                fontWeight: 700,
-                color: '#7a5c45',
-                textTransform: 'uppercase',
-                letterSpacing: '0.08em',
-                margin: '0 0 0.4rem',
-              }}>
-                Objectives
-              </h4>
-
-              {activeQuest.quest.objectives.map((obj, i) => {
-                const isComplete = i < activeQuest.progress.currentObjective;
-                const isCurrent = i === activeQuest.progress.currentObjective;
-                return (
-                  <div key={obj.id} style={{
-                    display: 'flex',
-                    alignItems: 'flex-start',
-                    gap: '0.4rem',
-                    marginBottom: '0.4rem',
-                    opacity: isComplete ? 0.5 : 1,
-                  }}>
-                    <span style={{ fontSize: '0.7rem', flexShrink: 0 }}>
-                      {isComplete ? '\u2713' : isCurrent ? '\u25B6' : '\u25CB'}
-                    </span>
-                    <span style={{
-                      fontFamily: "'Lora', Georgia, serif",
-                      fontSize: '0.75rem',
-                      color: isCurrent ? '#5a3e2b' : '#7a5c45',
-                      fontWeight: isCurrent ? 600 : 400,
-                      textDecoration: isComplete ? 'line-through' : 'none',
-                    }}>
-                      {obj.description}
-                    </span>
-                  </div>
-                );
-              })}
-
-              {activeQuest.quest.historicalNote && (
-                <p style={{
-                  fontFamily: "'Lora', Georgia, serif",
-                  fontSize: '0.7rem',
-                  fontStyle: 'italic',
-                  color: '#9a8570',
-                  lineHeight: 1.5,
-                  marginTop: '0.75rem',
-                  borderTop: '1px solid #e8d5b8',
-                  paddingTop: '0.5rem',
+              {/* Show each active quest (skip meta-quest, show real quests first) */}
+              {[...allActiveQuests]
+                .sort((a, b) => (a.quest.id === 'merchants_odyssey' ? 1 : 0) - (b.quest.id === 'merchants_odyssey' ? 1 : 0))
+                .map(({ quest: q, progress: p }) => (
+                <div key={q.id} style={{
+                  marginBottom: '1rem',
+                  paddingBottom: '0.75rem',
+                  borderBottom: '1px solid #e8d5b8',
                 }}>
-                  {activeQuest.quest.historicalNote}
-                </p>
-              )}
+                  {/* Quest name + status */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.3rem' }}>
+                    <h4 style={{
+                      fontFamily: "'Cinzel', Georgia, serif",
+                      fontSize: '0.75rem',
+                      fontWeight: 700,
+                      color: q.id === 'merchants_odyssey' ? '#7a5c45' : '#5a3e2b',
+                      margin: 0,
+                      letterSpacing: '0.04em',
+                    }}>
+                      {q.name}
+                    </h4>
+                    {q.id !== 'merchants_odyssey' && (
+                      <span style={{
+                        fontSize: '0.5rem',
+                        fontWeight: 700,
+                        color: '#fdf8f0',
+                        backgroundColor: '#c4956a',
+                        padding: '1px 6px',
+                        borderRadius: 3,
+                        letterSpacing: '0.08em',
+                        textTransform: 'uppercase',
+                      }}>
+                        ACTIVE
+                      </span>
+                    )}
+                  </div>
+
+                  <p style={{
+                    fontFamily: "'Lora', Georgia, serif",
+                    fontSize: '0.75rem',
+                    color: '#5a3e2b',
+                    lineHeight: 1.5,
+                    margin: '0 0 0.5rem',
+                  }}>
+                    {q.description}
+                  </p>
+
+                  {/* Objectives with checkmarks */}
+                  {q.objectives.map((obj, i) => {
+                    const isComplete = i < p.currentObjective;
+                    const isCurrent = i === p.currentObjective;
+                    return (
+                      <div key={obj.id} style={{
+                        display: 'flex',
+                        alignItems: 'flex-start',
+                        gap: '0.4rem',
+                        marginBottom: '0.3rem',
+                        marginLeft: '0.25rem',
+                        opacity: isComplete ? 0.5 : 1,
+                      }}>
+                        <span style={{
+                          fontSize: '0.65rem',
+                          flexShrink: 0,
+                          color: isComplete ? '#2b5c4a' : isCurrent ? '#c0392b' : '#7a5c45',
+                        }}>
+                          {isComplete ? '\u2713' : isCurrent ? '\u25B6' : '\u25CB'}
+                        </span>
+                        <span style={{
+                          fontFamily: "'Lora', Georgia, serif",
+                          fontSize: '0.7rem',
+                          color: isCurrent ? '#5a3e2b' : '#7a5c45',
+                          fontWeight: isCurrent ? 600 : 400,
+                          textDecoration: isComplete ? 'line-through' : 'none',
+                        }}>
+                          {obj.description}
+                        </span>
+                      </div>
+                    );
+                  })}
+
+                  {/* Historical note for the active sub-quest */}
+                  {q.id !== 'merchants_odyssey' && q.historicalNote && (
+                    <p style={{
+                      fontFamily: "'Lora', Georgia, serif",
+                      fontSize: '0.65rem',
+                      fontStyle: 'italic',
+                      color: '#9a8570',
+                      lineHeight: 1.5,
+                      marginTop: '0.5rem',
+                      padding: '0.4rem 0.5rem',
+                      backgroundColor: 'rgba(196, 149, 106, 0.08)',
+                      borderRadius: 4,
+                    }}>
+                      {q.historicalNote}
+                    </p>
+                  )}
+                </div>
+              ))}
             </div>
           )}
         </>
