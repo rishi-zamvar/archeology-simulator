@@ -11,7 +11,7 @@
  * Parchment aesthetic: Cinzel headings, Lora body, sepia palette.
  */
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import type { MarketGood, PlayerInventory } from '../../shared/ipc-types';
 import TradeGoodIcon from './TradeGoodIcon';
 import { useResourceImages } from '../hooks/useResourceImages';
@@ -58,6 +58,18 @@ export default function TradePanel({
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const [feedback, setFeedback] = useState<Record<string, { msg: string; ok: boolean }>>({});
   const [busy, setBusy] = useState<string | null>(null);
+  const [reputation, setReputation] = useState<{ tierName: string; tierLevel: number; score: number; region: string } | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    window.api.game.getPortReputation(portId)
+      .then((res) => {
+        if (cancelled) return;
+        if (res.success && res.data) setReputation(res.data);
+      })
+      .catch(() => { /* non-critical — prices still work without indicator */ });
+    return () => { cancelled = true; };
+  }, [portId]);
 
   const { goods: curatedGoods } = useResourceImages();
 
@@ -145,6 +157,17 @@ export default function TradePanel({
           <span style={{ color: '#a07840', fontWeight: 600 }}>{inventory.gold}</span>
           {' '}gold · {inventory.currentCargo}/{inventory.cargoCapacity} cargo
         </div>
+        {reputation && reputation.tierLevel > 0 && (
+          <div style={{
+            fontFamily: "'Lora', Georgia, serif",
+            fontSize: '0.7rem',
+            color: '#5a8f5a',
+            marginTop: '0.2rem',
+            fontStyle: 'italic',
+          }}>
+            {reputation.tierName} — {reputation.tierLevel === 1 ? '5%' : reputation.tierLevel === 2 ? '10%' : '20%'} better prices
+          </div>
+        )}
       </div>
 
       {/* Goods list */}

@@ -35,6 +35,7 @@ export default function PortInfoPanel({
   const [port, setPort] = useState<Port | null>(null);
   const [destinations, setDestinations] = useState<ReachableDestination[]>([]);
   const [lore, setLore] = useState<PortLore | null>(null);
+  const [reputation, setReputation] = useState<{ tierName: string; tierLevel: number; score: number; region: string } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
@@ -45,14 +46,16 @@ export default function PortInfoPanel({
     setPort(null);
     setDestinations([]);
     setLore(null);
+    setReputation(null);
 
-    // Fetch port details, reachable destinations, and lore in parallel
+    // Fetch port details, reachable destinations, lore, and reputation in parallel
     Promise.all([
       window.api.game.getPortDetails(portId),
       window.api.game.getReachablePorts(portId, currentTurn),
       window.api.game.getPortLore(portId),
+      window.api.game.getPortReputation(portId),
     ])
-      .then(([portRes, reachableRes, loreRes]) => {
+      .then(([portRes, reachableRes, loreRes, repRes]) => {
         if (cancelled) return;
         if (!portRes.success) throw new Error(portRes.error);
         if (!reachableRes.success) throw new Error(reachableRes.error);
@@ -63,6 +66,7 @@ export default function PortInfoPanel({
         );
         setDestinations(sorted.slice(0, 5));
         if (loreRes.success && loreRes.data) setLore(loreRes.data);
+        if (repRes.success && repRes.data) setReputation(repRes.data);
         setIsLoading(false);
       })
       .catch((err: unknown) => {
@@ -215,6 +219,23 @@ export default function PortInfoPanel({
         >
           {port.description}
         </p>
+      )}
+
+      {/* Your Standing — reputation tier */}
+      {port && !isLoading && reputation && (
+        <div style={{ marginTop: '0.5rem', marginBottom: '0.75rem', padding: '0.5rem', backgroundColor: 'rgba(196, 149, 106, 0.08)', border: '1px solid rgba(196, 149, 106, 0.3)', borderRadius: 2 }}>
+          <h4 style={{ fontFamily: "'Cinzel', serif", fontSize: '0.65rem', color: '#7a5c45', marginBottom: '0.3rem', marginTop: 0, textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 700 }}>
+            Your Standing
+          </h4>
+          <p style={{ fontFamily: "'Lora', Georgia, serif", fontSize: '0.8rem', color: '#3d2b1f', margin: 0, lineHeight: 1.6 }}>
+            {reputation.tierName}
+            {reputation.tierLevel > 0 && (
+              <span style={{ fontSize: '0.7rem', color: '#5a8f5a', marginLeft: '0.5rem' }}>
+                ({reputation.tierLevel === 1 ? '5%' : reputation.tierLevel === 2 ? '10%' : '20%'} better prices)
+              </span>
+            )}
+          </p>
+        </div>
       )}
 
       {/* Historical context — cultural description */}
