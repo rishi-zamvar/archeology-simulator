@@ -34,7 +34,7 @@ Seasonal weather with Athenian calendar, captain's journal with auto-logging, an
 
 **Milestone Goal:** Transform the framework into a complete educational game where players live the life of a 6th century BCE merchant captain -- learning ancient Mediterranean history through a narrative quest spanning the entire sea.
 
-- [ ] **Phase 13: Infrastructure & Migration System** - Version-tracked DB migrations and new tables for quests, NPCs, reputation, and port status
+- [x] **Phase 13: Infrastructure & Migration System** - Version-tracked DB migrations and new tables for quests, NPCs, reputation, and port status (completed 2026-04-01)
 - [ ] **Phase 14: Dialogue Engine & Content Pipeline** - JSON-driven dialogue system with condition evaluation, content templates, and build-time validation
 - [ ] **Phase 15: Quest System Foundation** - Observer-pattern quest engine with separate persistence, quest FSM, and Piraeus starting quest
 - [ ] **Phase 16: Port Content & World Building** - Historically researched lore, trade specializations, and ambient descriptions for 10 ports
@@ -58,7 +58,7 @@ Seasonal weather with Athenian calendar, captain's journal with auto-logging, an
 
 Plans:
 - [x] 13-01-PLAN.md -- Migration runner, new table types, 7 migrations (v1 baseline through v7 port_access), migration tests
-- [ ] 13-02-PLAN.md -- Consolidate new-game reset with PLAYER_DATA_TABLES, add db:schemaVersion IPC
+- [x] 13-02-PLAN.md -- Consolidate new-game reset with PLAYER_DATA_TABLES, add db:schemaVersion IPC
 
 ### Phase 14: Dialogue Engine & Content Pipeline
 **Goal**: NPCs can deliver branching, condition-gated dialogue loaded from JSON data files -- with build-time validation ensuring no broken references
@@ -154,7 +154,7 @@ Note: Phase 15 and Phase 16 can proceed in parallel after Phase 14 completes. Ph
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 13. Infrastructure & Migration System | v2.0 | 1/2 | In Progress | - |
+| 13. Infrastructure & Migration System | v2.0 | 2/2 | Complete   | 2026-04-01 |
 | 14. Dialogue Engine & Content Pipeline | v2.0 | 0/TBD | Not started | - |
 | 15. Quest System Foundation | v2.0 | 0/TBD | Not started | - |
 | 16. Port Content & World Building | v2.0 | 0/TBD | Not started | - |
