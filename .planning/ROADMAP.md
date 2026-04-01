@@ -146,8 +146,11 @@ Plans:
   2. Port unlocking is earned through reputation thresholds, quest progress, or NPC referrals -- never arbitrary
   3. Locked/unknown ports are visible on the map with a distinct visual treatment (not hidden) -- players can sail anywhere but get a limited experience at undiscovered ports
   4. v1.3 saves treat all 25 existing ports as unlocked; new v2.0 ports default to "unknown"
-**Plans**: TBD
-**UI hint**: yes
+**Plans**: 2 plans
+
+Plans:
+- [ ] 19-01-PLAN.md -- Migration v9 (status column), port access queries, IPC handlers, preload bridge, new-game seeding, tests
+- [ ] 19-02-PLAN.md -- Tiered map markers (grey/normal/gold), PortInfoPanel content gating, auto-discover on arrival, human verification
 
 ### Phase 20: Journal Integration & Game Polish
 **Goal**: The game feels complete -- journal captures the narrative journey, intro sets the scene, events are richer, and the odyssey has a satisfying conclusion
@@ -177,5 +180,5 @@ Note: Phase 15 and Phase 16 can proceed in parallel after Phase 14 completes. Ph
 | 16. Port Content & World Building | v2.0 | 3/3 | Complete    | 2026-04-01 |
 | 17. NPC Characters & Dialogue Content | v2.0 | 2/2 | Complete    | 2026-04-01 |
 | 18. Reputation & Trade Integration | v2.0 | 2/2 | Complete    | 2026-04-01 |
-| 19. Progressive Port Unlocking | v2.0 | 0/TBD | Not started | - |
+| 19. Progressive Port Unlocking | v2.0 | 0/2 | Not started | - |
 | 20. Journal Integration & Game Polish | v2.0 | 0/TBD | Not started | - |
