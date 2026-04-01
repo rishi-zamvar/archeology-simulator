@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: The Merchant's Odyssey
-status: executing
-stopped_at: Completed 16-01-PLAN.md
-last_updated: "2026-04-01T17:52:49.115Z"
+status: verifying
+stopped_at: Completed 16-03-PLAN.md
+last_updated: "2026-04-01T17:58:43.995Z"
 last_activity: 2026-04-01
 progress:
   total_phases: 8
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 10
-  completed_plans: 9
+  completed_plans: 10
   percent: 6
 ---
 
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-04-01)
 
 Phase: 16 (port-content-world-building) — EXECUTING
 Plan: 3 of 3
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-04-01
 
 Progress: [▓░░░░░░░░░] 6% (v2.0 milestone)
@@ -62,6 +62,8 @@ Progress: [▓░░░░░░░░░] 6% (v2.0 milestone)
 - [Phase 16-02]: 5 historically accurate trade goods added with regional supply/demand patterns for all 25 ports
 - [Phase 16]: Alexandria framed as proto-settlement Rhakotis for temporal accuracy at 540-530 BCE
 - [Phase 16]: All port lore citations use real scholarly works: Herodotus, Aubet, Boardman, Braudel, Horden and Purcell
+- [Phase 16]: Ambient description fetched via getPortDetails in PortScene rather than passed as prop from Shell
+- [Phase 16]: 29 sea routes total (10 original + 19 new) with 6 new waypoints for land-avoidance
 
 ### Blockers/Concerns
 
@@ -70,6 +72,6 @@ Progress: [▓░░░░░░░░░] 6% (v2.0 milestone)
 
 ## Session Continuity
 
-Last session: 2026-04-01T17:52:49.113Z
-Stopped at: Completed 16-01-PLAN.md
+Last session: 2026-04-01T17:58:43.992Z
+Stopped at: Completed 16-03-PLAN.md
 Resume file: None

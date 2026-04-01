@@ -4,7 +4,7 @@
 
 - [x] **PORT-01**: Each port displays rich historical lore — culture, customs, religion, daily life, and what the region is known for
 - [x] **PORT-02**: Regional trade goods are historically accurate (Tyrian purple from Sidon, grain from Egypt, olive oil from Athens, silver from Iberia, cedar from Byblos)
-- [ ] **PORT-03**: Player can read "Port Lore" sections teaching real ancient history (Phoenician alphabet, Athenian democracy, Egyptian grain trade)
+- [x] **PORT-03**: Player can read "Port Lore" sections teaching real ancient history (Phoenician alphabet, Athenian democracy, Egyptian grain trade)
 - [x] **PORT-04**: World expanded to 15-25 historically important ports (Tyre, Sidon, Corinth, Syracuse, Massalia, Gades, Memphis, Knossos, etc.)
 
 ## Quest & Narrative
