@@ -131,8 +131,11 @@ Plans:
   2. Higher reputation yields better trade prices (percentage modifier, capped at +/-20%, prices floored at 1g)
   3. Reputation NEVER gates required content -- low reputation means higher prices and grumpier NPCs, not locked doors
   4. A recovery path exists for every possible reputation state (no unrecoverable dead ends)
-**Plans**: TBD
-**UI hint**: yes
+**Plans**: 2 plans
+
+Plans:
+- [ ] 18-01-PLAN.md -- Pure reputation logic (tiers, price modifiers, trade gain formula), query integration, unit tests
+- [ ] 18-02-PLAN.md -- IPC handler, preload bridge, reputation display in PortInfoPanel and TradePanel, human verification
 
 ### Phase 19: Progressive Port Unlocking
 **Goal**: Players discover the Mediterranean progressively through trade reputation and NPC introductions, with a fog-of-knowledge model that preserves the open-world feel
@@ -173,6 +176,6 @@ Note: Phase 15 and Phase 16 can proceed in parallel after Phase 14 completes. Ph
 | 15. Quest System Foundation | v2.0 | 3/3 | Complete    | 2026-04-01 |
 | 16. Port Content & World Building | v2.0 | 3/3 | Complete    | 2026-04-01 |
 | 17. NPC Characters & Dialogue Content | v2.0 | 2/2 | Complete    | 2026-04-01 |
-| 18. Reputation & Trade Integration | v2.0 | 0/TBD | Not started | - |
+| 18. Reputation & Trade Integration | v2.0 | 0/2 | Not started | - |
 | 19. Progressive Port Unlocking | v2.0 | 0/TBD | Not started | - |
 | 20. Journal Integration & Game Polish | v2.0 | 0/TBD | Not started | - |
