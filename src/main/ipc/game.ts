@@ -43,7 +43,18 @@ import {
   getAllPortAccess,
   autoDiscoverPort,
   unlockNeighborPorts,
+  repairHull,
+  degradeHull,
+  adjustCrewMorale,
+  getShipCrewStatus,
+  getRumorsForPort,
+  getActiveFestival,
+  applyFestivalPriceEffects,
+  getCollectedPostcards,
+  getTotalPortCount,
+  markPostcardDiscovery,
 } from '../db/queries';
+import type { Festival, Postcard } from '../db/queries';
 import { getConnectedPorts } from '../../game/sea-routes';
 import { evaluateActiveQuests } from './quest';
 import { performAction } from '../../game/engine';
@@ -106,8 +117,25 @@ export function registerGameIPCHandlers(db: Database.Database): void {
         // rolled per-turn via game:advanceSailingTurn. SET_SAIL only transitions
         // to sailing state and logs the departure journal entry.
         if (action.type === 'SET_SAIL') {
+          // Phase 27: Block sailing if hull is too damaged
+          const shipStatus = getShipCrewStatus(db);
+          if (!shipStatus.canSail) {
+            return { success: false, state: current, error: 'Hull too damaged to sail. Repair at port first.' };
+          }
+
           pendingVoyageEvent = null; // clear any stale event from prior voyage
           pendingSailingContext = null; // clear stale sailing context
+
+          // Phase 27: Degrade hull on departure (5-15 based on voyage length)
+          const voyageTurns = action.voyageTurnsTotal ?? 1;
+          const hullDamage = Math.min(15, 5 + voyageTurns * 3 + Math.floor(Math.random() * 5));
+          degradeHull(db, hullDamage);
+
+          // Phase 27: Degrade morale for long voyages (2+ months = -8, per month at sea = -3)
+          if (voyageTurns >= 2) {
+            adjustCrewMorale(db, -8);
+          }
+          adjustCrewMorale(db, -3 * voyageTurns);
 
           // Auto-log departure to captain's journal (Phase 10 — JRN-04)
           if (current.type === 'trading' && current.selectedPort) {
@@ -150,6 +178,9 @@ export function registerGameIPCHandlers(db: Database.Database): void {
 
           // Upgrade this port to 'unlocked' on arrival (if it was only 'discovered')
           autoDiscoverPort(db, arrPortId, result.state.currentTurn);
+
+          // Phase 27: Boost morale on port arrival (+3)
+          adjustCrewMorale(db, 3);
 
           // Phase 15: Evaluate quests on port arrival
           evaluateActiveQuests(db);
@@ -512,6 +543,15 @@ export function registerGameIPCHandlers(db: Database.Database): void {
 
       applyOutcome();
 
+      // Phase 27: Storm events damage hull and reduce morale
+      if (event.type === 'storm') {
+        degradeHull(db, 10);
+        adjustCrewMorale(db, -10);
+      } else if (event.type === 'pirate') {
+        degradeHull(db, 5);
+        adjustCrewMorale(db, -5);
+      }
+
       // Auto-log event to captain's journal (Phase 10 — JRN-03)
       const currentForJournal = withTutorialDefault(loadGameState(db) ?? INITIAL_STATE);
       insertJournalEntry(db, currentForJournal.currentTurn, 'voyage_event',
@@ -614,7 +654,17 @@ export function registerGameIPCHandlers(db: Database.Database): void {
   /**
    * game:getJourneyStats — return aggregate journey statistics for conclusion screen.
    */
-  wrapHandler<{ portsVisited: number; goodsTraded: number; turnsElapsed: number; questsCompleted: number; goldEarned: number }>(
+  wrapHandler<{
+    portsVisited: number;
+    goodsTraded: number;
+    turnsElapsed: number;
+    questsCompleted: number;
+    goldEarned: number;
+    regionsVisited: string[];
+    mostTradedGood: string | null;
+    totalDistanceKm: number;
+    journalHighlights: Array<{ turn: number; title: string; entryType: string }>;
+  }>(
     'game:getJourneyStats',
     async () => {
       const state = loadGameState(db);
@@ -638,12 +688,45 @@ export function registerGameIPCHandlers(db: Database.Database): void {
       // Current gold
       const inv = getPlayerInventory(db);
 
+      // NAR-03: Regions visited (unique port regions from visited ports)
+      const regionRows = db.prepare(
+        "SELECT DISTINCT p.region FROM port_access pa JOIN ports p ON pa.port_id = p.id WHERE pa.discovered = 1"
+      ).all() as Array<{ region: string }>;
+      const regionsVisited = regionRows.map(r => r.region);
+
+      // NAR-03: Most traded good (by total quantity across all transactions)
+      const topGoodRow = db.prepare(
+        'SELECT good_id, SUM(quantity) as total FROM transaction_history GROUP BY good_id ORDER BY total DESC LIMIT 1'
+      ).get() as { good_id: string; total: number } | undefined;
+      const mostTradedGood = topGoodRow?.good_id ?? null;
+
+      // NAR-03: Rough total distance — sum of recorded voyage distances from journal departures
+      // We approximate using the count of voyage turns * 150km average per turn
+      const voyageTurnsRow = db.prepare(
+        "SELECT COUNT(*) as count FROM journal_entries WHERE entry_type = 'departure'"
+      ).get() as { count: number };
+      const totalDistanceKm = voyageTurnsRow.count * 150;
+
+      // NAR-03: Journal highlights — key narrative entries for timeline
+      const highlights = db.prepare(
+        "SELECT turn, title, entry_type FROM journal_entries WHERE priority = 'narrative' OR entry_type IN ('quest', 'arrival', 'discovery') ORDER BY turn ASC, id ASC LIMIT 30"
+      ).all() as Array<{ turn: number; title: string; entry_type: string }>;
+      const journalHighlights = highlights.map(h => ({
+        turn: h.turn,
+        title: h.title,
+        entryType: h.entry_type,
+      }));
+
       return {
         portsVisited: portsRow.count,
         goodsTraded: tradesRow.count,
         turnsElapsed,
         questsCompleted: questsRow.count,
         goldEarned: inv.gold,
+        regionsVisited,
+        mostTradedGood,
+        totalDistanceKm,
+        journalHighlights,
       };
     },
   );

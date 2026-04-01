@@ -65,7 +65,17 @@ export interface IPCBridge {
     newGame: () => Promise<IPCResponse<import('../game/types').GameState>>;
 
     // Phase 20: Journey stats for conclusion screen
-    getJourneyStats: () => Promise<IPCResponse<{ portsVisited: number; goodsTraded: number; turnsElapsed: number; questsCompleted: number; goldEarned: number }>>;
+    getJourneyStats: () => Promise<IPCResponse<{
+      portsVisited: number;
+      goodsTraded: number;
+      turnsElapsed: number;
+      questsCompleted: number;
+      goldEarned: number;
+      regionsVisited: string[];
+      mostTradedGood: string | null;
+      totalDistanceKm: number;
+      journalHighlights: Array<{ turn: number; title: string; entryType: string }>;
+    }>>;
 
     // Phase 16: Port lore
     getPortLore: (portId: string) => Promise<IPCResponse<import('./game-types').PortLore | null>>;
