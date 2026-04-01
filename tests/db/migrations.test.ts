@@ -24,7 +24,7 @@ describe('Migration system', () => {
     const row = db.prepare('SELECT version FROM schema_version').get() as {
       version: number;
     };
-    expect(row.version).toBe(9);
+    expect(row.version).toBe(10);
   });
 
   it('schema_version table has version and migrated_at columns', () => {
@@ -65,7 +65,7 @@ describe('Migration system', () => {
     const row = legacyDb.prepare('SELECT version FROM schema_version').get() as {
       version: number;
     };
-    expect(row.version).toBe(9);
+    expect(row.version).toBe(10);
 
     // Verify new tables exist
     const tables = legacyDb
@@ -94,7 +94,7 @@ describe('Migration system', () => {
     let row = testDb.prepare('SELECT version FROM schema_version').get() as {
       version: number;
     };
-    expect(row.version).toBe(9);
+    expect(row.version).toBe(10);
 
     // Now simulate a future migration that fails by manually setting version
     // back and creating a table that would conflict with migration v3 (quest_progress)
@@ -195,7 +195,7 @@ describe('Migration system', () => {
   describe('PLAYER_DATA_TABLES', () => {
     it('contains all 9 player-data tables', async () => {
       const { PLAYER_DATA_TABLES } = await import('../../src/main/db/schema');
-      expect(PLAYER_DATA_TABLES).toHaveLength(9);
+      expect(PLAYER_DATA_TABLES).toHaveLength(10);
       expect(PLAYER_DATA_TABLES).toContain('game_state');
       expect(PLAYER_DATA_TABLES).toContain('saves_history');
       expect(PLAYER_DATA_TABLES).toContain('transaction_history');

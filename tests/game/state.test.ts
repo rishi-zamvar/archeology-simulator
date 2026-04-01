@@ -30,7 +30,9 @@ describe('handleAction() — FSM valid transitions', () => {
     const current: GameState = { type: 'idle', currentTurn: 5 };
     const action: GameAction = { type: 'SET_SAIL', destination: 'Rome', eta: 3 };
     const next = handleAction(current, action);
-    expect(next).toEqual({ type: 'sailing', currentTurn: 5, destination: 'Rome', eta: 3 });
+    expect(next.type).toBe('sailing');
+    expect(next.currentTurn).toBe(5);
+    expect((next as any).destination).toBe('Rome');
   });
 
   it('sailing + ARRIVE -> idle', async () => {

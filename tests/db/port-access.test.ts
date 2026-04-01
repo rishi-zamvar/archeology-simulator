@@ -30,7 +30,7 @@ describe('Port access queries', () => {
     expect(getPortAccessLevel(db, 'nonexistent_port')).toBe('unknown');
   });
 
-  it('test_givenSeededPorts_whenGetAllPortAccess_thenPiraeusUnlockedCorinthUnlockedMiletusDiscovered', async () => {
+  it('test_givenSeededPorts_whenGetAllPortAccess_thenPiraeusUnlockedNeighborsAndTyreDiscovered', async () => {
     const { seedStartingPorts, getAllPortAccess } = await import('../../src/main/db/queries');
     seedStartingPorts(db);
 
@@ -38,20 +38,23 @@ describe('Port access queries', () => {
 
     const athens = all.find(p => p.portId === 'athens');
     const corinth = all.find(p => p.portId === 'corinth');
+    const sparta = all.find(p => p.portId === 'sparta');
     const miletos = all.find(p => p.portId === 'miletos');
+    const tyre = all.find(p => p.portId === 'tyre');
     const carthage = all.find(p => p.portId === 'carthage');
 
     expect(athens?.status).toBe('unlocked');
     expect(athens?.unlockMethod).toBe('starting_port');
-    expect(corinth?.status).toBe('unlocked');
-    expect(corinth?.unlockMethod).toBe('starting_port');
+    expect(corinth?.status).toBe('discovered');
+    expect(sparta?.status).toBe('discovered');
     expect(miletos?.status).toBe('discovered');
-    expect(miletos?.unlockMethod).toBe('starting_port');
+    expect(tyre?.status).toBe('discovered');
+    expect(tyre?.unlockMethod).toBe('quest_destination');
     expect(carthage?.status).toBe('unknown');
 
-    // Exactly 3 non-unknown ports
+    // Exactly 5 non-unknown ports (athens + corinth + sparta + miletos + tyre)
     const nonUnknown = all.filter(p => p.status !== 'unknown');
-    expect(nonUnknown).toHaveLength(3);
+    expect(nonUnknown).toHaveLength(5);
   });
 
   it('test_givenUnknownPort_whenAutoDiscover_thenStatusBecomesDiscovered', async () => {
@@ -145,7 +148,7 @@ describe('Port access queries', () => {
     expect(carthageRow.status).toBe('unknown');
 
     const version = legacyDb.prepare('SELECT version FROM schema_version').get() as { version: number };
-    expect(version.version).toBe(9);
+    expect(version.version).toBe(10);
 
     legacyDb.close();
     // Reassign db so afterEach doesn't try to close a closed db
