@@ -47,11 +47,12 @@ h1, h2, h3, h4, h5, h6 {
   font-family: 'Cinzel', 'Palatino Linotype', Georgia, serif;
 }
 
-/* ── Leaflet map: parchment / sepia tile filter ──────────────────────── */
+/* ── Leaflet map: blue water with parchment land ──────────────────────── */
 
-/* Apply sepia/parchment filter to all map tiles */
+/* Show real blue water with warm-tinted land masses */
 .leaflet-tile {
-  filter: sepia(60%) saturate(80%) brightness(105%);
+  filter: sepia(15%) saturate(120%) brightness(105%);
+  transition: filter 1.5s ease;
 }
 
 /* ── Water wave animation (active during sailing) ──────────────────── */
@@ -71,46 +72,136 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Rough seas (storm weather) — faster, more pronounced movement */
 .sailing-storm .leaflet-tile-pane {
-  animation: water-wave 1.5s ease-in-out infinite;
+  animation: water-wave 1.2s ease-in-out infinite;
 }
 
-/* Storm overlay tint — darker, bluer water */
+/* Storm tiles — darker, more saturated blue, dramatic */
 .sailing-storm .leaflet-tile {
-  filter: sepia(30%) saturate(60%) brightness(85%) hue-rotate(10deg);
-  transition: filter 1s ease;
+  filter: sepia(5%) saturate(150%) brightness(75%) contrast(110%);
+  transition: filter 1.5s ease;
 }
 
-/* Winter overlay — cooler, greyer tones */
+/* Winter tiles — cool blue-grey desaturated tones */
 .sailing-winter .leaflet-tile {
-  filter: sepia(40%) saturate(50%) brightness(95%) hue-rotate(15deg);
-  transition: filter 1s ease;
+  filter: sepia(5%) saturate(80%) brightness(90%) hue-rotate(10deg);
+  transition: filter 1.5s ease;
 }
 
-/* Spring/summer — warm, bright tones (default parchment) */
+/* Calm/summer tiles — bright and clear */
 .sailing-calm .leaflet-tile {
-  filter: sepia(60%) saturate(80%) brightness(108%);
-  transition: filter 1s ease;
+  filter: sepia(10%) saturate(130%) brightness(110%);
+  transition: filter 1.5s ease;
 }
 
-/* Ship icon slight bob animation */
+/* ── Ship icon animation ──────────────────────────────────────────── */
+
 .ship-icon {
-  animation: ship-bob 2s ease-in-out infinite;
+  animation: ship-bob 2.5s ease-in-out infinite;
 }
 
 @keyframes ship-bob {
   0%, 100% { transform: translateY(0); }
-  50%      { transform: translateY(-2px); }
+  50%      { transform: translateY(-3px); }
 }
 
-/* Storm ship bob — more dramatic */
 .sailing-storm .ship-icon {
-  animation: ship-bob-storm 0.8s ease-in-out infinite;
+  animation: ship-bob-storm 0.7s ease-in-out infinite;
 }
 
 @keyframes ship-bob-storm {
   0%, 100% { transform: translateY(0) rotate(0deg); }
-  25%      { transform: translateY(-3px) rotate(2deg); }
-  75%      { transform: translateY(2px) rotate(-2deg); }
+  25%      { transform: translateY(-4px) rotate(3deg); }
+  75%      { transform: translateY(3px) rotate(-3deg); }
+}
+
+/* ── Wind streaks ──────────────────────────────────────────────────── */
+
+.wind-streaks {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+@keyframes wind-blow {
+  0%   { transform: translateX(-100%) translateY(0) rotate(-15deg); opacity: 0; }
+  10%  { opacity: 1; }
+  90%  { opacity: 1; }
+  100% { transform: translateX(120vw) translateY(20px) rotate(-15deg); opacity: 0; }
+}
+
+@keyframes wind-blow-storm {
+  0%   { transform: translateX(-100%) translateY(0) rotate(-25deg); opacity: 0; }
+  5%   { opacity: 1; }
+  95%  { opacity: 1; }
+  100% { transform: translateX(120vw) translateY(40px) rotate(-25deg); opacity: 0; }
+}
+
+.wind-line {
+  position: absolute;
+  height: 1.5px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
+  border-radius: 1px;
+  animation: wind-blow 4s linear infinite;
+}
+
+.wind-storm .wind-line {
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(200, 210, 230, 0.7), rgba(255, 255, 255, 0.5), transparent);
+  animation: wind-blow-storm 2s linear infinite;
+}
+
+/* ── Rain drops ────────────────────────────────────────────────────── */
+
+.rain-container {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+@keyframes rain-fall {
+  0%   { transform: translateY(-20px) translateX(0); opacity: 0; }
+  10%  { opacity: 1; }
+  100% { transform: translateY(100vh) translateX(-30px); opacity: 0.2; }
+}
+
+.raindrop {
+  position: absolute;
+  top: -20px;
+  width: 1.5px;
+  height: 12px;
+  background: linear-gradient(180deg, transparent, rgba(150, 170, 210, 0.7));
+  border-radius: 0 0 2px 2px;
+  animation: rain-fall 1s linear infinite;
+  transform: rotate(-10deg);
+}
+
+/* ── Lightning flash ───────────────────────────────────────────────── */
+
+@keyframes lightning {
+  0%, 92%, 94%, 96%, 100% { opacity: 0; }
+  93%  { opacity: 0.6; }
+  95%  { opacity: 0.3; }
+}
+
+.lightning-flash {
+  position: absolute;
+  inset: 0;
+  background: rgba(200, 210, 240, 0.4);
+  pointer-events: none;
+  animation: lightning 6s ease-in-out infinite;
+}
+
+/* ── Weather gradient pulse ────────────────────────────────────────── */
+
+@keyframes gradient-drift {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.7; transform: scale(1.05); }
+}
+
+.weather-gradient {
+  animation: gradient-drift 8s ease-in-out infinite;
 }
 
 /* Port marker icon */

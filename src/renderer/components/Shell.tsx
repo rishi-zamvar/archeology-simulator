@@ -24,6 +24,7 @@ import CargoHold from './CargoHold';
 import ProfitDisplay from './ProfitDisplay';
 import ShipMarker from './ShipMarker';
 import SailingOverlay from './SailingOverlay';
+import WeatherOverlay from './WeatherOverlay';
 import EventCard from './EventCard';
 import TutorialModal from './TutorialModal';
 import Logbook from './Logbook';
@@ -297,6 +298,13 @@ export default function Shell(): React.ReactElement {
           )}
         </MapArea>
       </div>
+
+      {/* ── Weather effects overlay (wind streaks, rain, doppler gradient) ── */}
+      <WeatherOverlay
+        season={weatherMods.season}
+        stormWeight={weatherMods.stormWeight}
+        isActive={isSailing}
+      />
 
       {/* ── Sailing overlay (top-center, above map) ──────────────────── */}
       {isSailing && sailingOverlayData && sailingState && (
