@@ -103,7 +103,7 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 16-01-PLAN.md -- Migration v8, port lore seeding (25 ports), ambient descriptions, query functions, ports.json sync
+- [x] 16-01-PLAN.md -- Migration v8, port lore seeding (25 ports), ambient descriptions, query functions, ports.json sync
 - [x] 16-02-PLAN.md -- 5 new trade goods (papyrus, silver, glass, garum, silphium) with port inventory matrices
 - [ ] 16-03-PLAN.md -- IPC + UI wiring (lore display, ambient arrival text), sea route waypoints, human verification
 
@@ -168,7 +168,7 @@ Note: Phase 15 and Phase 16 can proceed in parallel after Phase 14 completes. Ph
 | 13. Infrastructure & Migration System | v2.0 | 2/2 | Complete    | 2026-04-01 |
 | 14. Dialogue Engine & Content Pipeline | v2.0 | 2/2 | Complete    | 2026-04-01 |
 | 15. Quest System Foundation | v2.0 | 3/3 | Complete    | 2026-04-01 |
-| 16. Port Content & World Building | v2.0 | 0/3 | In progress | - |
+| 16. Port Content & World Building | v2.0 | 2/3 | In Progress|  |
 | 17. NPC Characters & Dialogue Content | v2.0 | 0/TBD | Not started | - |
 | 18. Reputation & Trade Integration | v2.0 | 0/TBD | Not started | - |
 | 19. Progressive Port Unlocking | v2.0 | 0/TBD | Not started | - |

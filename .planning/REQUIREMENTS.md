@@ -2,10 +2,10 @@
 
 ## Port Content & World Building
 
-- [ ] **PORT-01**: Each port displays rich historical lore — culture, customs, religion, daily life, and what the region is known for
+- [x] **PORT-01**: Each port displays rich historical lore — culture, customs, religion, daily life, and what the region is known for
 - [x] **PORT-02**: Regional trade goods are historically accurate (Tyrian purple from Sidon, grain from Egypt, olive oil from Athens, silver from Iberia, cedar from Byblos)
 - [ ] **PORT-03**: Player can read "Port Lore" sections teaching real ancient history (Phoenician alphabet, Athenian democracy, Egyptian grain trade)
-- [ ] **PORT-04**: World expanded to 15-25 historically important ports (Tyre, Sidon, Corinth, Syracuse, Massalia, Gades, Memphis, Knossos, etc.)
+- [x] **PORT-04**: World expanded to 15-25 historically important ports (Tyre, Sidon, Corinth, Syracuse, Massalia, Gades, Memphis, Knossos, etc.)
 
 ## Quest & Narrative
 
@@ -43,7 +43,7 @@
 
 - [ ] **POLISH-01**: Intro sequence at Piraeus sets the scene and introduces the story
 - [ ] **POLISH-02**: Historically accurate voyage events expanded beyond current 24
-- [ ] **POLISH-03**: Port-specific ambient descriptions (sights, sounds, smells a merchant would experience)
+- [x] **POLISH-03**: Port-specific ambient descriptions (sights, sounds, smells a merchant would experience)
 
 ## Future Requirements (deferred)
 
