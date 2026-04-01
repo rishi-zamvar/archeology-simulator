@@ -22,7 +22,8 @@ import { useEffect, useRef } from 'react';
 import { useMap } from 'react-leaflet';
 import L from 'leaflet';
 import type { SailingState } from '../../game/types';
-import { calculateAnimationDuration, interpolateLatLng } from '../../game/sailing';
+import { calculateAnimationDuration } from '../../game/sailing';
+import { getSeaRoute } from '../../game/sea-routes';
 import type { SailingTurnResult } from '../../game/sailing';
 
 // Import leaflet.motion for side-effects -- it mutates the global L
@@ -116,6 +117,14 @@ export default function ShipMarker({
     const startCoords: [number, number] = deptCoords ?? [destCoords[0] - 0.5, destCoords[1] - 0.5];
     const endCoords: [number, number] = destCoords;
 
+    // Build sea route with waypoints that curve around land masses
+    const seaRoute = getSeaRoute(
+      departurePortId ?? '',
+      destination,
+      startCoords,
+      endCoords,
+    );
+
     // Remove any previous motion layer
     if (motionLayerRef.current) {
       motionLayerRef.current.motionStop();
@@ -129,8 +138,8 @@ export default function ShipMarker({
       routeLineRef.current = null;
     }
 
-    // 1. Static dashed route line (SAIL-01)
-    const routeLine = L.polyline([startCoords, endCoords], {
+    // 1. Static dashed route line following sea route waypoints (SAIL-01)
+    const routeLine = L.polyline(seaRoute, {
       color: '#7a5c45',
       weight: 2,
       dashArray: '10, 8',
@@ -142,56 +151,71 @@ export default function ShipMarker({
     // 2. Calculate distance-proportional duration (SAIL-02)
     const totalTurns = sailingState.voyageTurnsTotal ?? 1;
     const totalMs = calculateAnimationDuration(totalTurns);
-    const msPerTurn = totalMs / totalTurns;
+
+    // Total route segments (waypoint-to-waypoint segments distributed across turns)
+    const routeSegments = seaRoute.length - 1;
+    const msPerRouteSegment = totalMs / routeSegments;
+
+    // Map each game turn to a range of route segments
+    // Distribute route segments evenly across turns
+    const segmentsPerTurn = routeSegments / totalTurns;
 
     // 4. Camera: frame the full route initially (SAIL-03)
-    map.fitBounds(L.latLngBounds(startCoords, endCoords).pad(0.2));
+    const routeBounds = L.latLngBounds(seaRoute.map(p => L.latLng(p[0], p[1])));
+    map.fitBounds(routeBounds.pad(0.2));
 
     // Notify overlay of voyage start
     onVoyageStarted?.(totalTurns);
 
     const lm = L as LeafletWithMotion;
 
-    // 3. Segmented per-turn animation loop (SAIL-05)
+    // 3. Segmented per-turn animation along sea route waypoints (SAIL-05)
     async function runVoyageAnimation() {
-      for (let i = 0; i < totalTurns; i++) {
+      let currentSegIdx = 0;
+
+      for (let turn = 0; turn < totalTurns; turn++) {
         if (cleanedUpRef.current) return;
 
-        // Compute segment start/end via interpolation
-        const t0 = i / totalTurns;
-        const t1 = (i + 1) / totalTurns;
-        const segStart = interpolateLatLng(startCoords, endCoords, t0);
-        const segEnd = interpolateLatLng(startCoords, endCoords, t1);
+        // How many route segments this turn covers
+        const turnEndSeg = Math.min(routeSegments, Math.round((turn + 1) * segmentsPerTurn));
 
-        // Create a leaflet.motion polyline for this segment
-        const segmentLayer = lm.motion.polyline(
-          [segStart, segEnd],
-          { color: 'transparent', weight: 0 },
-          { auto: true, duration: msPerTurn },
-          { icon: createShipIcon(), showMarker: true, removeOnEnd: false },
-        );
+        // Animate through each route segment in this turn
+        while (currentSegIdx < turnEndSeg) {
+          if (cleanedUpRef.current) return;
 
-        // Wait for segment animation to complete
-        await new Promise<void>((resolve) => {
-          segmentLayer.on('motion-ended', () => {
-            resolve();
+          const segStart = seaRoute[currentSegIdx];
+          const segEnd = seaRoute[currentSegIdx + 1];
+
+          // Create a leaflet.motion polyline for this waypoint segment
+          const segmentLayer = lm.motion.polyline(
+            [segStart, segEnd],
+            { color: 'transparent', weight: 0 },
+            { auto: true, duration: msPerRouteSegment },
+            { icon: createShipIcon(), showMarker: true, removeOnEnd: false },
+          );
+
+          // Wait for segment animation to complete
+          await new Promise<void>((resolve) => {
+            segmentLayer.on('motion-ended', () => resolve());
+            segmentLayer.addTo(map);
           });
-          segmentLayer.addTo(map);
-        });
 
-        if (cleanedUpRef.current) {
+          if (cleanedUpRef.current) {
+            map.removeLayer(segmentLayer as unknown as L.Layer);
+            return;
+          }
+
+          // Remove the segment motion layer
+          segmentLayer.motionStop();
           map.removeLayer(segmentLayer as unknown as L.Layer);
-          return;
+
+          // Camera follow: pan to segment end (SAIL-03)
+          map.panTo(segEnd, { animate: true, duration: 0.3 });
+
+          currentSegIdx++;
         }
 
-        // Remove the segment motion layer
-        segmentLayer.motionStop();
-        map.removeLayer(segmentLayer as unknown as L.Layer);
-
-        // Camera follow: pan to segment end (SAIL-03)
-        map.panTo(segEnd, { animate: true, duration: 0.3 });
-
-        // Call advanceSailingTurn IPC
+        // After all route segments for this turn, advance the game turn
         const result = await window.api.game.advanceSailingTurn();
         if (cleanedUpRef.current) return;
 
