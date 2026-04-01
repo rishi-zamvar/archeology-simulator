@@ -22,9 +22,10 @@ interface MapAreaProps {
   onPortSelected?: () => void;
   onRefreshAccessReady?: (refreshAccess: () => void) => void;
   questTargetPorts?: Set<string>;
+  currentPortId?: string | null;
 }
 
-export default function MapArea({ children, onPortSelected, onRefreshAccessReady, questTargetPorts }: MapAreaProps): React.ReactElement {
+export default function MapArea({ children, onPortSelected, onRefreshAccessReady, questTargetPorts, currentPortId }: MapAreaProps): React.ReactElement {
   const { ports, portAccessMap, isLoading, error, refreshAccess } = useMapPorts();
   const { setSelectedPort } = useUIStore();
 
@@ -34,6 +35,8 @@ export default function MapArea({ children, onPortSelected, onRefreshAccessReady
   }, [refreshAccess, onRefreshAccessReady]);
 
   const handlePortClick = useCallback((portId: string) => {
+    // Only allow clicking the port you're currently at
+    if (currentPortId && portId !== currentPortId) return;
     setSelectedPort(portId);
     // Transition game FSM to trading state so buy/sell IPC works
     window.api.game.action({ type: 'START_TRADE', port: portId }).catch(() => {
@@ -41,7 +44,7 @@ export default function MapArea({ children, onPortSelected, onRefreshAccessReady
     });
     // Notify parent to switch to port scene view
     onPortSelected?.();
-  }, [setSelectedPort, onPortSelected]);
+  }, [setSelectedPort, onPortSelected, currentPortId]);
 
   if (error) {
     return (

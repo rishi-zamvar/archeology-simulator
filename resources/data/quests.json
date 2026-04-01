@@ -58,7 +58,7 @@
       "description": "Hanno, customs collector at Ostia, asks you to bring fine Athenian olive oil to the growing city of Rome.",
       "objectives": [
         { "id": "obj_talk_hanno", "type": "talk_to_npc", "description": "Speak with Hanno at Ostia", "npcId": "hanno" },
-        { "id": "obj_buy_oil_athens", "type": "complete_trade", "description": "Purchase olive oil at Athens", "portId": "athens", "goodId": "olive_oil", "action": "buy" },
+        { "id": "obj_buy_oil_athens", "type": "complete_trade", "description": "Purchase olive oil at Piraeus", "portId": "athens", "goodId": "olive_oil", "action": "buy" },
         { "id": "obj_deliver_oil_ostia", "type": "deliver_cargo", "description": "Deliver olive oil to Ostia", "portId": "ostia", "goodId": "olive_oil", "minQuantity": 3 }
       ],
       "prerequisites": null,

@@ -86,7 +86,7 @@ export function seedPorts(db: Database.Database): void {
 
   // [id, ancient_name, modern_name, lat, lng, region, description, pleiades_id, cultural_description, ambient_description]
   const ports: Array<[string, string, string, number, number, string, string, string, string, string]> = [
-    ['athens',     'Athenai',     'Athens',     37.97, 23.73, 'greece',
+    ['athens',     'Peiraieus',   'Athens',     37.95, 23.64, 'greece',
       'The intellectual heart of the ancient world. Athens exported olive oil, pottery, and silver while importing grain from the Black Sea region.',
       '579885',
       "Piraeus was Athens' busy seaport, three miles from the city itself. Silver mined from the Laurion hills nearby paid for Athens' famous trireme warships and filled its treasury. Olive oil, fine pottery, and Athenian silver coins bearing the owl of Athena traveled the Mediterranean from this harbor.",

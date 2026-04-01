@@ -455,6 +455,7 @@ export default function Shell(): React.ReactElement {
         <MapArea
           onPortSelected={() => setShowFullMap(false)}
           onRefreshAccessReady={handleRefreshAccessReady}
+          currentPortId={selectedPortId}
           questTargetPorts={(() => {
             const targets = new Set<string>();
             if (activeQuest) {
