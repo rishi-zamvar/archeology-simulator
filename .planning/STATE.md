@@ -4,13 +4,13 @@ milestone: v2.1
 milestone_name: Immersion & Polish
 status: executing
 stopped_at: Roadmap created for v2.1 milestone
-last_updated: "2026-04-01T23:09:31.107Z"
+last_updated: "2026-04-01T23:14:20.577Z"
 last_activity: 2026-04-01
 progress:
   total_phases: 6
   completed_phases: 0
   total_plans: 0
-  completed_plans: 1
+  completed_plans: 2
   percent: 79
 ---
 
@@ -21,13 +21,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-02)
 
 **Core value:** Students learn ancient Mediterranean history by making decisions as a merchant captain, not by reading about them.
-**Current focus:** Phase 24 — animation-effects
+**Current focus:** Phase 25 — visual-immersion
 
 ## Current Position
 
-Phase: 25
+Phase: 26
 Plan: Not started
-Status: Executing Phase 24
+Status: Executing Phase 25
 Last activity: 2026-04-01
 
 Progress: [████████████████░░░░] 79% (phases 1-23 complete, 24-29 remaining)
