@@ -37,7 +37,7 @@ Seasonal weather with Athenian calendar, captain's journal with auto-logging, an
 - [x] **Phase 13: Infrastructure & Migration System** - Version-tracked DB migrations and new tables for quests, NPCs, reputation, and port status (completed 2026-04-01)
 - [x] **Phase 14: Dialogue Engine & Content Pipeline** - JSON-driven dialogue system with condition evaluation, content templates, and build-time validation (completed 2026-04-01)
 - [x] **Phase 15: Quest System Foundation** - Observer-pattern quest engine with separate persistence, quest FSM, and Piraeus starting quest (completed 2026-04-01)
-- [ ] **Phase 16: Port Content & World Building** - Historically researched lore, trade specializations, and ambient descriptions for 10 ports
+- [ ] **Phase 16: Port Content & World Building** - Historically researched lore, trade specializations, and ambient descriptions for 25 ports
 - [ ] **Phase 17: NPC Characters & Dialogue Content** - 5 key NPCs with portraits, historically grounded dialogue trees, and quest hooks at ports
 - [ ] **Phase 18: Reputation & Trade Integration** - Reputation tracking with qualitative descriptors, price modifiers, and recovery paths
 - [ ] **Phase 19: Progressive Port Unlocking** - Fog-of-knowledge discovery model with tiered port status and NPC-driven reveals
@@ -96,12 +96,16 @@ Plans:
 **Depends on**: Phase 14
 **Requirements**: PORT-01, PORT-02, PORT-03, PORT-04, POLISH-03
 **Success Criteria** (what must be TRUE):
-  1. 10 ports have full lore sections (100-200 words each) covering culture, customs, religion, daily life, and regional significance -- every historical claim cites a source
+  1. 25 ports have full lore sections (100-200 words each) covering culture, customs, religion, daily life, and regional significance -- every historical claim cites a source
   2. Regional trade goods are historically accurate per port (Tyrian purple from Sidon, grain from Egypt, olive oil from Athens, etc.)
   3. Each port has ambient descriptions (sights, sounds, smells a merchant would experience) displayed on arrival
   4. Port content follows a consistent template with uniform depth, tone, and temporal framing (circa 540-530 BCE)
-**Plans**: TBD
-**UI hint**: yes
+**Plans**: 3 plans
+
+Plans:
+- [ ] 16-01-PLAN.md -- Migration v8, port lore seeding (25 ports), ambient descriptions, query functions, ports.json sync
+- [ ] 16-02-PLAN.md -- 5 new trade goods (papyrus, silver, glass, garum, silphium) with port inventory matrices
+- [ ] 16-03-PLAN.md -- IPC + UI wiring (lore display, ambient arrival text), sea route waypoints, human verification
 
 ### Phase 17: NPC Characters & Dialogue Content
 **Goal**: Players meet named NPCs who share historical knowledge, give quests, and reveal new trade routes through branching dialogue
@@ -164,7 +168,7 @@ Note: Phase 15 and Phase 16 can proceed in parallel after Phase 14 completes. Ph
 | 13. Infrastructure & Migration System | v2.0 | 2/2 | Complete    | 2026-04-01 |
 | 14. Dialogue Engine & Content Pipeline | v2.0 | 2/2 | Complete    | 2026-04-01 |
 | 15. Quest System Foundation | v2.0 | 3/3 | Complete    | 2026-04-01 |
-| 16. Port Content & World Building | v2.0 | 0/TBD | Not started | - |
+| 16. Port Content & World Building | v2.0 | 0/3 | In progress | - |
 | 17. NPC Characters & Dialogue Content | v2.0 | 0/TBD | Not started | - |
 | 18. Reputation & Trade Integration | v2.0 | 0/TBD | Not started | - |
 | 19. Progressive Port Unlocking | v2.0 | 0/TBD | Not started | - |
