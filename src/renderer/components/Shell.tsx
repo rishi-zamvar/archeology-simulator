@@ -333,13 +333,18 @@ export default function Shell(): React.ReactElement {
 
   // Phase 15: Fetch active quest for indicator on mount
   useEffect(() => {
-    window.api.quest.getActive().then((res) => {
-      if (res.success && res.data.length > 0) {
-        setAllActiveQuests(res.data);
-        // Show the first non-meta quest (not merchants_odyssey) for the indicator
-        const subQuest = res.data.find((q: { quest: QuestDefinition }) => q.quest.id !== 'merchants_odyssey') ?? res.data[0];
+    // Fetch ALL quests (active + not started) for the journey panel
+    Promise.all([
+      window.api.quest.getActive(),
+      window.api.quest.getAll(),
+    ]).then(([activeRes, allRes]) => {
+      if (activeRes.success && activeRes.data.length > 0) {
+        const subQuest = activeRes.data.find((q: { quest: QuestDefinition }) => q.quest.id !== 'merchants_odyssey') ?? activeRes.data[0];
         setActiveQuest(subQuest);
-        prevQuestRef.current = res.data;
+        prevQuestRef.current = activeRes.data;
+      }
+      if (allRes.success) {
+        setAllActiveQuests(allRes.data);
       }
     });
   }, []);
@@ -349,9 +354,12 @@ export default function Shell(): React.ReactElement {
     const cleanup = window.api.subscribe('game:updated', () => {
       window.api.quest.getActive().then((res) => {
         if (res.success) {
-          setAllActiveQuests(res.data);
           const subQuest = res.data.find((q: { quest: QuestDefinition }) => q.quest.id !== 'merchants_odyssey') ?? (res.data.length > 0 ? res.data[0] : null);
           setActiveQuest(subQuest);
+          // Also refresh all quests for the journey panel
+          window.api.quest.getAll().then(allRes => {
+            if (allRes.success) setAllActiveQuests(allRes.data);
+          }).catch(() => {});
 
           // Detect quest completion: quest was active before, not active now
           const prevIds = new Set(prevQuestRef.current.map(q => q.quest.id));
@@ -822,9 +830,13 @@ export default function Shell(): React.ReactElement {
                 </button>
               </div>
 
-              {/* Show each active quest (skip meta-quest, show real quests first) */}
+              {/* Show all quests — active first, then not_started, meta-quest last */}
               {[...allActiveQuests]
-                .sort((a, b) => (a.quest.id === 'merchants_odyssey' ? 1 : 0) - (b.quest.id === 'merchants_odyssey' ? 1 : 0))
+                .filter(({ quest: q }) => q.id !== 'merchants_odyssey')
+                .sort((a, b) => {
+                  const order = { active: 0, not_started: 1, completed: 2 };
+                  return (order[a.progress.status as keyof typeof order] ?? 1) - (order[b.progress.status as keyof typeof order] ?? 1);
+                })
                 .map(({ quest: q, progress: p }) => (
                 <div key={q.id} style={{
                   marginBottom: '1rem',
@@ -843,20 +855,18 @@ export default function Shell(): React.ReactElement {
                     }}>
                       {q.name}
                     </h4>
-                    {q.id !== 'merchants_odyssey' && (
-                      <span style={{
-                        fontSize: '0.5rem',
-                        fontWeight: 700,
-                        color: '#fdf8f0',
-                        backgroundColor: '#c4956a',
-                        padding: '1px 6px',
-                        borderRadius: 3,
-                        letterSpacing: '0.08em',
-                        textTransform: 'uppercase',
-                      }}>
-                        ACTIVE
-                      </span>
-                    )}
+                    <span style={{
+                      fontSize: '0.5rem',
+                      fontWeight: 700,
+                      color: '#fdf8f0',
+                      backgroundColor: p.status === 'active' ? '#c0392b' : p.status === 'completed' ? '#2b5c4a' : '#aaa',
+                      padding: '1px 6px',
+                      borderRadius: 3,
+                      letterSpacing: '0.08em',
+                      textTransform: 'uppercase',
+                    }}>
+                      {p.status === 'active' ? 'ACTIVE' : p.status === 'completed' ? 'DONE' : 'UPCOMING'}
+                    </span>
                   </div>
 
                   <p style={{
@@ -902,8 +912,8 @@ export default function Shell(): React.ReactElement {
                     );
                   })}
 
-                  {/* Historical note for the active sub-quest */}
-                  {q.id !== 'merchants_odyssey' && q.historicalNote && (
+                  {/* Historical note */}
+                  {p.status === 'active' && q.historicalNote && (
                     <p style={{
                       fontFamily: "'Lora', Georgia, serif",
                       fontSize: '0.65rem',

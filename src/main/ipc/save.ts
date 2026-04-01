@@ -114,12 +114,14 @@ export function registerSaveIPCHandlers(db: Database.Database): void {
         saveGameStateAtomic(db, INITIAL_STATE);
         // Seed starting ports: Piraeus (athens) unlocked, Corinth unlocked, Miletus discovered
         seedStartingPorts(db);
-        // Seed merchants_odyssey meta-quest as active from the start
-        db.prepare(`
+        // Seed meta-quest and first sub-quest as active from the start
+        const seedQuest = db.prepare(`
           INSERT INTO quest_progress (quest_id, status, current_objective, started_at)
-          VALUES ('merchants_odyssey', 'active', 0, datetime('now'))
+          VALUES (?, 'active', 0, datetime('now'))
           ON CONFLICT(quest_id) DO NOTHING
-        `).run();
+        `);
+        seedQuest.run('merchants_odyssey');
+        seedQuest.run('tyrian_commission');
       });
       reset();
       return INITIAL_STATE;
