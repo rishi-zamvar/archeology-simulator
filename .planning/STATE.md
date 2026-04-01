@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: The Merchant's Odyssey
 status: executing
-stopped_at: Completed 15-01-PLAN.md
-last_updated: "2026-04-01T12:15:56.950Z"
+stopped_at: Completed 15-02-PLAN.md
+last_updated: "2026-04-01T12:22:19.445Z"
 last_activity: 2026-04-01
 progress:
   total_phases: 8
   completed_phases: 2
   total_plans: 7
-  completed_plans: 5
+  completed_plans: 6
   percent: 6
 ---
 
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-04-01)
 ## Current Position
 
 Phase: 15 (quest-system-foundation) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 Status: Ready to execute
 Last activity: 2026-04-01
 
@@ -56,6 +56,8 @@ Progress: [▓░░░░░░░░░] 6% (v2.0 milestone)
 - [Phase 14]: NPC availability re-checked on dialogue dismiss (effects may change conditions)
 - [Phase 15]: GameContext extended with currentPortId and recentTrades for quest objective evaluation
 - [Phase 15]: talk_to_npc quest objective is stub returning false -- Phase 17 will wire NPC dialogue state
+- [Phase 15]: evaluateActiveQuests is a plain exported function called after game actions, not an IPC handler
+- [Phase 15]: buildGameContext exported from dialogue.ts for reuse by quest.ts
 
 ### Blockers/Concerns
 
@@ -64,6 +66,6 @@ Progress: [▓░░░░░░░░░] 6% (v2.0 milestone)
 
 ## Session Continuity
 
-Last session: 2026-04-01T12:15:56.947Z
-Stopped at: Completed 15-01-PLAN.md
+Last session: 2026-04-01T12:22:19.443Z
+Stopped at: Completed 15-02-PLAN.md
 Resume file: None
