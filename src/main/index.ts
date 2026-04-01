@@ -17,6 +17,7 @@ import { registerSaveIPCHandlers } from './ipc/save';
 import { registerGameIPCHandlers } from './ipc/game';
 import { registerJournalIPCHandlers } from './ipc/journal';
 import { registerDialogueIPCHandlers } from './ipc/dialogue';
+import { registerQuestIPCHandlers } from './ipc/quest';
 import { createLogger } from './lib/logger';
 import { getResourcesBase } from './lib/paths';
 
@@ -119,6 +120,7 @@ app.whenReady().then(() => {
   registerGameIPCHandlers(db);
   registerJournalIPCHandlers(db);
   registerDialogueIPCHandlers(db);
+  registerQuestIPCHandlers(db);
 
   createWindow();
 

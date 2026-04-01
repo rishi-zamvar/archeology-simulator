@@ -88,7 +88,7 @@ function findDialogueFilesForPort(portId: string): DialogueFile[] {
 
 // ── Build GameContext from DB ───────────────────────────────────────────────
 
-function buildGameContext(db: Database.Database): GameContext {
+export function buildGameContext(db: Database.Database): GameContext {
   const state = loadGameState(db);
   const currentTurn = state?.currentTurn ?? 0;
   const { season } = getSeason(currentTurn);
@@ -126,6 +126,26 @@ function buildGameContext(db: Database.Database): GameContext {
     }
   }
 
+  // Current port ID — derived from game state
+  let currentPortId: string | null = null;
+  if (state && 'type' in state && state.type === 'trading' && 'selectedPort' in state) {
+    currentPortId = (state as { selectedPort?: string }).selectedPort ?? null;
+  }
+
+  // Recent trades — last 10 transactions for quest objective evaluation
+  const recentTrades: Array<{ goodId: string; portId: string; action: 'buy' | 'sell'; quantity: number }> = [];
+  const txRows = db.prepare(
+    'SELECT good_id, port_id, action, quantity FROM transaction_history ORDER BY id DESC LIMIT 10'
+  ).all() as Array<{ good_id: string; port_id: string; action: string; quantity: number }>;
+  for (const row of txRows) {
+    recentTrades.push({
+      goodId: row.good_id,
+      portId: row.port_id,
+      action: row.action as 'buy' | 'sell',
+      quantity: row.quantity,
+    });
+  }
+
   return {
     questProgress,
     reputation,
@@ -133,6 +153,8 @@ function buildGameContext(db: Database.Database): GameContext {
     cargo,
     currentTurn,
     season,
+    currentPortId,
+    recentTrades,
   };
 }
 

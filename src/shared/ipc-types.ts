@@ -76,6 +76,11 @@ export interface IPCBridge {
     advanceNode: (npcId: string, nodeId: string, choiceIndex: number) => Promise<IPCResponse<{ node: import('./game-types').DialogueNode | null; availableChoices: import('./game-types').DialogueChoice[]; effectsApplied: string[] }>>;
     getAvailableNpcs: (portId: string) => Promise<IPCResponse<Array<{ npcId: string; name: string }>>>;
   };
+  /** Phase 15: Quest System */
+  quest: {
+    getActive: () => Promise<IPCResponse<Array<{ quest: import('./game-types').QuestDefinition; progress: import('./game-types').QuestProgress }>>>;
+    getAll: () => Promise<IPCResponse<Array<{ quest: import('./game-types').QuestDefinition; progress: import('./game-types').QuestProgress }>>>;
+  };
   /** Phase 10: Captain's Journal */
   journal: {
     getEntries: (limit?: number) => Promise<IPCResponse<import('./game-types').JournalEntry[]>>;

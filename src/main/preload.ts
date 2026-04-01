@@ -69,6 +69,11 @@ const api: IPCBridge = {
     advanceNode: (npcId: string, nodeId: string, choiceIndex: number) => ipcRenderer!.invoke('dialogue:advanceNode', npcId, nodeId, choiceIndex),
     getAvailableNpcs: (portId: string) => ipcRenderer!.invoke('dialogue:getAvailableNpcs', portId),
   },
+  // Phase 15: Quest System
+  quest: {
+    getActive: () => ipcRenderer!.invoke('quest:getActive'),
+    getAll: () => ipcRenderer!.invoke('quest:getAll'),
+  },
   // Phase 10: Captain's Journal
   journal: {
     getEntries: (limit?: number) => ipcRenderer!.invoke('journal:getEntries', limit),

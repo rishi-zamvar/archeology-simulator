@@ -35,6 +35,7 @@ import {
   getCuratedImagesForPort,
   insertJournalEntry,
 } from '../db/queries';
+import { evaluateActiveQuests } from './quest';
 import { performAction } from '../../game/engine';
 import { getReachablePorts } from '../../game/voyage';
 import { rollVoyageEvent, resolveEventChoice } from '../../game/events';
@@ -115,6 +116,9 @@ export function registerGameIPCHandlers(db: Database.Database): void {
             `Arrived at ${arrPort?.ancientName ?? result.state.selectedPort}`,
             { portId: result.state.selectedPort, portName: arrPort?.ancientName ?? result.state.selectedPort }
           );
+
+          // Phase 15: Evaluate quests on port arrival
+          evaluateActiveQuests(db);
         }
 
         // Broadcast updated state to all renderer windows.
@@ -192,6 +196,8 @@ export function registerGameIPCHandlers(db: Database.Database): void {
     async (portId, goodId, qty) => {
       const inventory = buyGood(db, portId, goodId, qty);
       broadcastGameUpdated(db);
+      // Phase 15: Evaluate quests after trade
+      evaluateActiveQuests(db);
       return inventory;
     },
     (portId, goodId, qty) => {
@@ -211,6 +217,8 @@ export function registerGameIPCHandlers(db: Database.Database): void {
     async (portId, goodId, qty) => {
       const inventory = sellGood(db, portId, goodId, qty);
       broadcastGameUpdated(db);
+      // Phase 15: Evaluate quests after trade
+      evaluateActiveQuests(db);
       return inventory;
     },
     (portId, goodId, qty) => {
