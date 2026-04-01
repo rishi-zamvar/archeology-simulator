@@ -1349,8 +1349,7 @@ export function setPortAccessLevel(
 
 /**
  * Seed starting ports for a new game.
- * Athens unlocked (starting port), Corinth discovered (nearby neighbor),
- * Tyre discovered (first quest destination — The Tyrian Commission).
+ * Athens unlocked (starting port). Nearby Greek ports + quest target discovered.
  * All other ports remain unknown until discovered through gameplay.
  */
 export function seedStartingPorts(db: Database.Database): void {
@@ -1360,8 +1359,13 @@ export function seedStartingPorts(db: Database.Database): void {
   `);
 
   const seedAll = db.transaction(() => {
+    // Starting port — fully unlocked
     insert.run('athens', 'unlocked', 1, 'starting_port');
+    // Nearby Greek ports — discovered (visible, can sail to)
     insert.run('corinth', 'discovered', 1, 'starting_port');
+    insert.run('sparta', 'discovered', 1, 'starting_port');
+    insert.run('miletos', 'discovered', 1, 'starting_port');
+    // Quest target — discovered so it's visible on map
     insert.run('tyre', 'discovered', 1, 'quest_destination');
   });
 
