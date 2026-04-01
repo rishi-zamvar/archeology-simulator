@@ -63,6 +63,12 @@ const api: IPCBridge = {
     scanResourceImages: () =>
       ipcRenderer!.invoke('game:scan-resource-images'),
   },
+  // Phase 14: Dialogue Engine
+  dialogue: {
+    getNodes: (npcId: string) => ipcRenderer!.invoke('dialogue:getNodes', npcId),
+    advanceNode: (npcId: string, nodeId: string, choiceIndex: number) => ipcRenderer!.invoke('dialogue:advanceNode', npcId, nodeId, choiceIndex),
+    getAvailableNpcs: (portId: string) => ipcRenderer!.invoke('dialogue:getAvailableNpcs', portId),
+  },
   // Phase 10: Captain's Journal
   journal: {
     getEntries: (limit?: number) => ipcRenderer!.invoke('journal:getEntries', limit),

@@ -70,6 +70,12 @@ export interface IPCBridge {
       goods: Record<string, string[]>;
     }>>;
   };
+  /** Phase 14: Dialogue Engine */
+  dialogue: {
+    getNodes: (npcId: string) => Promise<IPCResponse<{ node: import('./game-types').DialogueNode; availableChoices: import('./game-types').DialogueChoice[]; npcId: string }>>;
+    advanceNode: (npcId: string, nodeId: string, choiceIndex: number) => Promise<IPCResponse<{ node: import('./game-types').DialogueNode | null; availableChoices: import('./game-types').DialogueChoice[]; effectsApplied: string[] }>>;
+    getAvailableNpcs: (portId: string) => Promise<IPCResponse<Array<{ npcId: string; name: string }>>>;
+  };
   /** Phase 10: Captain's Journal */
   journal: {
     getEntries: (limit?: number) => Promise<IPCResponse<import('./game-types').JournalEntry[]>>;

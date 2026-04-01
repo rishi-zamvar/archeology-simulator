@@ -16,6 +16,7 @@ import { seedPorts, seedGoods, seedPortInventory, seedCuratedImages } from './db
 import { registerSaveIPCHandlers } from './ipc/save';
 import { registerGameIPCHandlers } from './ipc/game';
 import { registerJournalIPCHandlers } from './ipc/journal';
+import { registerDialogueIPCHandlers } from './ipc/dialogue';
 import { createLogger } from './lib/logger';
 import { getResourcesBase } from './lib/paths';
 
@@ -117,6 +118,7 @@ app.whenReady().then(() => {
   registerSaveIPCHandlers(db);
   registerGameIPCHandlers(db);
   registerJournalIPCHandlers(db);
+  registerDialogueIPCHandlers(db);
 
   createWindow();
 
