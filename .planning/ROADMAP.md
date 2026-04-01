@@ -39,7 +39,7 @@ Seasonal weather with Athenian calendar, captain's journal with auto-logging, an
 - [x] **Phase 15: Quest System Foundation** - Observer-pattern quest engine with separate persistence, quest FSM, and Piraeus starting quest (completed 2026-04-01)
 - [x] **Phase 16: Port Content & World Building** - Historically researched lore, trade specializations, and ambient descriptions for 25 ports (completed 2026-04-01)
 - [x] **Phase 17: NPC Characters & Dialogue Content** - 5 key NPCs with portraits, historically grounded dialogue trees, and quest hooks at ports (completed 2026-04-01)
-- [ ] **Phase 18: Reputation & Trade Integration** - Reputation tracking with qualitative descriptors, price modifiers, and recovery paths
+- [x] **Phase 18: Reputation & Trade Integration** - Reputation tracking with qualitative descriptors, price modifiers, and recovery paths (completed 2026-04-01)
 - [ ] **Phase 19: Progressive Port Unlocking** - Fog-of-knowledge discovery model with tiered port status and NPC-driven reveals
 - [ ] **Phase 20: Journal Integration & Game Polish** - Quest/NPC journal entries with priority taxonomy, intro sequence, expanded events, and win condition
 
@@ -134,8 +134,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 18-01-PLAN.md -- Pure reputation logic (tiers, price modifiers, trade gain formula), query integration, unit tests
-- [ ] 18-02-PLAN.md -- IPC handler, preload bridge, reputation display in PortInfoPanel and TradePanel, human verification
+- [x] 18-01-PLAN.md -- Pure reputation logic (tiers, price modifiers, trade gain formula), query integration, unit tests
+- [x] 18-02-PLAN.md -- IPC handler, preload bridge, reputation display in PortInfoPanel and TradePanel, human verification
 
 ### Phase 19: Progressive Port Unlocking
 **Goal**: Players discover the Mediterranean progressively through trade reputation and NPC introductions, with a fog-of-knowledge model that preserves the open-world feel
@@ -176,6 +176,6 @@ Note: Phase 15 and Phase 16 can proceed in parallel after Phase 14 completes. Ph
 | 15. Quest System Foundation | v2.0 | 3/3 | Complete    | 2026-04-01 |
 | 16. Port Content & World Building | v2.0 | 3/3 | Complete    | 2026-04-01 |
 | 17. NPC Characters & Dialogue Content | v2.0 | 2/2 | Complete    | 2026-04-01 |
-| 18. Reputation & Trade Integration | v2.0 | 1/2 | In progress | - |
+| 18. Reputation & Trade Integration | v2.0 | 2/2 | Complete   | 2026-04-01 |
 | 19. Progressive Port Unlocking | v2.0 | 0/TBD | Not started | - |
 | 20. Journal Integration & Game Polish | v2.0 | 0/TBD | Not started | - |
