@@ -82,16 +82,6 @@ export default function Shell(): React.ReactElement {
     }).catch(() => { /* non-fatal: defaults to false, hiding Continue */ });
   }, []);
 
-  const handleContinue = useCallback(() => {
-    setScreen('game');
-  }, []);
-
-  const handleNewGame = useCallback(() => {
-    window.api?.game?.newGame?.().then(res => {
-      if (res.success) setScreen('intro');
-    }).catch((err: unknown) => showError('Failed to start new game: ' + (err instanceof Error ? err.message : 'Unknown error')));
-  }, [showError]);
-
   // Full-map overlay — shown when player clicks mini-map from port scene
   const [showFullMap, setShowFullMap] = useState(false);
   // Mare clausum modal — set to destination port ID when navigating in winter
@@ -429,11 +419,29 @@ export default function Shell(): React.ReactElement {
     ? selectedPortId.charAt(0).toUpperCase() + selectedPortId.slice(1).replace(/_/g, ' ')
     : '';
 
+  // Screen transition state (FX-05)
+  const [transitioning, setTransitioning] = useState(false);
+  const pendingScreenRef = useRef<typeof screen | null>(null);
+
+  const transitionTo = useCallback((nextScreen: typeof screen) => {
+    setTransitioning(true);
+    pendingScreenRef.current = nextScreen;
+    setTimeout(() => {
+      setScreen(nextScreen);
+      setTransitioning(false);
+      pendingScreenRef.current = null;
+    }, 350);
+  }, []);
+
   // Gate: show title screen before gameplay
   if (screen === 'title') {
     return (
-      <div className="animate-fade-in">
-        <TitleScreen hasSave={hasSave} onContinue={handleContinue} onNewGame={handleNewGame} />
+      <div className={transitioning ? 'screen-transition-exit' : 'screen-transition-enter'}>
+        <TitleScreen hasSave={hasSave} onContinue={() => transitionTo('game')} onNewGame={() => {
+          window.api?.game?.newGame?.().then(res => {
+            if (res.success) transitionTo('intro');
+          }).catch((err: unknown) => showError('Failed to start new game: ' + (err instanceof Error ? err.message : 'Unknown error')));
+        }} />
       </div>
     );
   }
@@ -441,12 +449,12 @@ export default function Shell(): React.ReactElement {
   // Gate: show intro sequence after new game
   if (screen === 'intro') {
     return (
-      <div className="animate-fade-in">
+      <div className={transitioning ? 'screen-transition-exit' : 'screen-transition-enter'}>
         <IntroSequence onComplete={() => {
           // Auto-open Athens after intro — player starts at Piraeus
           window.api?.game?.action?.({ type: 'START_TRADE', port: 'athens' }).catch(() => {});
           setSelectedPort('athens');
-          setScreen('game');
+          transitionTo('game');
         }} />
       </div>
     );
@@ -455,12 +463,12 @@ export default function Shell(): React.ReactElement {
   // Gate: show conclusion screen when merchants_odyssey completes
   if (screen === 'conclusion' && conclusionStats) {
     return (
-      <div className="animate-fade-in">
+      <div className={transitioning ? 'screen-transition-exit' : 'screen-transition-enter'}>
         <ConclusionScreen
           stats={conclusionStats}
           onContinue={() => {
             setConclusionStats(null);
-            setScreen('game');
+            transitionTo('game');
           }}
         />
       </div>
