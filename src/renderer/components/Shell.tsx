@@ -36,6 +36,7 @@ import ConclusionScreen from './ConclusionScreen';
 import type { JourneyStats } from './ConclusionScreen';
 import { useTradeState } from '../hooks/useTradeState';
 import { useGeneratedAmbient } from '../hooks/useGeneratedAmbient';
+import { usePortAudio } from '../hooks/usePortAudio';
 import { getWeatherModifiers, getSeasonalWeatherDescription } from '../../game/weather';
 import type { Season } from '../../game/weather';
 import type { SailingTurnResult } from '../../game/sailing';
@@ -293,6 +294,14 @@ export default function Shell(): React.ReactElement {
         : 'sailing-active sailing-calm'
     : '';
   const isTrading = gameState?.type === 'trading';
+
+  // Port-specific ambient audio — region-aware soundscape (AUD-01)
+  const currentPortRegion = selectedPortId ? (portRegions.get(selectedPortId) ?? null) : null;
+  usePortAudio(
+    isTrading ? selectedPortId : null,
+    currentPortRegion,
+    ambientStarted.current
+  );
 
   // Phase 14: Check for available NPCs when port selection changes
   useEffect(() => {
