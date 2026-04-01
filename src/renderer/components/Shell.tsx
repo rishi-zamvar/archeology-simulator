@@ -38,6 +38,7 @@ import { useTradeState } from '../hooks/useTradeState';
 import { useGeneratedAmbient } from '../hooks/useGeneratedAmbient';
 import { usePortAudio } from '../hooks/usePortAudio';
 import { useSailingAudio } from '../hooks/useSailingAudio';
+import { playSfx } from '../audio/playSfx';
 import { getWeatherModifiers, getSeasonalWeatherDescription } from '../../game/weather';
 import type { Season } from '../../game/weather';
 import type { SailingTurnResult } from '../../game/sailing';
@@ -558,14 +559,14 @@ export default function Shell(): React.ReactElement {
       {isTrading && selectedPortId && !showFullMap && (
         <div
           style={{ position: 'absolute', inset: 0, zIndex: 5, cursor: 'pointer' }}
-          onClick={() => setShowPortPopup(true)}
+          onClick={() => { setShowPortPopup(true); playSfx('parchment'); }}
         >
           <PortScene
             portId={selectedPortId}
             portName={portDisplayName}
             region={portRegions.get(selectedPortId) ?? 'greece'}
-            onOpenMarket={() => setShowPortPopup(true)}
-            onOpenHarbor={() => setShowPortPopup(true)}
+            onOpenMarket={() => { setShowPortPopup(true); playSfx('parchment'); }}
+            onOpenHarbor={() => { setShowPortPopup(true); playSfx('parchment'); }}
           />
           {/* VIS-03: Day/night tinting based on current turn */}
           {(() => {

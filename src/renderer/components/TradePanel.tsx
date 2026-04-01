@@ -15,6 +15,7 @@ import React, { useState, useCallback, useEffect, useRef } from 'react';
 import type { MarketGood, PlayerInventory } from '../../shared/ipc-types';
 import TradeGoodIcon from './TradeGoodIcon';
 import { useResourceImages } from '../hooks/useResourceImages';
+import { playSfx } from '../audio/playSfx';
 
 interface TradePanelProps {
   portId: string;
@@ -109,6 +110,7 @@ export default function TradePanel({
         await onBuy(goodId, qty);
         setMsg(goodId, `Bought ${qty} unit${qty > 1 ? 's' : ''}.`, true);
         showGoldFloat(price * qty, false);
+        playSfx('coin_clink');
       } catch (err) {
         setMsg(goodId, err instanceof Error ? err.message : 'Buy failed.', false);
       } finally {
@@ -129,6 +131,7 @@ export default function TradePanel({
         await onSell(goodId, qty);
         setMsg(goodId, `Sold ${qty} unit${qty > 1 ? 's' : ''}.`, true);
         showGoldFloat(price * qty, true);
+        playSfx('coin_clink');
       } catch (err) {
         setMsg(goodId, err instanceof Error ? err.message : 'Sell failed.', false);
       } finally {

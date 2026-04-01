@@ -11,6 +11,7 @@
 
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { getSeasonalWeatherDescription } from '../../game/weather';
+import { playSfx } from '../audio/playSfx';
 import type { JournalEntry, QuestDefinition, QuestProgress } from '../../shared/game-types';
 
 export interface LogEntry {
@@ -228,6 +229,7 @@ export default function Logbook({ currentTurn, gameStateType, portName, season, 
       setNoteTitle('');
       setNoteText('');
       setSaving(false);
+      playSfx('quill');
       // Re-fetch entries to show the new note
       window.api.journal.getEntries().then((res) => {
         if (res.success) setDbEntries(res.data);
