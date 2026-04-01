@@ -207,6 +207,15 @@ export interface PortLore {
   primarySources: string[];
 }
 
+export type PortAccessLevel = 'unknown' | 'discovered' | 'unlocked';
+
+export interface PortAccessInfo {
+  portId: string;
+  status: PortAccessLevel;
+  discoveredTurn: number | null;
+  unlockMethod: string | null;
+}
+
 export interface PortAccess {
   portId: string;
   discovered: boolean;

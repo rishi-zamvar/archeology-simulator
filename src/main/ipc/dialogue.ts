@@ -212,10 +212,10 @@ function applyEffects(db: Database.Database, effects: DialogueEffect[], currentT
       case 'port_unlock': {
         const portId = effect.portId as string;
         db.prepare(`
-          INSERT INTO port_access (port_id, status, discovered)
-          VALUES (?, 'discovered', 1)
+          INSERT INTO port_access (port_id, status, discovered, unlock_method)
+          VALUES (?, 'discovered', 1, 'npc_referral')
           ON CONFLICT(port_id) DO UPDATE SET
-            status = CASE WHEN status = 'unknown' THEN 'discovered' ELSE status END,
+            status = CASE WHEN port_access.status = 'unknown' THEN 'discovered' ELSE port_access.status END,
             discovered = 1
         `).run(portId);
         applied.push(`port_unlock: ${portId}`);

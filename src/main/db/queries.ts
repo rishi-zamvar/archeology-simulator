@@ -13,7 +13,7 @@
 
 import type Database from 'better-sqlite3';
 import type { GameState } from '../../game/types';
-import type { Port, Good, MarketGood, PlayerInventory, CargoItem, JournalEntry, JournalEntryType, PortLore } from '../../shared/game-types';
+import type { Port, Good, MarketGood, PlayerInventory, CargoItem, JournalEntry, JournalEntryType, PortLore, PortAccessLevel, PortAccessInfo } from '../../shared/game-types';
 import { getReputationTier, getReputationPriceModifier, getTradeReputationGain, applyReputationToPrice } from '../../game/reputation';
 
 // ─── Game State ──────────────────────────────────────────────────────────────
@@ -1212,4 +1212,124 @@ export function getPortLore(db: Database.Database, portId: string): PortLore | n
     historicalPeriod: row.historical_period,
     primarySources: JSON.parse(row.primary_sources_json) as string[],
   };
+}
+
+// ─── Port Access ─────────────────────────────────────────────────────────────
+
+/**
+ * Get the access level for a specific port.
+ * Returns 'unknown' if no row exists (port has never been visited or seeded).
+ */
+export function getPortAccessLevel(db: Database.Database, portId: string): PortAccessLevel {
+  const row = db.prepare('SELECT status FROM port_access WHERE port_id = ?').get(portId) as
+    | { status: string }
+    | undefined;
+
+  if (!row) return 'unknown';
+  return row.status as PortAccessLevel;
+}
+
+/**
+ * Get access info for all ports. Ports with no port_access row appear as 'unknown'.
+ */
+export function getAllPortAccess(db: Database.Database): PortAccessInfo[] {
+  const rows = db.prepare(`
+    SELECT p.id AS port_id,
+           COALESCE(pa.status, 'unknown') AS status,
+           pa.discovered_turn,
+           pa.unlock_method
+    FROM ports p
+    LEFT JOIN port_access pa ON p.id = pa.port_id
+  `).all() as Array<{
+    port_id: string;
+    status: string;
+    discovered_turn: number | null;
+    unlock_method: string | null;
+  }>;
+
+  return rows.map(r => ({
+    portId: r.port_id,
+    status: r.status as PortAccessLevel,
+    discoveredTurn: r.discovered_turn,
+    unlockMethod: r.unlock_method,
+  }));
+}
+
+/**
+ * Set port access level with no-downgrade semantics.
+ * Status hierarchy: unknown < discovered < unlocked.
+ * A port can only be upgraded, never downgraded.
+ */
+export function setPortAccessLevel(
+  db: Database.Database,
+  portId: string,
+  status: PortAccessLevel,
+  unlockMethod?: string,
+): void {
+  const statusRank: Record<PortAccessLevel, number> = { unknown: 0, discovered: 1, unlocked: 2 };
+  const rank = statusRank[status];
+
+  db.prepare(`
+    INSERT INTO port_access (port_id, status, discovered, unlock_method)
+    VALUES (?, ?, ?, ?)
+    ON CONFLICT(port_id) DO UPDATE SET
+      status = CASE
+        WHEN ? > (CASE port_access.status WHEN 'unlocked' THEN 2 WHEN 'discovered' THEN 1 ELSE 0 END)
+        THEN ?
+        ELSE port_access.status
+      END,
+      discovered = CASE WHEN ? >= 1 THEN 1 ELSE port_access.discovered END,
+      unlock_method = CASE
+        WHEN ? > (CASE port_access.status WHEN 'unlocked' THEN 2 WHEN 'discovered' THEN 1 ELSE 0 END)
+        THEN ?
+        ELSE port_access.unlock_method
+      END
+  `).run(
+    portId, status, status !== 'unknown' ? 1 : 0, unlockMethod ?? null,
+    rank, status,
+    rank,
+    rank, unlockMethod ?? null,
+  );
+}
+
+/**
+ * Seed starting ports for a new game.
+ * Piraeus (athens) and Corinth are unlocked; Miletus is discovered.
+ */
+export function seedStartingPorts(db: Database.Database): void {
+  const insert = db.prepare(`
+    INSERT OR REPLACE INTO port_access (port_id, status, discovered, unlock_method)
+    VALUES (?, ?, ?, ?)
+  `);
+
+  const seedAll = db.transaction(() => {
+    insert.run('athens', 'unlocked', 1, 'starting_port');
+    insert.run('corinth', 'unlocked', 1, 'starting_port');
+    insert.run('miletos', 'discovered', 1, 'starting_port');
+  });
+
+  seedAll();
+}
+
+/**
+ * Auto-discover a port when the player visits it.
+ * Upgrades 'unknown' -> 'discovered' with the current turn and 'visited' method.
+ * No-op if port is already discovered or unlocked.
+ * Returns true if the status was upgraded, false otherwise.
+ */
+export function autoDiscoverPort(db: Database.Database, portId: string, turn: number): boolean {
+  const current = getPortAccessLevel(db, portId);
+  if (current !== 'unknown') return false;
+
+  db.prepare(`
+    INSERT INTO port_access (port_id, status, discovered, discovered_turn, unlock_method)
+    VALUES (?, 'discovered', 1, ?, 'visited')
+    ON CONFLICT(port_id) DO UPDATE SET
+      status = 'discovered',
+      discovered = 1,
+      discovered_turn = ?,
+      unlock_method = 'visited'
+  `).run(portId, turn, turn);
+
+  return true;
 }

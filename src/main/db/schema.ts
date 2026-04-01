@@ -227,6 +227,13 @@ const MIGRATIONS: Migration[] = [
   (db) => {
     db.prepare(`ALTER TABLE ports ADD COLUMN ambient_description TEXT`).run();
   },
+
+  // v9 (index 8): Add status column to port_access for three-tier access model
+  (db) => {
+    db.prepare("ALTER TABLE port_access ADD COLUMN status TEXT NOT NULL DEFAULT 'unknown'").run();
+    // Backfill: any row with discovered=1 gets status='unlocked' (v1.3 upgrade path — all existing ports are fully unlocked)
+    db.prepare("UPDATE port_access SET status = 'unlocked' WHERE discovered = 1").run();
+  },
 ];
 
 /**
