@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: The Merchant's Odyssey
-status: verifying
-stopped_at: Completed 16-03-PLAN.md
-last_updated: "2026-04-01T17:59:25.699Z"
+status: executing
+stopped_at: Completed 17-01-PLAN.md
+last_updated: "2026-04-01T18:18:04.865Z"
 last_activity: 2026-04-01
 progress:
   total_phases: 8
   completed_phases: 4
-  total_plans: 10
-  completed_plans: 10
+  total_plans: 12
+  completed_plans: 11
   percent: 6
 ---
 
@@ -21,13 +21,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-01)
 
 **Core value:** Students learn ancient Mediterranean history by making decisions as a merchant captain, not by reading about them.
-**Current focus:** Phase 16 — port-content-world-building
+**Current focus:** Phase 17 — npc-characters-dialogue-content
 
 ## Current Position
 
-Phase: 17
-Plan: Not started
-Status: Phase complete — ready for verification
+Phase: 17 (npc-characters-dialogue-content) — EXECUTING
+Plan: 2 of 2
+Status: Ready to execute
 Last activity: 2026-04-01
 
 Progress: [▓░░░░░░░░░] 6% (v2.0 milestone)
@@ -64,6 +64,9 @@ Progress: [▓░░░░░░░░░] 6% (v2.0 milestone)
 - [Phase 16]: All port lore citations use real scholarly works: Herodotus, Aubet, Boardman, Braudel, Horden and Purcell
 - [Phase 16]: Ambient description fetched via getPortDetails in PortScene rather than passed as prop from Shell
 - [Phase 16]: 29 sea routes total (10 original + 19 new) with 6 new waypoints for land-avoidance
+- [Phase 17]: Adapted quest goods to use existing IDs (grain, wine, olive_oil) since silver/cedar not in goods.json
+- [Phase 17]: Fixed validator BFS to treat nodes with conditions as alternate entry points for dialogue state branching
+- [Phase 17]: talk_to_npc objective evaluates npcDialogueState.timesSpoken > 0 via GameContext
 
 ### Blockers/Concerns
 
@@ -72,6 +75,6 @@ Progress: [▓░░░░░░░░░] 6% (v2.0 milestone)
 
 ## Session Continuity
 
-Last session: 2026-04-01T17:58:43.992Z
-Stopped at: Completed 16-03-PLAN.md
+Last session: 2026-04-01T18:18:04.862Z
+Stopped at: Completed 17-01-PLAN.md
 Resume file: None

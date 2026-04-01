@@ -119,7 +119,7 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 17-01-PLAN.md -- 4 NPC dialogue trees, 4 NPC-initiated quests, talk_to_npc wiring, 5 SVG portraits
+- [x] 17-01-PLAN.md -- 4 NPC dialogue trees, 4 NPC-initiated quests, talk_to_npc wiring, 5 SVG portraits
 - [ ] 17-02-PLAN.md -- Portrait display in DialogueModal, port_unlock effect implementation, human verification
 
 ### Phase 18: Reputation & Trade Integration
@@ -172,7 +172,7 @@ Note: Phase 15 and Phase 16 can proceed in parallel after Phase 14 completes. Ph
 | 14. Dialogue Engine & Content Pipeline | v2.0 | 2/2 | Complete    | 2026-04-01 |
 | 15. Quest System Foundation | v2.0 | 3/3 | Complete    | 2026-04-01 |
 | 16. Port Content & World Building | v2.0 | 3/3 | Complete    | 2026-04-01 |
-| 17. NPC Characters & Dialogue Content | v2.0 | 0/2 | Not started | - |
+| 17. NPC Characters & Dialogue Content | v2.0 | 1/2 | In Progress|  |
 | 18. Reputation & Trade Integration | v2.0 | 0/TBD | Not started | - |
 | 19. Progressive Port Unlocking | v2.0 | 0/TBD | Not started | - |
 | 20. Journal Integration & Game Polish | v2.0 | 0/TBD | Not started | - |
