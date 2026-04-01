@@ -53,16 +53,19 @@ Students learn ancient Mediterranean history — trade networks, cultures, geogr
 - Mobile/tablet versions — desktop Electron only
 - Real-time gameplay — strictly turn-based
 
-## Current Milestone: v2.0 The Merchant's Odyssey
+## Current Milestone: v2.0.1 Polish & Stabilization
 
-**Goal:** Transform the framework into a complete educational game where players live the life of a 6th century BCE merchant captain — learning ancient Mediterranean history, culture, trade, and geography through a narrative quest that spans the entire sea.
+**Goal:** Fix all broken tests, stabilize the game loop end-to-end, improve UI transitions and layout, and make the experience immersive and polished.
 
 **Target features:**
-- Rich port experiences with deep historical content (culture, customs, regional trade specializations)
-- Narrative quest system starting at Piraeus with branching historically-grounded objectives
-- Progressive port unlocking through trade reputation and NPC introductions
-- 15-25 historically important ports with unique goods, lore, and economic systems
-- NPCs at ports who share historical knowledge, give quests, reveal trade routes
+- All test suites passing (fix 54 broken tests from v2.0 changes)
+- End-to-end game flow validation (new game → intro → trade → sail → arrive → quest progress)
+- Smoother transitions, better framing of images, improved layout
+- UI polish: better port scenes, trade panel, dialogue modal, sailing overlay
+- Remove dead code and clean up convoluted logic
+
+**Previously shipped:**
+- v2.0 The Merchant's Odyssey — quest system, NPCs, 25 ports with lore, reputation, port unlocking
 - Captain's journal as narrative device recording discoveries and quest progress
 - Reputation/standing system affecting trade prices and NPC access
 - Expanded historically accurate voyage events

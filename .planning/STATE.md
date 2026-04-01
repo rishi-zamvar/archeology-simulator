@@ -1,96 +1,41 @@
 ---
 gsd_state_version: 1.0
-milestone: v2.0
-milestone_name: The Merchant's Odyssey
-status: verifying
-stopped_at: Completed 20-03-PLAN.md
-last_updated: "2026-04-01T19:34:41.245Z"
-last_activity: 2026-04-01
+milestone: v2.0.1
+milestone_name: "Polish & Stabilization"
+status: ready_to_plan
+last_updated: "2026-04-02"
+last_activity: 2026-04-02
 progress:
-  total_phases: 8
-  completed_phases: 8
-  total_plans: 19
-  completed_plans: 19
-  percent: 95
+  total_phases: 3
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-04-01)
+See: .planning/PROJECT.md (updated 2026-04-02)
 
 **Core value:** Students learn ancient Mediterranean history by making decisions as a merchant captain, not by reading about them.
-**Current focus:** Phase 20 — journal-integration-game-polish
+**Current focus:** Phase 21 — Test Stabilization & Code Cleanup
 
 ## Current Position
 
-Phase: 20
-Plan: Not started
-Status: Phase complete — ready for verification
-Last activity: 2026-04-01
-
-Progress: [▓▓▓▓▓▓▓▓▓░] 95% (v2.0 milestone)
+Phase: 21 of 23 (Test Stabilization & Code Cleanup)
+Plan: 0 of TBD
+Status: Ready to plan
+Last activity: 2026-04-02 — Milestone v2.0.1 started
 
 ## Accumulated Context
 
 ### Decisions
-
-- v1.0-v1.3 shipped successfully -- full gameplay loop, images, weather, journal, sailing animation, trade UX, title screen
-- Turn = 1 Athenian calendar month, max 2-month voyage range
-- Stamen Watercolor tiles for map (no modern roads)
-- Sea routes curve around land via maritime waypoints
-- [Roadmap]: Quest/NPC/reputation state in separate SQLite tables, not GameState JSON (Pitfall 1)
-- [Roadmap]: Dialogue in JSON data files with build-time validation (Pitfall 2)
-- [Roadmap]: Quest system observes game FSM -- no new GameState variants (Pitfall 6)
-- [Roadmap]: Fog-of-knowledge for port unlocking -- sail anywhere, depth varies (Pitfall 3)
-- [Roadmap]: Reputation modifies experience, never gates content (Pitfall 7)
-- [Roadmap]: Version-based migration system before any new tables (Pitfall 4)
-- [13-01]: Migration runner with 7 ordered migrations replaces ad-hoc CREATE TABLE pattern
-- [13-01]: PLAYER_DATA_TABLES constant exported for new-game reset (9 tables, excludes reference data)
-- [13-01]: runMigrations exported separately for testability
-- [Phase 13-02]: PLAYER_DATA_TABLES loop replaces hardcoded DELETE statements in new-game reset
-- [Phase 14]: Composite conditions use $and/$or/$not JSON DSL for dialogue branching logic
-- [Phase 14]: Validation function exported for unit testing; CLI guarded by argv check
-- [Phase 14]: Dialogue files cached in module-level Map for performance
-- [Phase 14]: NPC availability re-checked on dialogue dismiss (effects may change conditions)
-- [Phase 15]: GameContext extended with currentPortId and recentTrades for quest objective evaluation
-- [Phase 15]: talk_to_npc quest objective is stub returning false -- Phase 17 will wire NPC dialogue state
-- [Phase 15]: evaluateActiveQuests is a plain exported function called after game actions, not an IPC handler
-- [Phase 15]: buildGameContext exported from dialogue.ts for reuse by quest.ts
-- [Phase 15]: Logbook uses tab bar (Journal/Quests) matching parchment theme; quest completion detected via active quest ID diff
-- [Phase 16-02]: 5 historically accurate trade goods added with regional supply/demand patterns for all 25 ports
-- [Phase 16]: Alexandria framed as proto-settlement Rhakotis for temporal accuracy at 540-530 BCE
-- [Phase 16]: All port lore citations use real scholarly works: Herodotus, Aubet, Boardman, Braudel, Horden and Purcell
-- [Phase 16]: Ambient description fetched via getPortDetails in PortScene rather than passed as prop from Shell
-- [Phase 16]: 29 sea routes total (10 original + 19 new) with 6 new waypoints for land-avoidance
-- [Phase 17]: Adapted quest goods to use existing IDs (grain, wine, olive_oil) since silver/cedar not in goods.json
-- [Phase 17]: Fixed validator BFS to treat nodes with conditions as alternate entry points for dialogue state branching
-- [Phase 17]: talk_to_npc objective evaluates npcDialogueState.timesSpoken > 0 via GameContext
-- [Phase 17-02]: port_unlock uses ON CONFLICT with conditional UPDATE to only upgrade status, never downgrade
-- [Phase 18-01]: Pure reputation module (no DB) with 4 tiers: Stranger/Known Trader/Trusted Partner/Proxenos
-- [Phase 18-01]: Trade gain formula min(3, max(1, floor(totalValue/250))) -- every trade awards 1-3 rep points
-- [Phase 18-01]: getMarketPrices applies buy-side discount so TradePanel shows reputation-adjusted prices
-- [Phase 18]: Reputation UI uses green (#5a8f5a) for positive effects; Stranger shows no indicator (REP-03)
-- [Phase 19]: Port access uses no-downgrade semantics: status can only upgrade (unknown->discovered->unlocked)
-- [Phase 19]: Legacy v1.3 saves get all 25 ports set to unlocked on first load
-- [Phase 19]: Starting ports: athens (unlocked), corinth (unlocked), miletos (discovered)
-- [Phase 19]: refreshAccess callback passed from MapArea to Shell via onRefreshAccessReady prop pattern
-- [Phase 19]: Auto-discover fires on trading state transition, not explicit sail action
-- [Phase 20]: Migration v10 recreates journal_entries table to widen CHECK constraint (SQLite cannot ALTER CHECK)
-- [Phase 20]: Discovery entries fire on dialogue end and first port arrival for maximum educational coverage
-- [Phase 20]: Journal cap (3/turn) applied via insertJournalEntryIfUnderCap; existing entries bypass cap
-- [Phase 20]: merchants_odyssey meta-quest seeded as active on new game, not NPC-triggered
-- [Phase 20]: advanceQuest loops through multiple consecutively-satisfied objectives for meta-quest
-- [Phase 20]: Journey stats from journal arrivals, transaction_history, quest_progress, player_inventory
+- v2.0 shipped with 54 broken tests from rapid FSM/schema changes
+- SET_SAIL now carries departurePortId and voyageTurnsTotal
+- Sea routes use BFS graph pathfinding through 24 waypoints
 
 ### Blockers/Concerns
-
-- Pitfall 5: Content phases must cite sources for every historical claim. Quality over volume.
-- Pitfall 8: Code and content interleaved to prevent building systems without content to test.
-
-## Session Continuity
-
-Last session: 2026-04-01T19:33:14.911Z
-Stopped at: Completed 20-03-PLAN.md
-Resume file: None
+- 8 test files failing (54 tests)
+- Sailing animation edge cases
