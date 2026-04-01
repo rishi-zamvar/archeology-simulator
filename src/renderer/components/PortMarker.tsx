@@ -1,40 +1,52 @@
 /**
  * PortMarker — a single Leaflet Marker for a historical Mediterranean port.
  *
- * Renders a parchment-styled divIcon circle with the port's ancient name
- * as a permanent Tooltip. Clicking the marker dispatches port selection
- * to the parent via onPortClick.
+ * Renders a tiered divIcon based on access level:
+ *   - unknown: grey/faded circle with "?" tooltip
+ *   - discovered: parchment-styled circle with port name (default)
+ *   - unlocked: gold circle with port name
  *
  * Must be rendered inside a MapContainer (via MarkerClusterGroup in MapArea).
  */
 
-import React, { useCallback } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { Marker, Tooltip } from 'react-leaflet';
 import L from 'leaflet';
-import type { Port } from '../../shared/game-types';
+import type { Port, PortAccessLevel } from '../../shared/game-types';
 
 interface PortMarkerProps {
   port: Port;
+  accessLevel: PortAccessLevel;
   onPortClick: (portId: string) => void;
 }
 
-// Parchment-styled circle icon for port markers
-function createPortIcon(): L.DivIcon {
+// Tiered divIcon based on access level
+function createPortIcon(accessLevel: PortAccessLevel): L.DivIcon {
+  let innerClass = 'port-icon-inner';
+  if (accessLevel === 'unknown') {
+    innerClass = 'port-icon-inner port-icon-inner-unknown';
+  } else if (accessLevel === 'unlocked') {
+    innerClass = 'port-icon-inner port-icon-inner-unlocked';
+  }
+
   return L.divIcon({
     className: 'port-icon',
-    html: `<div class="port-icon-inner"></div>`,
+    html: `<div class="${innerClass}"></div>`,
     iconSize: [14, 14],
     iconAnchor: [7, 7],
     tooltipAnchor: [8, -4],
   });
 }
 
-export default function PortMarker({ port, onPortClick }: PortMarkerProps): React.ReactElement {
-  const icon = createPortIcon();
+export default function PortMarker({ port, accessLevel, onPortClick }: PortMarkerProps): React.ReactElement {
+  const icon = useMemo(() => createPortIcon(accessLevel), [accessLevel]);
 
   const handleClick = useCallback(() => {
     onPortClick(port.id);
   }, [port.id, onPortClick]);
+
+  const tooltipClass = accessLevel === 'unknown' ? 'port-label port-label-unknown' : 'port-label';
+  const tooltipText = accessLevel === 'unknown' ? '?' : port.ancientName;
 
   return (
     <Marker
@@ -46,9 +58,9 @@ export default function PortMarker({ port, onPortClick }: PortMarkerProps): Reac
         permanent
         direction="top"
         offset={[0, -10]}
-        className="port-label"
+        className={tooltipClass}
       >
-        {port.ancientName}
+        {tooltipText}
       </Tooltip>
     </Marker>
   );

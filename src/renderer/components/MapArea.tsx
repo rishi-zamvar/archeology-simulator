@@ -23,7 +23,7 @@ interface MapAreaProps {
 }
 
 export default function MapArea({ children, onPortSelected }: MapAreaProps): React.ReactElement {
-  const { ports, isLoading, error } = useMapPorts();
+  const { ports, portAccessMap, isLoading, error } = useMapPorts();
   const { setSelectedPort } = useUIStore();
 
   const handlePortClick = useCallback((portId: string) => {
@@ -85,6 +85,7 @@ export default function MapArea({ children, onPortSelected }: MapAreaProps): Rea
               <PortMarker
                 key={port.id}
                 port={port}
+                accessLevel={portAccessMap.get(port.id) ?? 'unknown'}
                 onPortClick={handlePortClick}
               />
             ))}

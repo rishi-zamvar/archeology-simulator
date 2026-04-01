@@ -226,6 +226,36 @@ h1, h2, h3, h4, h5, h6 {
   background-color: #e8b870;
 }
 
+/* Unknown port: grey/faded marker */
+.port-icon-inner-unknown {
+  background-color: #999 !important;
+  border-color: #777 !important;
+  opacity: 0.5;
+}
+.port-icon-inner-unknown:hover {
+  background-color: #aaa !important;
+  opacity: 0.7;
+}
+
+/* Unlocked port: gold marker */
+.port-icon-inner-unlocked {
+  background-color: #d4a017 !important;
+  border: 2px solid #8b6914 !important;
+  box-shadow: 0 0 4px rgba(212, 160, 23, 0.4);
+}
+.port-icon-inner-unlocked:hover {
+  background-color: #e8b870 !important;
+  box-shadow: 0 0 6px rgba(212, 160, 23, 0.6);
+}
+
+/* Unknown port label — faded */
+.port-label-unknown {
+  background-color: rgba(200, 200, 200, 0.7) !important;
+  border-color: #999 !important;
+  color: #666 !important;
+  font-style: italic !important;
+}
+
 /* Port name tooltip — Cinzel font, parchment styling */
 .port-label {
   background-color: rgba(253, 248, 240, 0.92) !important;
