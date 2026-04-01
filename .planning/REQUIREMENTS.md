@@ -65,27 +65,27 @@
 
 | REQ-ID | Phase | Status |
 |--------|-------|--------|
-| PORT-01 | TBD | Planned |
-| PORT-02 | TBD | Planned |
-| PORT-03 | TBD | Planned |
-| PORT-04 | TBD | Planned |
-| QUEST-01 | TBD | Planned |
-| QUEST-02 | TBD | Planned |
-| QUEST-03 | TBD | Planned |
-| QUEST-04 | TBD | Planned |
-| NPC-01 | TBD | Planned |
-| NPC-02 | TBD | Planned |
-| NPC-03 | TBD | Planned |
-| NPC-04 | TBD | Planned |
-| UNLOCK-01 | TBD | Planned |
-| UNLOCK-02 | TBD | Planned |
-| UNLOCK-03 | TBD | Planned |
-| REP-01 | TBD | Planned |
-| REP-02 | TBD | Planned |
-| REP-03 | TBD | Planned |
-| JRNL-01 | TBD | Planned |
-| JRNL-02 | TBD | Planned |
-| JRNL-03 | TBD | Planned |
-| POLISH-01 | TBD | Planned |
-| POLISH-02 | TBD | Planned |
-| POLISH-03 | TBD | Planned |
+| PORT-01 | Phase 16 | Planned |
+| PORT-02 | Phase 16 | Planned |
+| PORT-03 | Phase 16 | Planned |
+| PORT-04 | Phase 16 | Planned |
+| QUEST-01 | Phase 15 | Planned |
+| QUEST-02 | Phase 15 | Planned |
+| QUEST-03 | Phase 15 | Planned |
+| QUEST-04 | Phase 20 | Planned |
+| NPC-01 | Phase 17 | Planned |
+| NPC-02 | Phase 14 | Planned |
+| NPC-03 | Phase 17 | Planned |
+| NPC-04 | Phase 17 | Planned |
+| UNLOCK-01 | Phase 19 | Planned |
+| UNLOCK-02 | Phase 19 | Planned |
+| UNLOCK-03 | Phase 19 | Planned |
+| REP-01 | Phase 18 | Planned |
+| REP-02 | Phase 18 | Planned |
+| REP-03 | Phase 18 | Planned |
+| JRNL-01 | Phase 20 | Planned |
+| JRNL-02 | Phase 20 | Planned |
+| JRNL-03 | Phase 20 | Planned |
+| POLISH-01 | Phase 20 | Planned |
+| POLISH-02 | Phase 20 | Planned |
+| POLISH-03 | Phase 16 | Planned |
