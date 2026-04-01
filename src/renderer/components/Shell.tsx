@@ -37,6 +37,7 @@ import type { JourneyStats } from './ConclusionScreen';
 import { useTradeState } from '../hooks/useTradeState';
 import { useGeneratedAmbient } from '../hooks/useGeneratedAmbient';
 import { usePortAudio } from '../hooks/usePortAudio';
+import { useSailingAudio } from '../hooks/useSailingAudio';
 import { getWeatherModifiers, getSeasonalWeatherDescription } from '../../game/weather';
 import type { Season } from '../../game/weather';
 import type { SailingTurnResult } from '../../game/sailing';
@@ -302,6 +303,9 @@ export default function Shell(): React.ReactElement {
     currentPortRegion,
     ambientStarted.current
   );
+
+  // Sailing ambient audio — creaking wood, waves, wind (AUD-02)
+  useSailingAudio(isSailing, weatherMods.stormWeight, ambientStarted.current);
 
   // Phase 14: Check for available NPCs when port selection changes
   useEffect(() => {
