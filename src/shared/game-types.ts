@@ -141,3 +141,44 @@ export interface JournalEntry {
   body: JournalBodyMap[JournalEntryType];
   createdAt: string;
 }
+
+// --- v2.0 Quest/NPC/Reputation/Port Tables ---
+
+export type QuestStatus = 'available' | 'active' | 'completed' | 'failed';
+
+export interface QuestProgress {
+  questId: string;
+  status: QuestStatus;
+  currentObjective: number;
+  startedAt?: string;
+  completedAt?: string;
+}
+
+export interface NpcDialogueState {
+  npcId: string;
+  lastNodeId?: string;
+  timesSpoken: number;
+  lastSpokenTurn?: number;
+}
+
+export interface Reputation {
+  region: string;
+  score: number;
+}
+
+export interface PortLore {
+  portId: string;
+  history: string;
+  culture: string;
+  tradeSpecialization: string;
+  notableFacts: string[];
+  historicalPeriod: string;
+  primarySources: string[];
+}
+
+export interface PortAccess {
+  portId: string;
+  discovered: boolean;
+  discoveredTurn?: number;
+  unlockMethod?: string;
+}
