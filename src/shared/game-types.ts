@@ -166,13 +166,14 @@ export interface QuestProgress {
 
 export interface QuestObjective {
   id: string;
-  type: 'deliver_cargo' | 'visit_port' | 'complete_trade' | 'talk_to_npc';
+  type: 'deliver_cargo' | 'visit_port' | 'complete_trade' | 'talk_to_npc' | 'complete_quest';
   description: string;
   portId?: string;
   goodId?: string;
   minQuantity?: number;
   npcId?: string;
   action?: 'buy' | 'sell';
+  questId?: string;
 }
 
 export interface QuestReward {

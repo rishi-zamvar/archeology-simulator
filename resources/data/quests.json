@@ -84,6 +84,23 @@
         { "type": "journal_entry", "title": "The Cedar of Lebanon Complete", "text": "The wine from Byblos has reached Tyre. Aziru's shipwrights will celebrate the launching of their newest vessel. The Phoenician coast -- Tyre, Sidon, Byblos -- is the cradle of Mediterranean seamanship." }
       ],
       "historicalNote": "Byblos (modern Jbeil, Lebanon) is one of the oldest continuously inhabited cities in the world. It was the center of the cedar trade -- Lebanese cedar was essential for shipbuilding, construction, and Egyptian coffin-making. The very word 'Bible' derives from Byblos, as it was the primary source of papyrus imported from Egypt. Boardman's 'The Greeks Overseas' documents Phoenician trade along the Levantine coast."
+    },
+    {
+      "id": "merchants_odyssey",
+      "name": "The Merchant's Odyssey",
+      "description": "Complete all commissions across the Mediterranean to prove yourself as a master merchant captain.",
+      "objectives": [
+        { "id": "obj_complete_tyrian", "type": "complete_quest", "description": "Complete the Tyrian Commission", "questId": "tyrian_commission" },
+        { "id": "obj_complete_nile", "type": "complete_quest", "description": "Complete the Grain of the Nile", "questId": "nile_grain" },
+        { "id": "obj_complete_pillars", "type": "complete_quest", "description": "Complete the Pillars of Melqart", "questId": "pillars_of_melqart" },
+        { "id": "obj_complete_roman", "type": "complete_quest", "description": "Complete Roman Tribute", "questId": "roman_tribute" },
+        { "id": "obj_complete_cedar", "type": "complete_quest", "description": "Complete the Cedar of Lebanon", "questId": "cedar_of_lebanon" }
+      ],
+      "prerequisites": null,
+      "rewards": [
+        { "type": "journal_entry", "title": "The Merchant's Odyssey Complete", "text": "I have sailed the length of the Mediterranean, from the Pillars of Melqart to the ports of the Levant. I have traded with Phoenicians, Egyptians, Romans, and Carthaginians. The sea has been my teacher and the ports my classroom. I am a master merchant of Mare Nostrum." }
+      ],
+      "historicalNote": "A merchant captain in the 6th century BCE who had traded across the entire Mediterranean would have been among the most worldly and educated people alive. Through trade, ancient merchants were the primary vectors for cultural exchange -- spreading the Phoenician alphabet, Greek philosophy, Egyptian astronomy, and technological innovations across the known world."
     }
   ]
 }
