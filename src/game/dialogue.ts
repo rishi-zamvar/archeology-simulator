@@ -24,6 +24,8 @@ export interface GameContext {
   cargo: Array<{ goodId: string; quantity: number }>;
   currentTurn: number;
   season: string;
+  currentPortId: string | null;
+  recentTrades: Array<{ goodId: string; portId: string; action: 'buy' | 'sell'; quantity: number }>;
 }
 
 // ── Type Guards ──────────────────────────────────────────────────────────────

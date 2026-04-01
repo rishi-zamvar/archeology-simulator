@@ -154,6 +154,36 @@ export interface QuestProgress {
   completedAt?: string;
 }
 
+export interface QuestObjective {
+  id: string;
+  type: 'deliver_cargo' | 'visit_port' | 'complete_trade' | 'talk_to_npc';
+  description: string;
+  portId?: string;
+  goodId?: string;
+  minQuantity?: number;
+  npcId?: string;
+  action?: 'buy' | 'sell';
+}
+
+export interface QuestReward {
+  type: 'reputation_change' | 'journal_entry' | 'gold';
+  region?: string;
+  delta?: number;
+  title?: string;
+  text?: string;
+  amount?: number;
+}
+
+export interface QuestDefinition {
+  id: string;
+  name: string;
+  description: string;
+  objectives: QuestObjective[];
+  prerequisites: CompositeCondition | null;
+  rewards: QuestReward[];
+  historicalNote: string;
+}
+
 export interface NpcDialogueState {
   npcId: string;
   lastNodeId?: string;

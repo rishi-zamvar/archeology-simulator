@@ -29,6 +29,8 @@ function makeContext(overrides: Partial<GameContext> = {}): GameContext {
     cargo: [],
     currentTurn: 1,
     season: 'summer',
+    currentPortId: null,
+    recentTrades: [],
     ...overrides,
   };
 }
