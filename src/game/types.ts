@@ -79,6 +79,7 @@ export type SetSailAction = {
   type: 'SET_SAIL';
   destination: string;
   eta: number;
+  voyageTurnsTotal?: number;
 };
 
 export type ArriveAction = {

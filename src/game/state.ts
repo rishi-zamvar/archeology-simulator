@@ -81,6 +81,8 @@ export function handleAction(current: GameState, action: GameAction): GameState 
             currentTurn: current.currentTurn,
             destination: action.destination,
             eta: action.eta,
+            voyageTurnsTotal: action.voyageTurnsTotal ?? 1,
+            voyageTurnsElapsed: 0,
             tutorialPhase: autoAdvanceTutorial(current.tutorialPhase, action.type),
           };
         default:
@@ -110,6 +112,9 @@ export function handleAction(current: GameState, action: GameAction): GameState 
             currentTurn: current.currentTurn,
             destination: action.destination,
             eta: action.eta,
+            departurePortId: current.selectedPort,
+            voyageTurnsTotal: action.voyageTurnsTotal ?? 1,
+            voyageTurnsElapsed: 0,
             tutorialPhase: autoAdvanceTutorial(current.tutorialPhase, action.type),
           };
         default:

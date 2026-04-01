@@ -224,7 +224,7 @@ export default function Shell(): React.ReactElement {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [toggleLeftPanel, toggleRightPanel]);
 
-  function handleNavigate(destinationPortId: string) {
+  function handleNavigate(destinationPortId: string, durationTurns: number = 1) {
     setShowFullMap(false);
     const mods = getWeatherModifiers(gameState?.currentTurn ?? 0);
     if (mods.isMareClasum) {
@@ -235,6 +235,7 @@ export default function Shell(): React.ReactElement {
       type: 'SET_SAIL',
       destination: destinationPortId,
       eta: 0,
+      voyageTurnsTotal: Math.max(1, Math.ceil(durationTurns * mods.durationMultiplier)),
     }).catch((err: unknown) => showError('Failed to set sail: ' + (err instanceof Error ? err.message : 'Unknown error')));
   }
 
@@ -244,6 +245,7 @@ export default function Shell(): React.ReactElement {
       type: 'SET_SAIL',
       destination: destPortId,
       eta: 0,
+      voyageTurnsTotal: 1,
     }).catch((err: unknown) => showError('Failed to set sail: ' + (err instanceof Error ? err.message : 'Unknown error')));
   }
 

@@ -21,7 +21,7 @@ interface PortInfoPanelProps {
   portId: string;
   currentTurn?: number;
   onClose: () => void;
-  onNavigate: (destinationPortId: string) => void;
+  onNavigate: (destinationPortId: string, durationTurns: number) => void;
 }
 
 export default function PortInfoPanel({
@@ -94,8 +94,8 @@ export default function PortInfoPanel({
   }, [portId, currentTurn]);
 
   const handleSail = useCallback(
-    (destPortId: string) => {
-      onNavigate(destPortId);
+    (destPortId: string, durationTurns: number) => {
+      onNavigate(destPortId, durationTurns);
     },
     [onNavigate]
   );
@@ -548,7 +548,7 @@ export default function PortInfoPanel({
                 {/* Sail button */}
                 <button
                   type="button"
-                  onClick={() => handleSail(dest.id)}
+                  onClick={() => handleSail(dest.id, route.durationTurns)}
                   aria-label={`Sail to ${dest.ancientName}`}
                   style={{
                     marginLeft: '0.5rem',
