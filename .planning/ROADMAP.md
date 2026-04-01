@@ -41,7 +41,7 @@ Seasonal weather with Athenian calendar, captain's journal with auto-logging, an
 - [x] **Phase 17: NPC Characters & Dialogue Content** - 5 key NPCs with portraits, historically grounded dialogue trees, and quest hooks at ports (completed 2026-04-01)
 - [x] **Phase 18: Reputation & Trade Integration** - Reputation tracking with qualitative descriptors, price modifiers, and recovery paths (completed 2026-04-01)
 - [x] **Phase 19: Progressive Port Unlocking** - Fog-of-knowledge discovery model with tiered port status and NPC-driven reveals (completed 2026-04-01)
-- [ ] **Phase 20: Journal Integration & Game Polish** - Quest/NPC journal entries with priority taxonomy, intro sequence, expanded events, and win condition
+- [x] **Phase 20: Journal Integration & Game Polish** - Quest/NPC journal entries with priority taxonomy, intro sequence, expanded events, and win condition (completed 2026-04-01)
 
 ## Phase Details
 
@@ -168,7 +168,7 @@ Plans:
 Plans:
 - [x] 20-01-PLAN.md -- Journal integration: new entry types (quest/dialogue/discovery), discovery tracking, cap enforcement, Logbook UI
 - [x] 20-02-PLAN.md -- Expanded voyage events: 13 new historically accurate events (storms, pirates, calm encounters)
-- [ ] 20-03-PLAN.md -- Intro sequence at Piraeus, win condition meta-quest, conclusion screen with journey stats
+- [x] 20-03-PLAN.md -- Intro sequence at Piraeus, win condition meta-quest, conclusion screen with journey stats
 
 ## Progress
 
@@ -186,4 +186,4 @@ Note: Phase 15 and Phase 16 can proceed in parallel after Phase 14 completes. Ph
 | 17. NPC Characters & Dialogue Content | v2.0 | 2/2 | Complete    | 2026-04-01 |
 | 18. Reputation & Trade Integration | v2.0 | 2/2 | Complete    | 2026-04-01 |
 | 19. Progressive Port Unlocking | v2.0 | 2/2 | Complete    | 2026-04-01 |
-| 20. Journal Integration & Game Polish | v2.0 | 2/3 | In Progress|  |
+| 20. Journal Integration & Game Polish | v2.0 | 3/3 | Complete   | 2026-04-01 |

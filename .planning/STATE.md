@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: The Merchant's Odyssey
-status: executing
-stopped_at: Completed 20-01-PLAN.md
-last_updated: "2026-04-01T19:25:38.783Z"
+status: verifying
+stopped_at: Completed 20-03-PLAN.md
+last_updated: "2026-04-01T19:33:14.914Z"
 last_activity: 2026-04-01
 progress:
   total_phases: 8
-  completed_phases: 7
+  completed_phases: 8
   total_plans: 19
-  completed_plans: 18
+  completed_plans: 19
   percent: 95
 ---
 
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-04-01)
 
 Phase: 20 (journal-integration-game-polish) — EXECUTING
 Plan: 3 of 3
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-04-01
 
 Progress: [▓▓▓▓▓▓▓▓▓░] 95% (v2.0 milestone)
@@ -80,6 +80,9 @@ Progress: [▓▓▓▓▓▓▓▓▓░] 95% (v2.0 milestone)
 - [Phase 20]: Migration v10 recreates journal_entries table to widen CHECK constraint (SQLite cannot ALTER CHECK)
 - [Phase 20]: Discovery entries fire on dialogue end and first port arrival for maximum educational coverage
 - [Phase 20]: Journal cap (3/turn) applied via insertJournalEntryIfUnderCap; existing entries bypass cap
+- [Phase 20]: merchants_odyssey meta-quest seeded as active on new game, not NPC-triggered
+- [Phase 20]: advanceQuest loops through multiple consecutively-satisfied objectives for meta-quest
+- [Phase 20]: Journey stats from journal arrivals, transaction_history, quest_progress, player_inventory
 
 ### Blockers/Concerns
 
@@ -88,6 +91,6 @@ Progress: [▓▓▓▓▓▓▓▓▓░] 95% (v2.0 milestone)
 
 ## Session Continuity
 
-Last session: 2026-04-01T19:25:38.781Z
-Stopped at: Completed 20-01-PLAN.md
+Last session: 2026-04-01T19:33:14.911Z
+Stopped at: Completed 20-03-PLAN.md
 Resume file: None

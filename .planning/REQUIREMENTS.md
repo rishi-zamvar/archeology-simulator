@@ -12,7 +12,7 @@
 - [x] **QUEST-01**: Main storyline begins at Piraeus with a commission from an Athenian merchant house
 - [x] **QUEST-02**: Quests involve historically plausible merchant activities (deliver goods, source materials, negotiate deals)
 - [x] **QUEST-03**: Completing quests advances the story and teaches history through gameplay
-- [ ] **QUEST-04**: Win condition exists — completing the merchant's odyssey across the Mediterranean
+- [x] **QUEST-04**: Win condition exists — completing the merchant's odyssey across the Mediterranean
 
 ## NPCs & Dialogue
 
@@ -41,7 +41,7 @@
 
 ## Game Polish
 
-- [ ] **POLISH-01**: Intro sequence at Piraeus sets the scene and introduces the story
+- [x] **POLISH-01**: Intro sequence at Piraeus sets the scene and introduces the story
 - [x] **POLISH-02**: Historically accurate voyage events expanded beyond current 24
 - [x] **POLISH-03**: Port-specific ambient descriptions (sights, sounds, smells a merchant would experience)
 
