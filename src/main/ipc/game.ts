@@ -34,6 +34,7 @@ import {
   getCuratedImagesForGood,
   getCuratedImagesForPort,
   insertJournalEntry,
+  getPortLore,
 } from '../db/queries';
 import { evaluateActiveQuests } from './quest';
 import { performAction } from '../../game/engine';
@@ -42,7 +43,7 @@ import { rollVoyageEvent, resolveEventChoice } from '../../game/events';
 import { getWeatherModifiers, getSeason, getSeasonalWeatherDescription } from '../../game/weather';
 import type { SailingTurnResult } from '../../game/sailing';
 import type { GameAction, GameResult, GameState, SailingState, TutorialPhase } from '../../game/types';
-import type { VoyageEvent } from '../../shared/game-types';
+import type { VoyageEvent, PortLore } from '../../shared/game-types';
 
 // New games start the tutorial from the beginning.
 // Existing saves that pre-date the tutorial system will have tutorialPhase=undefined;
@@ -575,6 +576,15 @@ export function registerGameIPCHandlers(db: Database.Database): void {
       broadcastGameUpdated(db);
       return { success: true, state: newState };
     },
+  );
+
+  /**
+   * game:getPortLore — return lore data for a specific port.
+   */
+  wrapHandler<PortLore | null, [string]>(
+    'game:getPortLore',
+    async (portId) => getPortLore(db, portId),
+    (portId) => (!portId || typeof portId !== 'string' ? 'portId is required' : null),
   );
 }
 

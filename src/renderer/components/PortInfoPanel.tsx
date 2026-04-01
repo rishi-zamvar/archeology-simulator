@@ -12,7 +12,7 @@
  */
 
 import React, { useEffect, useState, useCallback } from 'react';
-import type { Port, VoyageRoute } from '../../shared/game-types';
+import type { Port, VoyageRoute, PortLore } from '../../shared/game-types';
 
 interface ReachableDestination {
   port: Port;
@@ -34,6 +34,7 @@ export default function PortInfoPanel({
 }: PortInfoPanelProps): React.ReactElement {
   const [port, setPort] = useState<Port | null>(null);
   const [destinations, setDestinations] = useState<ReachableDestination[]>([]);
+  const [lore, setLore] = useState<PortLore | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
@@ -43,13 +44,15 @@ export default function PortInfoPanel({
     setError(null);
     setPort(null);
     setDestinations([]);
+    setLore(null);
 
-    // Fetch port details and reachable destinations in parallel
+    // Fetch port details, reachable destinations, and lore in parallel
     Promise.all([
       window.api.game.getPortDetails(portId),
       window.api.game.getReachablePorts(portId, currentTurn),
+      window.api.game.getPortLore(portId),
     ])
-      .then(([portRes, reachableRes]) => {
+      .then(([portRes, reachableRes, loreRes]) => {
         if (cancelled) return;
         if (!portRes.success) throw new Error(portRes.error);
         if (!reachableRes.success) throw new Error(reachableRes.error);
@@ -59,6 +62,7 @@ export default function PortInfoPanel({
           (a, b) => a.route.distanceKm - b.route.distanceKm
         );
         setDestinations(sorted.slice(0, 5));
+        if (loreRes.success && loreRes.data) setLore(loreRes.data);
         setIsLoading(false);
       })
       .catch((err: unknown) => {
@@ -241,6 +245,137 @@ export default function PortInfoPanel({
           >
             {port.culturalDescription}
           </p>
+        </div>
+      )}
+
+      {/* Port Lore */}
+      {port && !isLoading && lore && (
+        <div style={{ marginTop: '0.5rem', borderTop: '1px solid #c4956a', paddingTop: '1rem', marginBottom: '1rem' }}>
+          <h4
+            style={{
+              fontFamily: "'Cinzel', serif",
+              fontSize: '0.65rem',
+              color: '#7a5c45',
+              marginBottom: '0.75rem',
+              marginTop: 0,
+              textTransform: 'uppercase',
+              letterSpacing: '0.08em',
+              fontWeight: 700,
+            }}
+          >
+            Port Lore
+          </h4>
+
+          {/* History */}
+          <h5
+            style={{
+              fontFamily: "'Cinzel', serif",
+              fontSize: '0.6rem',
+              color: '#7a5c45',
+              marginBottom: '0.3rem',
+              marginTop: 0,
+              textTransform: 'uppercase',
+              letterSpacing: '0.06em',
+              fontWeight: 700,
+            }}
+          >
+            History
+          </h5>
+          <p style={{ fontFamily: "'Lora', Georgia, serif", fontSize: '0.8rem', color: '#3d2b1f', lineHeight: 1.6, margin: '0 0 0.75rem' }}>
+            {lore.history}
+          </p>
+
+          {/* Culture & Daily Life */}
+          <h5
+            style={{
+              fontFamily: "'Cinzel', serif",
+              fontSize: '0.6rem',
+              color: '#7a5c45',
+              marginBottom: '0.3rem',
+              marginTop: 0,
+              textTransform: 'uppercase',
+              letterSpacing: '0.06em',
+              fontWeight: 700,
+            }}
+          >
+            Culture &amp; Daily Life
+          </h5>
+          <p style={{ fontFamily: "'Lora', Georgia, serif", fontSize: '0.8rem', color: '#3d2b1f', lineHeight: 1.6, margin: '0 0 0.75rem' }}>
+            {lore.culture}
+          </p>
+
+          {/* Trade Specialization */}
+          <h5
+            style={{
+              fontFamily: "'Cinzel', serif",
+              fontSize: '0.6rem',
+              color: '#7a5c45',
+              marginBottom: '0.3rem',
+              marginTop: 0,
+              textTransform: 'uppercase',
+              letterSpacing: '0.06em',
+              fontWeight: 700,
+            }}
+          >
+            Trade Specialization
+          </h5>
+          <p style={{ fontFamily: "'Lora', Georgia, serif", fontSize: '0.8rem', color: '#3d2b1f', lineHeight: 1.6, margin: '0 0 0.75rem' }}>
+            {lore.tradeSpecialization}
+          </p>
+
+          {/* Notable Facts */}
+          {lore.notableFacts.length > 0 && (
+            <>
+              <h5
+                style={{
+                  fontFamily: "'Cinzel', serif",
+                  fontSize: '0.6rem',
+                  color: '#7a5c45',
+                  marginBottom: '0.3rem',
+                  marginTop: 0,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.06em',
+                  fontWeight: 700,
+                }}
+              >
+                Notable Facts
+              </h5>
+              <ul style={{ margin: '0 0 0.75rem', paddingLeft: '1.2rem' }}>
+                {lore.notableFacts.map((fact, i) => (
+                  <li
+                    key={i}
+                    style={{
+                      fontFamily: "'Lora', Georgia, serif",
+                      fontSize: '0.75rem',
+                      color: '#3d2b1f',
+                      lineHeight: 1.6,
+                      marginBottom: '0.2rem',
+                    }}
+                  >
+                    {fact}
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
+
+          {/* Sources */}
+          {lore.primarySources.length > 0 && (
+            <div style={{ marginTop: '0.5rem' }}>
+              <p
+                style={{
+                  fontFamily: "'Lora', Georgia, serif",
+                  fontSize: '0.65rem',
+                  color: '#7a5c45',
+                  fontStyle: 'italic',
+                  lineHeight: 1.5,
+                  margin: 0,
+                }}
+              >
+                Sources: {lore.primarySources.join('; ')}
+              </p>
+            </div>
+          )}
         </div>
       )}
 

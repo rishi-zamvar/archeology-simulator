@@ -13,7 +13,7 @@
  * Fonts: Cinzel (headings), Lora (body).
  */
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import PortIllustration from './PortIllustration';
 import { useResourceImages } from '../hooks/useResourceImages';
 import type { PortRegion } from '../../shared/game-types';
@@ -46,8 +46,22 @@ export default function PortScene({
 }: PortSceneProps): React.ReactElement {
   const [marketHovered, setMarketHovered] = useState(false);
   const [harborHovered, setHarborHovered] = useState(false);
+  const [ambientDescription, setAmbientDescription] = useState<string | null>(null);
   const { ports: portImages } = useResourceImages();
   const curatedPortImage = portImages[portId];
+
+  // Fetch ambient description when port changes
+  useEffect(() => {
+    let cancelled = false;
+    setAmbientDescription(null);
+    window.api.game.getPortDetails(portId).then((res) => {
+      if (cancelled) return;
+      if (res.success && res.data?.ambientDescription) {
+        setAmbientDescription(res.data.ambientDescription);
+      }
+    }).catch(() => { /* non-fatal */ });
+    return () => { cancelled = true; };
+  }, [portId]);
 
   const regions: OverlayRegion[] = [
     {
@@ -180,6 +194,24 @@ export default function PortScene({
         >
           {portName}
         </span>
+        {/* Ambient arrival description */}
+        {ambientDescription && (
+          <p
+            style={{
+              fontFamily: "'Lora', Georgia, serif",
+              fontSize: '0.75rem',
+              fontStyle: 'italic',
+              color: '#5a4233',
+              margin: '0.3rem 0 0',
+              lineHeight: 1.5,
+              maxWidth: 600,
+              marginLeft: 'auto',
+              marginRight: 'auto',
+            }}
+          >
+            {ambientDescription}
+          </p>
+        )}
       </div>
 
       {/* Instruction hint */}

@@ -64,6 +64,9 @@ export interface IPCBridge {
     hasSave: () => Promise<IPCResponse<boolean>>;
     newGame: () => Promise<IPCResponse<import('../game/types').GameState>>;
 
+    // Phase 16: Port lore
+    getPortLore: (portId: string) => Promise<IPCResponse<import('./game-types').PortLore | null>>;
+
     // Scan resources/images/ for available image files on disk
     scanResourceImages: () => Promise<IPCResponse<{
       ports: Record<string, string>;
