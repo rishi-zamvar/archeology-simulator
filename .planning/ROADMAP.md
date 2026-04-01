@@ -158,7 +158,7 @@ Note: Phase 15 and Phase 16 can proceed in parallel after Phase 14 completes. Ph
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 13. Infrastructure & Migration System | v2.0 | 2/2 | Complete    | 2026-04-01 |
-| 14. Dialogue Engine & Content Pipeline | v2.0 | 2/2 | Complete   | 2026-04-01 |
+| 14. Dialogue Engine & Content Pipeline | v2.0 | 2/2 | Complete    | 2026-04-01 |
 | 15. Quest System Foundation | v2.0 | 0/TBD | Not started | - |
 | 16. Port Content & World Building | v2.0 | 0/TBD | Not started | - |
 | 17. NPC Characters & Dialogue Content | v2.0 | 0/TBD | Not started | - |
