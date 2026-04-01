@@ -1,11 +1,11 @@
 /**
- * Voyage event system — 24 hand-written historically grounded events,
+ * Voyage event system — 37 hand-written historically grounded events,
  * a weighted roll function, and deterministic/probabilistic resolution logic.
  *
  * Events are the "Oregon Trail moment" of Archeology Simulator:
  * they make each voyage unpredictable and consequential.
  *
- * Distribution: 8 storm, 8 pirate, 8 calm events.
+ * Distribution: 12 storm, 12 pirate, 13 calm events.
  * Roll probability: 70% chance of any event per voyage.
  * Weights: storm 25%, pirate 20%, calm 55%.
  */
@@ -171,6 +171,83 @@ export const EVENT_DATABASE: VoyageEvent[] = [
     ],
   },
 
+  {
+    id: 'storm_sirocco',
+    type: 'storm',
+    title: 'The Sirocco',
+    description:
+      'A scorching wind from the Sahara — the sirocco — sweeps north across the sea. Ancient sailors dreaded this hot, sand-laden gale that parched throats and cracked timber. The air shimmers with desert dust.',
+    choices: [
+      {
+        id: 'shelter_island',
+        label: 'Shelter at the nearest island',
+        outcome: 'Lose 2 turns waiting for the wind to pass, but ship and cargo are safe.',
+      },
+      {
+        id: 'wet_sails',
+        label: 'Wet down the sails and press on',
+        outcome: 'Crew fights the heat. 60% chance of safe passage; otherwise lose 15% cargo to heat damage.',
+      },
+    ],
+  },
+  {
+    id: 'storm_winter_gale',
+    type: 'storm',
+    title: 'Winter Gale',
+    description:
+      'You have violated mare clausum — the ancient custom of closing the sea to navigation in winter. Hesiod warned: "Avoid the sea for fifty days after the solstice." Now you understand why.',
+    choices: [
+      {
+        id: 'dump_heavy',
+        label: 'Dump heavy cargo to lighten the ship',
+        outcome: 'Lose 25% of cargo but stay afloat. The crew lives.',
+      },
+      {
+        id: 'ride_full',
+        label: 'Ride the storm with full hold',
+        outcome: '40% chance the weight keeps you stable. 60% chance: lose 30% cargo and 1 turn.',
+      },
+    ],
+  },
+  {
+    id: 'storm_prester',
+    type: 'storm',
+    title: 'The Prester',
+    description:
+      'A waterspout — what Aristotle calls a prester — descends from a dark cloud, its whirling column connecting sky and sea. Ancient mariners believed these were sent by wrathful gods to punish impious sailors.',
+    choices: [
+      {
+        id: 'row_to_port',
+        label: 'Row hard to port',
+        outcome: 'Your oarsmen pull you clear. Lose 1 turn from the detour.',
+      },
+      {
+        id: 'pray_poseidon',
+        label: 'Wait and pray to Poseidon',
+        outcome: '65% chance it dissipates harmlessly. 35% chance: lose 200 denarii in damage.',
+      },
+    ],
+  },
+  {
+    id: 'storm_fog_strait',
+    type: 'storm',
+    title: 'Fog on the Strait',
+    description:
+      'A thick fog has enveloped the strait, turning the world to white silence. Without a compass — an invention still centuries away — ancient navigators relied on sound, stars, and instinct. Today there are no stars.',
+    choices: [
+      {
+        id: 'anchor_wait',
+        label: 'Drop anchor and wait for it to lift',
+        outcome: 'Safe but slow. Lose 2 turns.',
+      },
+      {
+        id: 'navigate_sound',
+        label: 'Navigate by the sound of surf on rocks',
+        outcome: '50% chance you thread the strait safely. 50% chance: scrape the hull (150 denarii repairs).',
+      },
+    ],
+  },
+
   // ── PIRATES ───────────────────────────────────────────────────────────────
 
   {
@@ -326,6 +403,83 @@ export const EVENT_DATABASE: VoyageEvent[] = [
     ],
   },
 
+  {
+    id: 'pirate_cilician_ambush',
+    type: 'pirate',
+    title: 'Cilician Ambush',
+    description:
+      'Hidden behind a rocky headland, Cilician pirates spring their trap. Cilicia — the southern coast of Anatolia — was the most notorious pirate haven in the ancient Mediterranean, terrorizing trade routes for centuries.',
+    choices: [
+      {
+        id: 'offer_tribute',
+        label: 'Offer cargo as tribute',
+        outcome: 'Lose your lowest-value cargo type. They let you pass.',
+      },
+      {
+        id: 'signal_warship',
+        label: 'Signal a nearby warship (50% bluff)',
+        outcome: '50% chance they scatter. 50% chance they call the bluff: lose 250 denarii.',
+      },
+    ],
+  },
+  {
+    id: 'pirate_tyrrhenian_raiders',
+    type: 'pirate',
+    title: 'Tyrrhenian Raiders',
+    description:
+      'Etruscan pirates — the Tyrrhenians — prowl the western Mediterranean. Greek legend says they once captured Dionysus himself. Their swift penteconters are built for speed, not trade.',
+    choices: [
+      {
+        id: 'single_combat',
+        label: 'Challenge their captain to single combat on deck',
+        outcome: '40% chance you win and they withdraw in respect. 60% chance: pay 200 denarii ransom.',
+      },
+      {
+        id: 'negotiate_fee',
+        label: 'Negotiate a passage fee',
+        outcome: 'Pay 120 denarii. A reasonable price for your life.',
+      },
+    ],
+  },
+  {
+    id: 'pirate_false_merchant',
+    type: 'pirate',
+    title: 'False Merchant',
+    description:
+      'A ship flying merchant colours approaches with friendly signals. But your experienced helmsman notices the extra oar ports and the armed men crouching behind the gunwale. A pirate ship disguised as a trader — a tactic as old as seafaring itself.',
+    choices: [
+      {
+        id: 'approach_cautious',
+        label: 'Approach cautiously with weapons ready',
+        outcome: 'They see your readiness. Demand 100 denarii or they attack. You pay.',
+      },
+      {
+        id: 'change_course',
+        label: 'Change course immediately',
+        outcome: '70% chance you escape cleanly. 30% chance they pursue: lose 1 turn fleeing.',
+      },
+    ],
+  },
+  {
+    id: 'pirate_slave_galley',
+    type: 'pirate',
+    title: 'Escaped Slave Galley',
+    description:
+      'A damaged warship drifts into view, crewed not by pirates but by escaped slaves who have seized the vessel. They are desperate, hungry, and armed with broken chains. The ancient Mediterranean slave trade was vast and brutal.',
+    choices: [
+      {
+        id: 'offer_provisions',
+        label: 'Offer food and fresh water',
+        outcome: 'Lose 50 denarii worth of provisions. They share intelligence about the coast ahead.',
+      },
+      {
+        id: 'report_position',
+        label: 'Note their position and report at next port',
+        outcome: 'No cost. Authorities may reward you (30% chance: gain 80 denarii).',
+      },
+    ],
+  },
+
   // ── CALM / FAVORABLE ─────────────────────────────────────────────────────
 
   {
@@ -452,6 +606,101 @@ export const EVENT_DATABASE: VoyageEvent[] = [
         id: 'nod_and_sail',
         label: 'Thank him and sail on',
         outcome: 'No bonus. No penalty.',
+      },
+    ],
+  },
+  {
+    id: 'calm_phoenician_navigation',
+    type: 'calm',
+    title: 'Phoenician Navigation Lesson',
+    description:
+      'You encounter a Phoenician merchant vessel whose navigator is renowned for his mastery of star-reckoning — the art of steering by Polaris, which the Greeks call Phoinike, "the Phoenician star." He offers to share his knowledge.',
+    choices: [
+      {
+        id: 'learn_stars',
+        label: 'Spend time learning celestial navigation',
+        outcome: 'Your navigator gains invaluable knowledge of Phoenician star-reckoning techniques.',
+      },
+      {
+        id: 'trade_chart',
+        label: 'Trade for a star chart',
+        outcome: 'Pay 60 denarii for a Phoenician star chart inscribed on copper.',
+      },
+    ],
+  },
+  {
+    id: 'calm_sacred_island',
+    type: 'calm',
+    title: 'Sacred Island',
+    description:
+      'Your ship passes a small island crowned with a white marble temple gleaming in the sun. Smoke from altar fires rises into the sky. Many such sacred islands dotted the ancient Aegean — sanctuaries where even enemies observed truce.',
+    choices: [
+      {
+        id: 'make_offering',
+        label: 'Stop and make an offering at the temple',
+        outcome: 'Leave a donation. Delay 1 turn but crew feels the gods\' favour.',
+      },
+      {
+        id: 'sail_past',
+        label: 'Sail past with a prayer of reverence',
+        outcome: 'Continue your voyage. The gods note your respect.',
+      },
+    ],
+  },
+  {
+    id: 'calm_whale_sighting',
+    type: 'calm',
+    title: 'Whale Sighting',
+    description:
+      'Great dark shapes surface alongside your vessel — whales, far more common in the ancient Mediterranean than today. Your crew is divided: some see them as Poseidon\'s escorts, others as an omen to change course.',
+    choices: [
+      {
+        id: 'follow_whales',
+        label: 'Follow the whales — they know the currents',
+        outcome: 'The whales lead you into a favourable current. Faster passage.',
+      },
+      {
+        id: 'change_course',
+        label: 'Change course — heed the superstition',
+        outcome: 'A longer route, but your crew feels safer.',
+      },
+    ],
+  },
+  {
+    id: 'calm_ancient_wreck',
+    type: 'calm',
+    title: 'Ancient Shipwreck',
+    description:
+      'Your lookout spots the dark outline of a sunken ship in shallow water, its cargo of amphorae still visible on the seabed. Shipwrecks were tragically common — archaeologists have found thousands across the Mediterranean floor.',
+    choices: [
+      {
+        id: 'dive_salvage',
+        label: 'Send divers to salvage what they can',
+        outcome: 'Recover sealed amphorae from the wreck. Delay while diving.',
+      },
+      {
+        id: 'mark_and_sail',
+        label: 'Mark the spot and sail on',
+        outcome: 'Note the location for another day. No delay.',
+      },
+    ],
+  },
+  {
+    id: 'calm_fishing_fleet',
+    type: 'calm',
+    title: 'Fishing Fleet',
+    description:
+      'A fleet of small fishing boats works the waters ahead — local fishermen who know every rock, current, and harbour in the region. Ancient fishing communities were vital sources of intelligence for passing merchants.',
+    choices: [
+      {
+        id: 'buy_fish',
+        label: 'Buy fresh fish for the crew',
+        outcome: 'Fresh food improves morale. A small price for a happier crew.',
+      },
+      {
+        id: 'ask_conditions',
+        label: 'Ask about sea conditions ahead',
+        outcome: 'Learn about weather and harbour conditions on your route.',
       },
     ],
   },
@@ -633,6 +882,36 @@ function resolveByEventAndChoice(
         ? { goldDelta: 0, cargoDelta: {}, turnDelta: 0, message: 'Waterspout passed by harmlessly.' }
         : { goldDelta: 0, cargoDelta: loseCargoPercent(inventory, 0.2), turnDelta: 0, message: 'Waterspout clipped the ship. Lost 20% cargo.' };
 
+    // ── NEW STORM EVENTS ────────────────────────────────────────────────────
+
+    case 'storm_sirocco':
+      if (choiceId === 'shelter_island')
+        return { goldDelta: 0, cargoDelta: {}, turnDelta: 2, message: 'Sheltered from the sirocco. Lost 2 turns.' };
+      return Math.random() < 0.6
+        ? { goldDelta: 0, cargoDelta: {}, turnDelta: 0, message: 'Wet sails held. You pressed through the sirocco.' }
+        : { goldDelta: 0, cargoDelta: loseCargoPercent(inventory, 0.15), turnDelta: 0, message: 'Heat damaged 15% of your cargo.' };
+
+    case 'storm_winter_gale':
+      if (choiceId === 'dump_heavy')
+        return { goldDelta: 0, cargoDelta: loseCargoPercent(inventory, 0.25), turnDelta: 0, message: 'Lightened the ship. Lost 25% cargo but survived the winter gale.' };
+      return Math.random() < 0.4
+        ? { goldDelta: 0, cargoDelta: {}, turnDelta: 0, message: 'The heavy cargo kept you stable through the gale.' }
+        : { goldDelta: 0, cargoDelta: loseCargoPercent(inventory, 0.3), turnDelta: 1, message: 'Mare clausum showed its fury. Lost 30% cargo and 1 turn.' };
+
+    case 'storm_prester':
+      if (choiceId === 'row_to_port')
+        return { goldDelta: 0, cargoDelta: {}, turnDelta: 1, message: 'Oarsmen pulled clear of the prester. Lost 1 turn.' };
+      return Math.random() < 0.65
+        ? { goldDelta: 0, cargoDelta: {}, turnDelta: 0, message: 'The prester dissipated harmlessly. Poseidon was merciful.' }
+        : { goldDelta: -200, cargoDelta: {}, turnDelta: 0, message: 'The prester struck nearby. Water damage cost 200 denarii.' };
+
+    case 'storm_fog_strait':
+      if (choiceId === 'anchor_wait')
+        return { goldDelta: 0, cargoDelta: {}, turnDelta: 2, message: 'Anchored in the fog. Lost 2 turns waiting for it to lift.' };
+      return Math.random() < 0.5
+        ? { goldDelta: 0, cargoDelta: {}, turnDelta: 0, message: 'Navigated by sound alone. Your helmsman found the way.' }
+        : { goldDelta: -150, cargoDelta: {}, turnDelta: 0, message: 'Scraped the hull on hidden rocks. Repairs cost 150 denarii.' };
+
     // ── PIRATES ──────────────────────────────────────────────────────────────
 
     case 'pirate_cilician_corsairs':
@@ -702,6 +981,36 @@ function resolveByEventAndChoice(
         ? { goldDelta: 0, cargoDelta: {}, turnDelta: 0, message: 'Rammed through! Escaped unharmed.' }
         : { goldDelta: -300, cargoDelta: {}, turnDelta: 1, message: 'The ram failed. Paid 300 denarii and lost 1 turn.' };
 
+    // ── NEW PIRATE EVENTS ───────────────────────────────────────────────────
+
+    case 'pirate_cilician_ambush':
+      if (choiceId === 'offer_tribute')
+        return { goldDelta: 0, cargoDelta: loseLowestCargo(inventory), turnDelta: 0, message: 'Gave up your lowest-value cargo. The Cilicians let you pass.' };
+      return Math.random() < 0.5
+        ? { goldDelta: 0, cargoDelta: {}, turnDelta: 0, message: 'Your bluff worked! They scattered at the sight of your "warship" signal.' }
+        : { goldDelta: -250, cargoDelta: {}, turnDelta: 0, message: 'They called the bluff. Paid 250 denarii.' };
+
+    case 'pirate_tyrrhenian_raiders':
+      if (choiceId === 'single_combat')
+        return Math.random() < 0.4
+          ? { goldDelta: 0, cargoDelta: {}, turnDelta: 0, message: 'You won the duel! The Tyrrhenians withdrew with grudging respect.' }
+          : { goldDelta: -200, cargoDelta: {}, turnDelta: 0, message: 'You lost the duel. Paid 200 denarii ransom for your freedom.' };
+      return { goldDelta: -120, cargoDelta: {}, turnDelta: 0, message: 'Negotiated a passage fee of 120 denarii.' };
+
+    case 'pirate_false_merchant':
+      if (choiceId === 'approach_cautious')
+        return { goldDelta: -100, cargoDelta: {}, turnDelta: 0, message: 'Paid 100 denarii under threat. Your caution prevented worse.' };
+      return Math.random() < 0.7
+        ? { goldDelta: 0, cargoDelta: {}, turnDelta: 0, message: 'Changed course in time. Escaped cleanly.' }
+        : { goldDelta: 0, cargoDelta: {}, turnDelta: 1, message: 'They gave chase. You escaped but lost 1 turn fleeing.' };
+
+    case 'pirate_slave_galley':
+      if (choiceId === 'offer_provisions')
+        return { goldDelta: -50, cargoDelta: {}, turnDelta: 0, message: 'Gave provisions worth 50 denarii. They shared useful coastal intelligence.' };
+      return Math.random() < 0.3
+        ? { goldDelta: 80, cargoDelta: {}, turnDelta: 0, message: 'Authorities rewarded your report with 80 denarii.' }
+        : { goldDelta: 0, cargoDelta: {}, turnDelta: 0, message: 'Noted their position. No reward was offered.' };
+
     // ── CALM ─────────────────────────────────────────────────────────────────
 
     case 'calm_fair_winds':
@@ -736,6 +1045,36 @@ function resolveByEventAndChoice(
       if (choiceId === 'ask_more')
         return { goldDelta: 0, cargoDelta: {}, turnDelta: 0, message: 'Learned textiles are scarce at Tyre. High prices await.' };
       return { goldDelta: 0, cargoDelta: {}, turnDelta: 0, message: 'Sailed on. No bonus.' };
+
+    // ── NEW CALM EVENTS ───────────────────────────────────────────────────
+
+    case 'calm_phoenician_navigation':
+      if (choiceId === 'learn_stars')
+        return { goldDelta: 0, cargoDelta: {}, turnDelta: 0, message: 'Spent hours learning Phoenician star-reckoning. Future voyages will be swifter.' };
+      return { goldDelta: -60, cargoDelta: {}, turnDelta: 0, message: 'Bought a Phoenician star chart (60 denarii). A worthy investment.' };
+
+    case 'calm_sacred_island':
+      if (choiceId === 'make_offering')
+        return { goldDelta: -30, cargoDelta: {}, turnDelta: 1, message: 'Left 30 denarii at the temple. The crew feels blessed. Lost 1 turn.' };
+      return { goldDelta: 0, cargoDelta: {}, turnDelta: 0, message: 'Sailed past with reverence. No delay.' };
+
+    case 'calm_whale_sighting':
+      if (choiceId === 'follow_whales')
+        return { goldDelta: 0, cargoDelta: {}, turnDelta: -1, message: 'The whales led you through a swift current. Arrived 1 turn early!' };
+      return { goldDelta: 0, cargoDelta: {}, turnDelta: 1, message: 'Changed course to avoid ill omen. Lost 1 turn.' };
+
+    case 'calm_ancient_wreck': {
+      if (choiceId === 'dive_salvage') {
+        const salvageGood = Math.random() < 0.5 ? 'wine' : 'olive_oil';
+        return { goldDelta: 0, cargoDelta: { [salvageGood]: 2 }, turnDelta: 1, message: `Divers recovered 2 units of ${salvageGood} from the wreck. Lost 1 turn.` };
+      }
+      return { goldDelta: 0, cargoDelta: {}, turnDelta: 0, message: 'Marked the wreck and sailed on. Perhaps another day.' };
+    }
+
+    case 'calm_fishing_fleet':
+      if (choiceId === 'buy_fish')
+        return { goldDelta: -20, cargoDelta: {}, turnDelta: 0, message: 'Bought fresh fish (20 denarii). Crew morale is high.' };
+      return { goldDelta: 0, cargoDelta: {}, turnDelta: 0, message: 'Learned about safe harbours and calm waters ahead.' };
 
     default:
       return { goldDelta: 0, cargoDelta: {}, turnDelta: 0, message: 'The voyage continued without incident.' };
