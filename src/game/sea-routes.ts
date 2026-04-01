@@ -24,6 +24,7 @@ type Waypoint = [number, number];
 const SEA_WAYPOINTS = {
   // Southern Italy / Sicily strait
   sicily_south:     [36.8, 15.2] as Waypoint,   // south of Sicily
+  sicily_north:     [38.5, 13.5] as Waypoint,   // north coast of Sicily
   messina_strait:   [38.2, 15.6] as Waypoint,   // Strait of Messina
   // Central Mediterranean
   malta_channel:    [35.5, 14.5] as Waypoint,   // south of Malta
@@ -38,6 +39,12 @@ const SEA_WAYPOINTS = {
   // Western Mediterranean
   sardinia_south:   [38.5, 9.5] as Waypoint,    // south of Sardinia
   tyrrhenian:       [39.5, 13.0] as Waypoint,   // Tyrrhenian Sea (off Naples)
+  gibraltar:        [35.9, -5.5] as Waypoint,   // Strait of Gibraltar
+  // Greece / Aegean
+  peloponnese_south: [36.4, 22.5] as Waypoint,  // Cape Malea (south of Peloponnese)
+  ionian_sea:       [38.0, 19.0] as Waypoint,   // open Ionian Sea (between Italy and Greece)
+  aegean_south:     [36.5, 25.5] as Waypoint,   // southern Aegean
+  bosphorus_south:  [40.5, 29.0] as Waypoint,   // approaching Bosphorus
 } as const;
 
 const W = SEA_WAYPOINTS;
@@ -79,6 +86,33 @@ const ROUTE_WAYPOINTS: Record<string, Waypoint[]> = {
 
   // Alexandria → Antioch: northeast along Levantine coast
   'alexandria->antioch': [W.cyprus_south],
+
+  // ── Western Mediterranean hub routes (Phase 16) ──────────────────
+  // Gadir (Cadiz) routes — must go through Strait of Gibraltar
+  'gadir->carthage': [W.gibraltar, W.sardinia_south],
+  'gadir->massalia': [W.gibraltar, W.sardinia_south],
+  'gadir->emporion': [W.gibraltar],
+  // Massalia routes — avoid cutting through Corsica/Sardinia
+  'massalia->carthage': [W.sardinia_south],
+  'massalia->syracuse': [W.sardinia_south, W.sicily_south],
+
+  // ── Italy routes (Phase 16) ──────────────────────────────────────
+  'ostia->syracuse': [W.tyrrhenian, W.sicily_north],
+  'ostia->taras': [W.tyrrhenian, W.messina_strait, W.ionian_sea],
+  'ostia->athens': [W.tyrrhenian, W.messina_strait, W.sicily_south, W.ionian_sea],
+  'taras->athens': [W.ionian_sea, W.peloponnese_south],
+
+  // ── Greece internal routes (Phase 16) ────────────────────────────
+  // athens->corinth: no waypoints needed (very close, no land crossing)
+  'athens->sparta': [W.peloponnese_south],
+  'athens->miletos': [W.aegean_south],
+  'athens->byzantion': [W.bosphorus_south],
+
+  // ── Eastern routes (Phase 16) ────────────────────────────────────
+  'athens->tyre': [W.rhodes, W.cyprus_south],
+  'athens->memphis': [W.crete_west, W.crete_east, W.egypt_coast],
+  'tyre->memphis': [W.cyprus_south, W.egypt_coast],
+  'carthage->tyre': [W.malta_channel, W.crete_west, W.crete_east, W.rhodes, W.cyprus_south],
 };
 
 /**
