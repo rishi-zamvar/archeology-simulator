@@ -841,10 +841,7 @@ export default function Shell(): React.ReactElement {
         seasonTint={SEASON_TINTS[weatherMods.season]}
       />
 
-        </div>
-      </div>
-
-      {/* ── Active quest indicator — OUTSIDE hover panel, always clickable ── */}
+      {/* ── Active quest indicator — inside hover panel ── */}
       {activeQuest && (
         <>
           <button
@@ -1043,6 +1040,9 @@ export default function Shell(): React.ReactElement {
           )}
         </>
       )}
+
+        </div>
+      </div>
 
       {/* ── Quest completion wax seal (FX-02) ──────────────────── */}
       {questToast && (

@@ -50,6 +50,15 @@ export function registerSaveIPCHandlers(db: Database.Database): void {
       log.info('Loading game state');
       const state = loadGameState(db);
 
+      // Ensure player_inventory row exists (may be missing in older saves)
+      const invRow = db.prepare('SELECT id FROM player_inventory WHERE id = 1').get();
+      if (!invRow) {
+        db.prepare(`
+          INSERT INTO player_inventory (id, gold, cargo_capacity, cargo_json, hull_condition, crew_morale)
+          VALUES (1, 500, 50, '[]', 100, 70)
+        `).run();
+      }
+
       // Backward compatibility: v1.3 saves have game_state but no port_access rows.
       // Treat all 25 existing ports as unlocked so returning players can access everything.
       if (state) {
@@ -112,7 +121,12 @@ export function registerSaveIPCHandlers(db: Database.Database): void {
         }
         // Re-insert fresh state
         saveGameStateAtomic(db, INITIAL_STATE);
-        // Seed starting ports: Piraeus (athens) unlocked, Corinth unlocked, Miletus discovered
+        // Seed player inventory with starting gold
+        db.prepare(`
+          INSERT INTO player_inventory (id, gold, cargo_capacity, cargo_json, hull_condition, crew_morale)
+          VALUES (1, 500, 50, '[]', 100, 70)
+        `).run();
+        // Seed starting ports
         seedStartingPorts(db);
         // Seed meta-quest and first sub-quest as active from the start
         const seedQuest = db.prepare(`
