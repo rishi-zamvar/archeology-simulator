@@ -39,24 +39,11 @@ type LeafletWithMotion = typeof L & {
 function createShipIcon(): L.DivIcon {
   return L.divIcon({
     className: 'ship-icon',
-    html: `<div style="width:36px;height:24px;display:flex;align-items:center;justify-content:center;filter:drop-shadow(1px 1px 2px rgba(61,43,31,0.4));">
-      <svg width="36" height="24" viewBox="0 0 36 24" xmlns="http://www.w3.org/2000/svg">
-        <path d="M2,16 Q4,20 18,20 Q32,20 35,16 L33,14 Q30,18 18,18 Q6,18 3,14 Z" fill="#7a5c45" stroke="#3d2b1f" stroke-width="0.8"/>
-        <path d="M35,16 L36,15 L35,14.5" fill="#5a3e2b" stroke="#3d2b1f" stroke-width="0.5"/>
-        <path d="M5,15 Q18,13 31,15" fill="none" stroke="#3d2b1f" stroke-width="0.6"/>
-        <line x1="18" y1="14" x2="18" y2="3" stroke="#3d2b1f" stroke-width="1.2"/>
-        <path d="M18,4 Q24,6 26,10 L18,12 Z" fill="#f8edd8" stroke="#7a5c45" stroke-width="0.6"/>
-        <path d="M18,4 Q12,6 10,10 L18,12 Z" fill="#efe0c8" stroke="#7a5c45" stroke-width="0.6"/>
-        <line x1="10" y1="17" x2="8" y2="21" stroke="#5a3e2b" stroke-width="0.5" opacity="0.7"/>
-        <line x1="14" y1="17" x2="12" y2="21" stroke="#5a3e2b" stroke-width="0.5" opacity="0.7"/>
-        <line x1="18" y1="17" x2="16" y2="21" stroke="#5a3e2b" stroke-width="0.5" opacity="0.7"/>
-        <line x1="22" y1="17" x2="20" y2="21" stroke="#5a3e2b" stroke-width="0.5" opacity="0.7"/>
-        <line x1="26" y1="17" x2="24" y2="21" stroke="#5a3e2b" stroke-width="0.5" opacity="0.7"/>
-        <path d="M2,16 Q1,12 3,10" fill="none" stroke="#3d2b1f" stroke-width="0.8"/>
-      </svg>
+    html: `<div style="width:64px;height:40px;display:flex;align-items:center;justify-content:center;filter:drop-shadow(2px 2px 4px rgba(0,0,0,0.3));">
+      <img src="resource-image:///images/trireme.png" width="64" height="40" style="object-fit:contain;" alt="trireme" />
     </div>`,
-    iconSize: [36, 24],
-    iconAnchor: [18, 12],
+    iconSize: [64, 40],
+    iconAnchor: [32, 20],
   });
 }
 
