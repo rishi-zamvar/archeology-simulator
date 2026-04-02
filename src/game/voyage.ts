@@ -26,8 +26,13 @@
 
 import type { Port, VoyageRoute } from '../shared/game-types';
 
-/** Monthly sailing range in km (150 km/day × 25 days). */
-const KM_PER_MONTH = 3750;
+/**
+ * Monthly sailing range in km.
+ * Ancient coastal sailing: ~60 km/day average (including stops for weather,
+ * resupply, beaching at night) × ~15 actual sailing days per month.
+ * This gives variety: nearby ports = 1 month, mid-range = 2, far = 3+.
+ */
+const KM_PER_MONTH = 900;
 
 /**
  * Calculate the great-circle distance between two ports using the haversine formula.
@@ -64,7 +69,7 @@ export function calculateVoyageDuration(from: Port, to: Port): number {
 export function getReachablePorts(
   fromPortId: string,
   allPorts: Port[],
-  maxTurns: number = 2
+  maxTurns: number = 3
 ): Array<{ port: Port; route: VoyageRoute }> {
   const from = allPorts.find(p => p.id === fromPortId);
   if (!from) return [];

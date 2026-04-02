@@ -75,5 +75,14 @@ export function useMapPorts(): UseMapPortsReturn {
     setRefreshAccessKey((k) => k + 1);
   }, []);
 
+  // Auto-refresh access levels when game state changes (e.g., after arrival discovers neighbors)
+  useEffect(() => {
+    if (!window.api?.subscribe) return;
+    const cleanup = window.api.subscribe('game:updated', () => {
+      refreshAccess();
+    });
+    return cleanup;
+  }, [refreshAccess]);
+
   return { ports, portAccessMap, isLoading, error, refreshAccess };
 }

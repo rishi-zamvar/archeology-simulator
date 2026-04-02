@@ -1452,11 +1452,10 @@ export function seedStartingPorts(db: Database.Database): void {
   const seedAll = db.transaction(() => {
     // Starting port — fully unlocked
     insert.run('athens', 'unlocked', 1, 'starting_port');
-    // Nearby Greek ports — discovered (visible, can sail to)
+    // 2 nearby ports — discovered (the 3 closest to Athens)
     insert.run('corinth', 'discovered', 1, 'starting_port');
     insert.run('sparta', 'discovered', 1, 'starting_port');
-    insert.run('miletos', 'discovered', 1, 'starting_port');
-    // Quest target — discovered so it's visible on map
+    // Quest target — discovered so player knows where to go
     insert.run('tyre', 'discovered', 1, 'quest_destination');
   });
 
@@ -1632,11 +1631,36 @@ export function getConnectedPortIds(db: Database.Database, portId: string): stri
 }
 
 /**
- * Unlock neighboring ports when a player arrives at a port.
- * Sets directly connected ports to 'discovered' if they are currently 'unknown'.
+ * Unlock up to 3 neighboring ports when a player arrives at a port.
+ * Only discovers the 3 closest unknown ports (by haversine distance).
+ * This creates a gradual exploration feel — each port reveals a few new ones.
  * Never downgrades — discovered/unlocked ports stay as-is.
  */
 export function unlockNeighborPorts(db: Database.Database, arrivedPortId: string, connectedPortIds: string[]): string[] {
+  const MAX_DISCOVERIES = 3;
+
+  // Get the arrived port's coordinates for distance sorting
+  const arrivedPort = db.prepare('SELECT lat, lng FROM ports WHERE id = ?').get(arrivedPortId) as { lat: number; lng: number } | undefined;
+  if (!arrivedPort) return [];
+
+  // Filter to only unknown ports and sort by distance (closest first)
+  const unknownNeighbors: Array<{ id: string; dist: number }> = [];
+  for (const neighborId of connectedPortIds) {
+    const row = db.prepare('SELECT status FROM port_access WHERE port_id = ?').get(neighborId) as { status: string } | undefined;
+    if (!row || row.status === 'unknown') {
+      const nPort = db.prepare('SELECT lat, lng FROM ports WHERE id = ?').get(neighborId) as { lat: number; lng: number } | undefined;
+      if (nPort) {
+        const dlat = nPort.lat - arrivedPort.lat;
+        const dlng = nPort.lng - arrivedPort.lng;
+        unknownNeighbors.push({ id: neighborId, dist: Math.sqrt(dlat * dlat + dlng * dlng) });
+      }
+    }
+  }
+
+  // Sort by distance, take only the closest 3
+  unknownNeighbors.sort((a, b) => a.dist - b.dist);
+  const toDiscover = unknownNeighbors.slice(0, MAX_DISCOVERIES);
+
   const newlyDiscovered: string[] = [];
   const upsert = db.prepare(`
     INSERT INTO port_access (port_id, status, discovered, unlock_method)
@@ -1647,12 +1671,9 @@ export function unlockNeighborPorts(db: Database.Database, arrivedPortId: string
   `);
 
   const txn = db.transaction(() => {
-    for (const neighborId of connectedPortIds) {
-      // Check current status
-      const row = db.prepare('SELECT status FROM port_access WHERE port_id = ?').get(neighborId) as { status: string } | undefined;
-      const wasUnknown = !row || row.status === 'unknown';
-      upsert.run(neighborId);
-      if (wasUnknown) newlyDiscovered.push(neighborId);
+    for (const neighbor of toDiscover) {
+      upsert.run(neighbor.id);
+      newlyDiscovered.push(neighbor.id);
     }
   });
 
