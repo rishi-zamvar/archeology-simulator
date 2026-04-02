@@ -117,7 +117,7 @@ export default function Shell(): React.ReactElement {
   }, []);
 
   const { state: gameState } = useGameState();
-  const { marketGoods, inventory, transactions, error: tradeError } = useTradeState(selectedPortId);
+  const { marketGoods, inventory, transactions, error: tradeError, refresh: refreshTrade } = useTradeState(selectedPortId);
 
   // Ambient audio — start on first user interaction (browser autoplay policy)
   const generatedAmbient = useGeneratedAmbient();
@@ -269,13 +269,15 @@ export default function Shell(): React.ReactElement {
     if (!selectedPortId) return;
     const res = await window.api.game.buyGood(selectedPortId, goodId, qty);
     if (!res.success) throw new Error(res.error);
-  }, [selectedPortId]);
+    void refreshTrade();
+  }, [selectedPortId, refreshTrade]);
 
   const handleSell = useCallback(async (goodId: string, qty: number) => {
     if (!selectedPortId) return;
     const res = await window.api.game.sellGood(selectedPortId, goodId, qty);
     if (!res.success) throw new Error(res.error);
-  }, [selectedPortId]);
+    void refreshTrade();
+  }, [selectedPortId, refreshTrade]);
 
   // Derive seasonal weather modifiers for header display and mare clausum checks
   const weatherMods = getWeatherModifiers(gameState?.currentTurn ?? 0);
@@ -839,7 +841,10 @@ export default function Shell(): React.ReactElement {
         seasonTint={SEASON_TINTS[weatherMods.season]}
       />
 
-      {/* ── Active quest indicator (below Logbook) — clickable ──── */}
+        </div>
+      </div>
+
+      {/* ── Active quest indicator — OUTSIDE hover panel, always clickable ── */}
       {activeQuest && (
         <>
           <button
@@ -1038,9 +1043,6 @@ export default function Shell(): React.ReactElement {
           )}
         </>
       )}
-
-        </div>
-      </div>
 
       {/* ── Quest completion wax seal (FX-02) ──────────────────── */}
       {questToast && (
