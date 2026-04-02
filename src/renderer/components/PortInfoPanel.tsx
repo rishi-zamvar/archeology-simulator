@@ -87,7 +87,7 @@ export default function PortInfoPanel({
         const sorted = [...reachableRes.data].sort(
           (a, b) => a.route.distanceKm - b.route.distanceKm
         );
-        setDestinations(sorted.slice(0, 8));
+        setDestinations(sorted);
         if (loreRes.success && loreRes.data) setLore(loreRes.data);
         // Fetch access levels for all destination ports
         window.api?.game?.getAllPortAccess?.().then(accessRes => {

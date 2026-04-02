@@ -147,8 +147,11 @@ export function registerGameIPCHandlers(db: Database.Database): void {
           }
         }
 
-        // Auto-log arrival to captain's journal (Phase 10 — JRN-04)
-        if (current.type === 'sailing' && result.state.type === 'trading' && result.state.selectedPort) {
+        // Auto-log arrival and unlock neighbors when entering a port
+        // Triggers on: sailing→trading (direct) OR idle→trading (after ARRIVE+START_TRADE)
+        const justArrivedAtPort = result.state.type === 'trading' &&
+          (current.type === 'sailing' || (current.type === 'idle' && action.type === 'START_TRADE'));
+        if (justArrivedAtPort && result.state.type === 'trading') {
           const arrPortId = result.state.selectedPort;
           const arrPort = getPortById(db, arrPortId);
           insertJournalEntry(db, result.state.currentTurn, 'arrival',
