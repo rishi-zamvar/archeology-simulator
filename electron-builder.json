@@ -22,10 +22,11 @@
     "target": [
       {
         "target": "dmg",
-        "arch": ["x64", "arm64"]
+        "arch": ["arm64"]
       }
     ],
-    "category": "public.app-category.education"
+    "category": "public.app-category.education",
+    "identity": null
   },
   "win": {
     "target": [
