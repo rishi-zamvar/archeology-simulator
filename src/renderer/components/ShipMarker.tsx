@@ -36,11 +36,14 @@ type LeafletWithMotion = typeof L & {
   };
 };
 
+// Import trireme image — Vite resolves this to a URL at build time
+import triremeUrl from '../../../resources/images/trireme.png';
+
 function createShipIcon(): L.DivIcon {
   return L.divIcon({
     className: 'ship-icon',
     html: `<div style="width:64px;height:40px;display:flex;align-items:center;justify-content:center;filter:drop-shadow(2px 2px 4px rgba(0,0,0,0.3));">
-      <img src="resource-image:///trireme.png" width="64" height="40" style="object-fit:contain;" alt="trireme" />
+      <img src="${triremeUrl}" width="64" height="40" style="object-fit:contain;" alt="trireme" />
     </div>`,
     iconSize: [64, 40],
     iconAnchor: [32, 20],
