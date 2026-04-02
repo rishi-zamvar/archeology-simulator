@@ -592,11 +592,13 @@ export default function PortInfoPanel({
 
       {/* Reachable destinations — only discovered/unlocked ports shown */}
       {!isLoading && destinations.length > 0 && (() => {
-        // Filter to only show ports the player knows about
-        const knownDestinations = destinations.filter(({ port: dest }) => {
-          const destAccess = destAccessMap.get(dest.id);
-          return destAccess === 'discovered' || destAccess === 'unlocked';
-        });
+        // Filter to only show discovered/unlocked ports, cap at 5, minimum 3 shown
+        const knownDestinations = destinations
+          .filter(({ port: dest }) => {
+            const destAccess = destAccessMap.get(dest.id);
+            return destAccess === 'discovered' || destAccess === 'unlocked';
+          })
+          .slice(0, 5); // max 5 destinations
 
         if (knownDestinations.length === 0) return null;
 
