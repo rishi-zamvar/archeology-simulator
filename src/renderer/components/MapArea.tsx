@@ -83,10 +83,16 @@ export default function MapArea({ children, onPortSelected, onRefreshAccessReady
           attribution="&copy; Stamen Design &copy; OpenStreetMap contributors"
         />
 
-        {/* Port markers — no clustering, all 25 ports visible individually */}
+        {/* Port markers — only show discovered/unlocked ports + quest targets */}
         {!isLoading && ports.length > 0 && (
           <>
-            {ports.map((port) => (
+            {ports
+              .filter((port) => {
+                const access = portAccessMap.get(port.id) ?? 'unknown';
+                const isTarget = questTargetPorts?.has(port.id) ?? false;
+                return access !== 'unknown' || isTarget;
+              })
+              .map((port) => (
               <PortMarker
                 key={port.id}
                 port={port}
