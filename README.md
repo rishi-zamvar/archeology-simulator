@@ -21,12 +21,12 @@ A turn-based ancient Mediterranean trade simulator where you play as a merchant 
 ## Install & Play
 
 ### macOS (Apple Silicon)
-1. Download **[Archeology Simulator-2.1.0-arm64.dmg](https://github.com/rishi-zamvar/archeology-simulator/releases/latest/download/Archeology.Simulator-2.1.0-arm64.dmg)** from [Releases](../../releases/latest)
+1. Download **[Archeology Simulator-1.0.0-arm64.dmg](https://github.com/rishi-zamvar/archeology-simulator/releases/latest/download/Archeology.Simulator-1.0.0-arm64.dmg)** from [Releases](../../releases/latest)
 2. Open the DMG and drag **Archeology Simulator** to Applications
 3. Right-click the app → **Open** (first time only, to bypass Gatekeeper)
 
 ### Windows (x64)
-1. Download **[Archeology Simulator Setup 2.1.0.exe](https://github.com/rishi-zamvar/archeology-simulator/releases/latest/download/Archeology.Simulator.Setup.2.1.0.exe)** from [Releases](../../releases/latest)
+1. Download **[Archeology Simulator Setup 1.0.0.exe](https://github.com/rishi-zamvar/archeology-simulator/releases/latest/download/Archeology.Simulator.Setup.1.0.0.exe)** from [Releases](../../releases/latest)
 2. Run the installer — choose your install directory when prompted
 3. Launch from Start Menu or Desktop shortcut
 

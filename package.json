@@ -1,6 +1,6 @@
 {
   "name": "archeology-simulator",
-  "version": "2.1.0",
+  "version": "1.0.0",
   "description": "Archeology Simulator — Learn ancient Mediterranean history as a merchant captain",
   "main": "dist/main/index.js",
   "scripts": {
