@@ -228,16 +228,22 @@ export function getConnectedPorts(portId: string): string[] {
   const myWaypoints = PORT_WAYPOINTS[portId];
   if (!myWaypoints) return [];
 
-  // Collect all waypoints within 2 hops
+  // Collect all waypoints within 3 hops (ensures port chains connect)
   const reachable = new Set<string>();
   for (const wp of myWaypoints) {
     reachable.add(wp);
-    const neighbors = ADJ.get(wp);
-    if (neighbors) {
-      for (const n of neighbors) {
-        reachable.add(n);
-        const hop2 = ADJ.get(n);
-        if (hop2) { for (const n2 of hop2) reachable.add(n2); }
+    const hop1 = ADJ.get(wp);
+    if (hop1) {
+      for (const n1 of hop1) {
+        reachable.add(n1);
+        const hop2 = ADJ.get(n1);
+        if (hop2) {
+          for (const n2 of hop2) {
+            reachable.add(n2);
+            const hop3 = ADJ.get(n2);
+            if (hop3) { for (const n3 of hop3) reachable.add(n3); }
+          }
+        }
       }
     }
   }

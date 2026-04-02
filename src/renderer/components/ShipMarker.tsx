@@ -134,24 +134,34 @@ export default function ShipMarker({
 
       // Advance all turns
       for (let i = 0; i < totalTurns; i++) {
-        const result = await window.api.game.advanceSailingTurn();
-        if (result.success && result.data) {
-          onTurnAdvanced?.(result.data);
-          if (result.data.event !== null) {
-            // Wait for event resolution
-            await new Promise<void>(resolve => {
-              const unsub = window.api.subscribe('game:updated', (data: unknown) => {
-                if ((data as { type: string }).type === 'sailing') { unsub(); resolve(); }
+        try {
+          const result = await window.api.game.advanceSailingTurn();
+          if (result.success && result.data) {
+            onTurnAdvanced?.(result.data);
+            if (result.data.event !== null) {
+              // Wait for event resolution — accept 'sailing' OR 'idle' (last turn)
+              await new Promise<void>(resolve => {
+                const timeout = setTimeout(() => resolve(), 30000); // 30s safety
+                const unsub = window.api.subscribe('game:updated', (data: unknown) => {
+                  const t = (data as { type: string }).type;
+                  if (t === 'sailing' || t === 'idle') {
+                    clearTimeout(timeout);
+                    unsub();
+                    resolve();
+                  }
+                });
               });
-            });
+            }
+            if (result.data.arrived) break;
           }
-          if (result.data.arrived) break;
+        } catch {
+          break; // Don't hang on IPC errors
         }
       }
 
-      // Arrive at destination
-      await window.api.game.action({ type: 'ARRIVE' });
-      await window.api.game.action({ type: 'START_TRADE', port: destination });
+      // Arrive at destination — try both actions, ignore errors if already transitioned
+      try { await window.api.game.action({ type: 'ARRIVE' }); } catch { /* may already be idle */ }
+      try { await window.api.game.action({ type: 'START_TRADE', port: destination }); } catch { /* non-fatal */ }
     }
 
     motion.on('motion-ended', () => { void finishVoyage(); });

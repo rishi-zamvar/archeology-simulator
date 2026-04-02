@@ -1668,15 +1668,16 @@ export function unlockNeighborPorts(db: Database.Database, arrivedPortId: string
  */
 export function autoDiscoverPort(db: Database.Database, portId: string, turn: number): boolean {
   const current = getPortAccessLevel(db, portId);
-  if (current !== 'unknown') return false;
+  if (current === 'unlocked') return false; // already fully unlocked
 
+  // Visiting a port always upgrades to 'unlocked' (you're physically there)
   db.prepare(`
     INSERT INTO port_access (port_id, status, discovered, discovered_turn, unlock_method)
-    VALUES (?, 'discovered', 1, ?, 'visited')
+    VALUES (?, 'unlocked', 1, ?, 'visited')
     ON CONFLICT(port_id) DO UPDATE SET
-      status = 'discovered',
+      status = 'unlocked',
       discovered = 1,
-      discovered_turn = ?,
+      discovered_turn = COALESCE(port_access.discovered_turn, ?),
       unlock_method = 'visited'
   `).run(portId, turn, turn);
 
