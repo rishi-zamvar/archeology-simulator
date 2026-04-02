@@ -1,5 +1,8 @@
 # Archeology Simulator — Mare Nostrum
 
+[![Release](https://img.shields.io/github/v/release/rishi-zamvar/archeology-simulator)](https://github.com/rishi-zamvar/archeology-simulator/releases/latest)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
 A turn-based ancient Mediterranean trade simulator where you play as a merchant captain sailing between ports in 540 BCE. Learn real history — trade networks, cultures, geography, and daily life — by making decisions, not by reading about them.
 
 ## Features
@@ -80,4 +83,4 @@ All historical content is sourced from academic references including Herodotus, 
 
 ## License
 
-Copyright © 2026 Rishi Zamvar. All rights reserved.
+MIT License — Copyright © 2026 Rishi Zamvar
