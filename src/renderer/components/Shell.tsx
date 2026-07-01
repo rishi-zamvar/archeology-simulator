@@ -229,7 +229,7 @@ export default function Shell(): React.ReactElement {
   function handleNavigate(destinationPortId: string, durationTurns: number = 1) {
     setShowFullMap(false);
     const mods = getWeatherModifiers(gameState?.currentTurn ?? 0);
-    if (mods.isMareClasum) {
+    if (mods.isMareClausum) {
       setMareClausumDest(destinationPortId);
       return;
     }

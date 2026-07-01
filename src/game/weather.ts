@@ -16,7 +16,7 @@ export interface WeatherModifiers {
   stormWeight: number;
   calmWeight: number;
   pirateWeight: number;
-  isMareClasum: boolean;
+  isMareClausum: boolean;
 }
 
 // ── Constants ────────────────────────────────────────────────────────────────
@@ -55,10 +55,10 @@ const MONTH_TO_SEASON: Season[] = [
 
 /** Season-specific modifiers. Weights sum to 100 for each season. */
 const SEASON_CONFIG: Record<Season, Omit<WeatherModifiers, 'season' | 'monthName'>> = {
-  winter:  { durationMultiplier: 1.5, stormWeight: 40, calmWeight: 30, pirateWeight: 30, isMareClasum: true },
-  autumn:  { durationMultiplier: 1.0, stormWeight: 20, calmWeight: 50, pirateWeight: 30, isMareClasum: false },
-  spring:  { durationMultiplier: 1.0, stormWeight: 10, calmWeight: 60, pirateWeight: 30, isMareClasum: false },
-  summer:  { durationMultiplier: 0.8, stormWeight: 5,  calmWeight: 70, pirateWeight: 25, isMareClasum: false },
+  winter:  { durationMultiplier: 1.5, stormWeight: 40, calmWeight: 30, pirateWeight: 30, isMareClausum: true },
+  autumn:  { durationMultiplier: 1.0, stormWeight: 20, calmWeight: 50, pirateWeight: 30, isMareClausum: false },
+  spring:  { durationMultiplier: 1.0, stormWeight: 10, calmWeight: 60, pirateWeight: 30, isMareClausum: false },
+  summer:  { durationMultiplier: 0.8, stormWeight: 5,  calmWeight: 70, pirateWeight: 25, isMareClausum: false },
 };
 
 /** Historically grounded weather descriptions per season (randomly selected). */
