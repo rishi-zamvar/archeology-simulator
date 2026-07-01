@@ -162,37 +162,37 @@ describe('WX-03: getWeatherModifiers — storm and event weights', () => {
 // ── WX-04: Mare clausum ───────────────────────────────────────────────────────
 
 describe('WX-04: getWeatherModifiers — mare clausum (winter sailing closure)', () => {
-  it('test_givenMaimakterionTurn4_whenGetWeatherModifiers_thenIsMareClasum', () => {
-    expect(getWeatherModifiers(4).isMareClasum).toBe(true);
+  it('test_givenMaimakterionTurn4_whenGetWeatherModifiers_thenIsMareClausum', () => {
+    expect(getWeatherModifiers(4).isMareClausum).toBe(true);
   });
 
-  it('test_givenAnthesterionTurn7_whenGetWeatherModifiers_thenIsMareClasum', () => {
-    expect(getWeatherModifiers(7).isMareClasum).toBe(true);
+  it('test_givenAnthesterionTurn7_whenGetWeatherModifiers_thenIsMareClausum', () => {
+    expect(getWeatherModifiers(7).isMareClausum).toBe(true);
   });
 
-  it('test_givenElaphebolionTurn8_whenGetWeatherModifiers_thenNotMareClasum', () => {
-    expect(getWeatherModifiers(8).isMareClasum).toBe(false);
+  it('test_givenElaphebolionTurn8_whenGetWeatherModifiers_thenNotMareClausum', () => {
+    expect(getWeatherModifiers(8).isMareClausum).toBe(false);
   });
 
-  it('test_givenPyanepsionTurn3_whenGetWeatherModifiers_thenNotMareClasum', () => {
-    expect(getWeatherModifiers(3).isMareClasum).toBe(false);
+  it('test_givenPyanepsionTurn3_whenGetWeatherModifiers_thenNotMareClausum', () => {
+    expect(getWeatherModifiers(3).isMareClausum).toBe(false);
   });
 
-  it('test_givenSummerTurn0_whenGetWeatherModifiers_thenNotMareClasum', () => {
-    expect(getWeatherModifiers(0).isMareClasum).toBe(false);
+  it('test_givenSummerTurn0_whenGetWeatherModifiers_thenNotMareClausum', () => {
+    expect(getWeatherModifiers(0).isMareClausum).toBe(false);
   });
 
-  it('test_givenAllWinterMonths_whenGetWeatherModifiers_thenAllAreMareClasum', () => {
+  it('test_givenAllWinterMonths_whenGetWeatherModifiers_thenAllAreMareClausum', () => {
     // Months 4-7: Maimakterion, Poseideon, Gamelion, Anthesterion
     for (let month = 4; month <= 7; month++) {
-      expect(getWeatherModifiers(month).isMareClasum).toBe(true);
+      expect(getWeatherModifiers(month).isMareClausum).toBe(true);
     }
   });
 
-  it('test_givenAllNonWinterMonths_whenGetWeatherModifiers_thenNoneAreMareClasum', () => {
+  it('test_givenAllNonWinterMonths_whenGetWeatherModifiers_thenNoneAreMareClausum', () => {
     const nonWinterMonths = [0, 1, 2, 3, 8, 9, 10, 11];
     for (const month of nonWinterMonths) {
-      expect(getWeatherModifiers(month).isMareClasum).toBe(false);
+      expect(getWeatherModifiers(month).isMareClausum).toBe(false);
     }
   });
 });
