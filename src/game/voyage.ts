@@ -8,17 +8,21 @@
  * - Ships needed to stop at ports for water, food, and hull maintenance
  *
  * One game turn = one Athenian calendar month (~30 days).
- * Monthly range: ~150 km/day × 25 sailing days = ~3,750 km/month.
- * Max voyage: 2 months before needing to resupply at a coastal port.
  *
- * Reference voyage durations (historical sources):
- * - Athens → Alexandria:    ~970 km,  7-10 days  → 1 month
- * - Rome → Carthage:        ~600 km,  ~7 days    → 1 month
- * - Rome → Alexandria:      ~2,100 km, 14-20 days → 1 month
- * - Athens → Antioch:       ~1,100 km, 8-12 days  → 1 month
- * - Carthage → Antioch:     ~2,800 km, 20-25 days → 1 month
- * - Emporion → Alexandria:  ~3,200 km, 25-35 days → 1 month
- * - Emporion → Antioch:     ~3,800 km, 30-40 days → 2 months
+ * Game model vs. history: real coastal merchant ships could cover roughly
+ * 3,750 km in a favourable month (~150 km/day × 25 sailing days). The game
+ * deliberately uses a shorter effective range (KM_PER_MONTH below) so that
+ * voyage lengths vary — nearby ports take 1 month, mid-range 2, distant 3+ —
+ * which reads better as turn-based gameplay than "everything is 1 month".
+ *
+ * Reference voyage distances (historical sources), for grounding the map:
+ * - Athens → Alexandria:   ~970 km,   7-10 days
+ * - Rome → Carthage:       ~600 km,   ~7 days
+ * - Rome → Alexandria:     ~2,100 km, 14-20 days
+ * - Athens → Antioch:      ~1,100 km, 8-12 days
+ * - Carthage → Antioch:    ~2,800 km, 20-25 days
+ * - Emporion → Alexandria: ~3,200 km, 25-35 days
+ * - Emporion → Antioch:    ~3,800 km, 30-40 days
  *
  * Sources: Lionel Casson "Ships and Seamanship in the Ancient World",
  *          TAPA 82:136-148 "Speed Under Sail of Ancient Ships" (1951)
@@ -52,7 +56,7 @@ export function haversineDistanceKm(from: Port, to: Port): number {
 
 /**
  * Calculate voyage duration in turns (months).
- * Based on ancient merchant ship coastal sailing: ~3,750 km/month.
+ * Distance is divided by KM_PER_MONTH and rounded up.
  * Minimum of 1 turn (month) for any voyage.
  */
 export function calculateVoyageDuration(from: Port, to: Port): number {
@@ -63,7 +67,7 @@ export function calculateVoyageDuration(from: Port, to: Port): number {
 
 /**
  * Returns all ports reachable from a given port within maxTurns months.
- * Default max: 2 months — ships must resupply at coastal ports.
+ * Default max: 3 months — beyond this, ships must resupply at coastal ports.
  * Excludes the departure port itself. Sorted by duration (nearest first).
  */
 export function getReachablePorts(
